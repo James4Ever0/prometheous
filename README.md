@@ -16,6 +16,10 @@ You may want to use other models. There are currently [a lot models](https://git
 
 [MPT-6B](https://huggingface.co/mosaicml/mpt-7b-instruct)
 
+[WizardLM](https://github.com/nlpxucan/WizardLM): for coding
+
+[Awesome-LLM-for-RecSys](https://github.com/CHIANGEL/Awesome-LLM-for-RecSys): for recommendation, may assist our "pyjom" project or help model to explore more
+
 more info can be found on [kuxai](https://www.kuxai.com/)
 
 ---
