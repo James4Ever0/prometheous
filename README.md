@@ -1,6 +1,6 @@
 # Prometheous
 
-As before, our past is a complete chaos filled with inadequate knowledge and time for us to learn and develop.
+As before, our past is complete chaos because of inadequate knowledge and time for us to learn and develop.
 
 Find tools for searching our code, build a semantic chatbot to serve us, for hacking, earning and creating.
 
@@ -16,4 +16,4 @@ The bot needs to learn and modify itself.
 
 ## Requirements
 
-You might want a bigger SSD for storing all these data. It is simply overwelming. Also for faster searching and training, you may want bigger RAM.
+You might want a bigger SSD for storing all these data. It is simply overwhelming. Also for faster searching and training, you may want bigger RAM.
