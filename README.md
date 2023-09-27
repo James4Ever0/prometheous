@@ -4,7 +4,23 @@ As before, our past is complete chaos because of inadequate knowledge and time f
 
 Find tools for searching our code, build a semantic chatbot to serve us, for hacking, earning and creating.
 
+## Environments and Models
+
+[Pyenv](), [virtualenv]() and [conda]()/[mamba]() are used for environment management. To store model cache other than default `$HOME` (*nix) or `%USERPROFILE%` (Windows) you may need to change the home directory of current user. Complex solutions such as [overlayfs]() may apply but not preferred.
+
 ## Libraries
+
+To install "compiled" packages like [hnswlib](https://github.com/nmslib/hnswlib/issues/479) on windows you may need mingw2 (follow the installation guide of privateGPT) or conda:
+
+```
+conda install -c conda-forge -n prometheous hnswlib
+```
+
+```
+conda install libpython m2w64-toolchain -c msys2
+```
+
+---
 
 You may want to use other models. There are currently [a lot models](https://github.com/eugeneyan/open-llms).
 
@@ -18,9 +34,17 @@ You may want to use other models. There are currently [a lot models](https://git
 
 [WizardLM](https://github.com/nlpxucan/WizardLM): for coding
 
-[Awesome-LLM-for-RecSys](https://github.com/CHIANGEL/Awesome-LLM-for-RecSys): for recommendation, may assist our "pyjom" project or help model to explore more
+[Awesome-LLM-for-RecSys](https://github.com/CHIANGEL/Awesome-LLM-for-RecSys): for recommendation, may assist our "pyjom" project or help models to explore more
 
-more info can be found on [kuxai](https://www.kuxai.com/)
+more ai related news/info can be found on [kuxai](https://www.kuxai.com/)
+
+---
+
+serve custom models with openai api compatible server:
+
+[openai_server](https://github.com/shawwn/openai-server)
+
+[llama-api-server](https://github.com/iaalm/llama-api-server)
 
 ---
 
@@ -31,6 +55,8 @@ more info can be found on [kuxai](https://www.kuxai.com/)
 [promptify](https://github.com/promptslab/Promptify): structural gpt output
 
 ---
+
+when using these retrieval based models, we need to provide more context. we need to know what the content is (more than filename), how it was retrieved (more than timestamp) and some brief. though these can be achieved by some genetic prompt generation algorithm.
 
 [quivr](https://github.com/StanGirard/quivr)
 
