@@ -8,6 +8,9 @@ from enum import auto
 from strenum import StrEnum
 REQUIRED_BINARIES = [RCLONE := "rclone", GIT := "git"]
 
+DISABLE_GIT_AUTOCRLF = f'{GIT} config --global core.autocrlf input'
+PRUNE_NOW = f'{GIT} gc --prune=now'
+os.system(DISABLE_GIT_AUTOCRLF)
 # import parse
 from config_utils import EnvBaseModel, getConfig
 import filelock
@@ -52,6 +55,21 @@ def add_safe_directory():
     success = True
     return success
 
+
+def detect_upstream_branch():
+    try:
+        upstream = subprocess.check_output(['git', 'rev-parse', '--abbrev-ref', '@{upstream}'], stderr=subprocess.STDOUT).decode().strip()
+        logger_print("Upstream branch: " + upstream)
+        return upstream
+    except subprocess.CalledProcessError:
+        raise Exception("Error: Current branch has no upstream branch set\nHint: git branch --set-upstream-to=<origin name>/<branch> <current branch>")
+
+def detect_upstream_branch_and_add_safe_directory():
+    # do not swap the order.
+    success = add_safe_directory()
+    detect_upstream_branch()
+    return success
+
 # class BackupMode(StrEnum):
 #     incremental = auto()
 #     last_time_only = auto()
@@ -63,6 +81,10 @@ class GitHeadHashAcquisitionMode(StrEnum):
 
 
 from pydantic import Field, BaseModel
+
+# shall you detect if current branch has no upstream branch, and emit exception if so, to prevent 'up-to-date' info being slienced.
+
+# courtesy of ChatGPT
 
 REPO_UP_TO_DATE_KW = "Your branch is up to date with"
 REPO_BEHIND_KW = "Your branch is behind"
@@ -329,7 +351,8 @@ if config.INSTALL_DIR != "":
     # if config.INSTALL_DIR is not "":
     if os.path.exists(config.INSTALL_DIR):
         with chdir_context(config.INSTALL_DIR):
-            add_safe_directory()
+            # add_safe_directory()
+            detect_upstream_branch_and_add_safe_directory()
             assert os.path.isdir(GITDIR), "Git directory not found!"
             success = git_fsck()
             if not success:
@@ -620,6 +643,7 @@ _, COMMIT_CMD = get_script_path_and_exec_cmd("commit")
 
 
 def commit():
+    logger_print(f"running commit command: {COMMIT_CMD}")
     success = False
     # add_config_success = add_safe_directory()
     # if add_config_success:
@@ -663,7 +687,8 @@ def atomic_commit():
     success = False
     commit_success = False
     commit_hash_changed = False
-    add_safe_directory()
+    # add_safe_directory()
+    detect_upstream_branch_and_add_safe_directory()
     # add_config_success = add_safe_directory()
     # if not add_config_success:
     #     logger_print("failed to add safe directory")
@@ -736,3 +761,6 @@ if __name__ == "__main__":
         success = atomic_commit()
         if not success:
             raise Exception("Failed to perform atomic commit.")
+        else:
+            logger_print("Cleaning up after successful commit:")
+            os.system(PRUNE_NOW)
