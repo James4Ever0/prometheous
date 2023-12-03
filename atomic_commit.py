@@ -1,8 +1,14 @@
+# TODO: split execution logs with commandline
+
 import os
 import sys
 from log_utils import logger_print
 import shutil
 import subprocess
+
+# TODO: backup .gitconfig file in user directory, if config related command fails we restore it and rerun the command
+# TODO: recursively backup all .git folders in submodules
+# TODO: repair corrupted index by renaming index file and `git reset`
 
 from enum import auto
 from strenum import StrEnum
@@ -10,7 +16,11 @@ REQUIRED_BINARIES = [RCLONE := "rclone", GIT := "git"]
 
 DISABLE_GIT_AUTOCRLF = f'{GIT} config --global core.autocrlf input'
 PRUNE_NOW = f'{GIT} gc --prune=now'
-os.system(DISABLE_GIT_AUTOCRLF)
+SCRIPT_FILENAME = os.path.basename(__file__)
+
+# TODO: combine this with other git config commands
+# os.system(DISABLE_GIT_AUTOCRLF)
+
 # import parse
 from config_utils import EnvBaseModel, getConfig
 import filelock
@@ -25,9 +35,12 @@ class BackupUpdateCheckMode(StrEnum):
     commit_and_backup_flag_metadata = auto()
     git_commit_hash = auto()
 
+USER_HOME = os.path.expanduser("~")
 
-
-
+GIT_CONFIG_FNAME = ".gitconfig"
+GIT_CONFIG_BACKUP_FNAME = ".gitconfig.bak"
+GIT_CONFIG_ABSPATH = os.path.join(USER_HOME, GIT_CONFIG_FNAME)
+GIT_CONFIG_BACKUP_ABSPATH = os.path.join(USER_HOME, GIT_CONFIG_BACKUP_FNAME)
 GIT_LIST_CONFIG = f"{GIT} config -l"
 GIT_ADD_GLOBAL_CONFIG_CMDGEN = (
     lambda conf: f"{GIT} config --global --add {conf.split('=')[0]} \"{conf.split('=')[1]}\""
@@ -56,6 +69,14 @@ def add_safe_directory():
     return success
 
 
+def exec_system_command_and_check_return_code(command:str, banner:str):
+    success = False
+    ret = os.system(command)
+    success = ret == 0
+    assert success, f"{banner.title()} command failed with exit code {ret}"
+    return success
+
+
 def detect_upstream_branch():
     try:
         upstream = subprocess.check_output(['git', 'rev-parse', '--abbrev-ref', '@{upstream}'], stderr=subprocess.STDOUT).decode().strip()
@@ -65,9 +86,21 @@ def detect_upstream_branch():
         raise Exception("Error: Current branch has no upstream branch set\nHint: git branch --set-upstream-to=<origin name>/<branch> <current branch>")
 
 def detect_upstream_branch_and_add_safe_directory():
+    success = False
     # do not swap the order.
     success = add_safe_directory()
-    detect_upstream_branch()
+    if not success:
+        # repair
+        logger_print("repairing .gitconfig")
+        repaired = restore_gitconfig()
+        if repaired:
+            success = add_safe_directory()
+    if success:
+        # backup
+        logger_print("backing up .gitconfig")
+        backedUp = backup_gitconfig()
+        if backedUp:
+            detect_upstream_branch()
     return success
 
 # class BackupMode(StrEnum):
@@ -148,6 +181,7 @@ def check_repo_status(encoding="utf-8"):
         )
     return out
 
+from typing import Literal
 
 class AtomicCommitConfig(EnvBaseModel):
     # BACKUP_MODE: BackupMode = Field(
@@ -159,8 +193,13 @@ class AtomicCommitConfig(EnvBaseModel):
         default="",
         title="Directory for installation (if set, after installation the program will exit)",
     )
-    SKIP_CONFLICT_CHECK: bool = Field(
-        default=False, title="Skip duplication/conflict checks during installation."
+    # SKIP_CONFLICT_CHECK: bool = Field(
+    #     default=False, title="Skip duplication/conflict checks during installation."
+    # )
+    DUPLICATION_CHECK_MODE: Literal['md5sum', 'filesize'] = Field(
+        default='md5sum',
+        # default='filesize',
+        title="Duplication check mode during installation. Duplicated files will not be copied."
     )
     RCLONE_FLAGS: str = Field(
         default="-P", title="Commandline flags for rclone command"
@@ -173,6 +212,10 @@ class AtomicCommitConfig(EnvBaseModel):
         default=GitHeadHashAcquisitionMode.rev_parse,
         title="How to acquire git HEAD (latest commit) hash",
     )
+
+    NO_COMMIT: bool = Field(default = False, title = 'Skipping commit action')
+
+    SUBMODULE: bool = Field(default = False, title = 'Skipping recursive installation & excecution due to submodule.')
 
 
 # from pydantic_argparse import ArgumentParser
@@ -193,6 +236,43 @@ class AtomicCommitConfig(EnvBaseModel):
 
 config = getConfig(AtomicCommitConfig)
 
+rclone_flags = config.RCLONE_FLAGS
+RCLONE_SYNC_CMDGEN = lambda source, target:  f"{RCLONE} sync {rclone_flags} \"{source}\" \"{target}\""
+
+BACKUP_GIT_CONFIG = RCLONE_SYNC_CMDGEN(GIT_CONFIG_ABSPATH, GIT_CONFIG_BACKUP_ABSPATH)
+RESTORE_GIT_CONFIG = RCLONE_SYNC_CMDGEN(GIT_CONFIG_BACKUP_ABSPATH, GIT_CONFIG_ABSPATH)
+
+def backup_gitconfig():
+    success = False
+    success = exec_system_command_and_check_return_code(BACKUP_GIT_CONFIG, 'backup .gitconfig')
+    return success
+
+def restore_gitconfig():
+    success = False
+    success = exec_system_command_and_check_return_code(RESTORE_GIT_CONFIG, 'restore .gitconfig')
+    return success
+
+
+def check_if_filepath_is_valid(filepath):
+    assert os.path.exists(filepath), f"path '{filepath}' does not exist."
+    assert os.path.isfile(filepath), f"path '{filepath}' is not file."
+
+def checksum(filepath):
+    check_if_filepath_is_valid(filepath)
+    ret = str(_checksum(filepath))
+    return ret
+
+if config.DUPLICATION_CHECK_MODE == 'filesize':
+    def _checksum(filepath):
+        ret = os.path.getsize(filepath)
+        return ret
+elif config.DUPLICATION_CHECK_MODE == 'md5sum':
+    from simple_file_checksum import get_checksum
+    def _checksum(filepath):
+        ret = get_checksum(filepath, algorithm='MD5')
+        return ret
+else:
+    raise Exception(f"Unknown DUPLICATION_CHECK_MODE: {config.DUPLICATION_CHECK_MODE}")
 
 # instead of 'where', we have `shutil.which`
 
@@ -347,10 +427,12 @@ def chdir_context(dirpath: str):
         os.chdir(cwd)
 
 
-if config.INSTALL_DIR != "":
+def install_script(install_dir:str, source_dir:str = "."):
     # if config.INSTALL_DIR is not "":
-    if os.path.exists(config.INSTALL_DIR):
-        with chdir_context(config.INSTALL_DIR):
+    assert install_dir != source_dir, f"install_dir '{install_dir}' shall not be the same as source_dir '{source_dir}'"
+    success = False
+    if os.path.exists(install_dir):
+        with chdir_context(install_dir):
             # add_safe_directory()
             detect_upstream_branch_and_add_safe_directory()
             assert os.path.isdir(GITDIR), "Git directory not found!"
@@ -358,30 +440,59 @@ if config.INSTALL_DIR != "":
             if not success:
                 raise Exception("Target git repository is corrupted.")
 
-        localfiles = os.listdir(".")
-        install_files = [f for f in localfiles if f.endswith(".py")]
-        if not config.SKIP_CONFLICT_CHECK:
-            target_dir_files = os.listdir(config.INSTALL_DIR)
-            conflict_files = [f for f in install_files if f in target_dir_files]
-            if set(conflict_files) == set(install_files):
-                raise Exception(
-                    "You probably have installed at directory %s" % config.INSTALL_DIR
-                )
-            if conflict_files != []:
-                err = [
-                    f"Conflict file '{f}' found in target directory '{config.INSTALL_DIR}'"
-                    for f in conflict_files
-                ]
-                raise Exception("\n".join(err))
+        localfiles = os.listdir(source_dir)
+        install_files = ['atomic_commit.py', 'config_utils.py', 'exception_utils.py', 'log_utils.py', 'argparse_utils.py', 'exceptional_print.py', 'error_utils.py']
         for f in install_files:
-            target_fpath = os.path.join(config.INSTALL_DIR, f)
-            shutil.copy(f, target_fpath)
-        logger_print(f"Atomic commit script installed at: '{config.INSTALL_DIR}'")
+            assert f in localfiles, "Could not find '%s' in '%s'" % (f, source_dir)
+        # install_files = [f for f in localfiles if f.endswith(".py")] # let's redefine this.
+        # print(install_files)
+        # breakpoint()
+        # if not config.SKIP_CONFLICT_CHECK:
+        target_dir_files = os.listdir(install_dir)
+        need_install_files = []
+        for f in install_files:
+            if f not in target_dir_files:
+                logger_print("target directory %s does not exist" % f)
+                need_install_files.append(f)
+            else:
+                target_checksum = checksum(os.path.join(install_dir, f))
+                install_checksum = checksum(os.path.join(source_dir, f))
+                if target_checksum == install_checksum:
+                    logger_print(f"skipping installation of file '{f}' due to same checksum '{install_checksum}' (method: {config.DUPLICATION_CHECK_MODE})")
+                else:
+                    logger_print(f"file '{f}' checksum mismatch. (target: '{target_checksum}', install: '{install_checksum}')")
+                    need_install_files.append(f)
+        # conflict_files = [f for f in install_files if f in target_dir_files]
+        # if set(conflict_files) == set(install_files):
+        #     raise Exception(
+        #         "You probably have installed at directory %s" % config.INSTALL_DIR
+        #     )
+        # if conflict_files != []:
+        #     err = [
+        #         f"Conflict file '{f}' found in target directory '{config.INSTALL_DIR}'"
+        #         for f in conflict_files
+        #     ]
+        #     raise Exception("\n".join(err))
+        
+        for f in need_install_files:
+            logger_print(f"installing '{f}' to '{install_dir}'")
+            target_fpath = os.path.join(install_dir, f)
+            source_fpath = os.path.join(source_dir,f)
+            shutil.copy(source_fpath, target_fpath)
+        logger_print(f"Atomic commit script installed at: '{install_dir}'")
+        success = True
     else:
         raise Exception(
-            f"Could not find installation directory at '{config.INSTALL_DIR}'"
+            f"Could not find installation directory at '{install_dir}'"
         )
-    exit(0)
+    return success
+
+if config.INSTALL_DIR != "":
+    success = install_script(config.INSTALL_DIR)
+    if success:
+        exit(0)
+    else:
+        raise Exception(f"Installation failed at '{config.INSTALL_DIR}' for unknown reason.")
 
 assert os.path.isdir(GITDIR), "Git directory not found!"
 if os.path.exists(BACKUP_BASE_DIR):
@@ -494,13 +605,15 @@ def get_script_path_and_exec_cmd(script_prefix):
 # deadlock: if both backup integrity & fsck failed, what to do?
 # when backup is done, put head hash as marker
 # default skip check: mod-time & size
-rclone_flags = config.RCLONE_FLAGS
-BACKUP_COMMAND_COMMON = f"{RCLONE} sync {rclone_flags} {GITDIR} {INPROGRESS_DIR}"
 
-ROLLBACK_COMMAND = f"{RCLONE} sync {rclone_flags} {BACKUP_GIT_DIR} {GITDIR}"
+# BACKUP_COMMAND_COMMON = f"{RCLONE} sync {rclone_flags} {GITDIR} {INPROGRESS_DIR}"
+BACKUP_COMMAND_COMMON = RCLONE_SYNC_CMDGEN(GITDIR, INPROGRESS_DIR)
+
+# ROLLBACK_COMMAND = f"{RCLONE} sync {rclone_flags} {BACKUP_GIT_DIR} {GITDIR}"
+ROLLBACK_COMMAND = RCLONE_SYNC_CMDGEN(BACKUP_GIT_DIR, GITDIR)
 
 # if config.BACKUP_MODE == BackupMode.last_time_only:
-BACKUP_COMMAND_GEN = lambda: BACKUP_COMMAND_COMMON
+# BACKUP_COMMAND_GEN = lambda: BACKUP_COMMAND_COMMON
 # else:
 #     # take care of last backup!
 #     BACKUP_COMMAND_GEN = (
@@ -511,10 +624,9 @@ BACKUP_COMMAND_GEN = lambda: BACKUP_COMMAND_COMMON
 def backup():
     if os.path.exists(BACKUP_GIT_DIR):
         shutil.move(BACKUP_GIT_DIR, INPROGRESS_DIR)
-    backup_command = BACKUP_COMMAND_GEN()
-    ret = os.system(backup_command)
-    success = ret == 0
-    assert success, f"Backup command failed with exit code {ret}"
+    backup_command = BACKUP_COMMAND_COMMON
+    # backup_command = BACKUP_COMMAND_GEN()
+    success = exec_system_command_and_check_return_code(backup_command, 'backup')
     # then we move folders into places.
     shutil.move(INPROGRESS_DIR, BACKUP_GIT_DIR)
     # if config.BACKUP_MODE == BackupMode.incremental:
@@ -638,8 +750,9 @@ def rollback():
         os.remove(ROLLBACK_INPROGRESS_FLAG)
     return success
 
-
-_, COMMIT_CMD = get_script_path_and_exec_cmd("commit")
+COMMIT_CMD = ...
+if not config.NO_COMMIT:
+    _, COMMIT_CMD = get_script_path_and_exec_cmd("commit")
 
 
 def commit():
@@ -656,6 +769,42 @@ def commit():
 
 
 # TODO: formulate this into a state machine.
+from easyprocess import EasyProcess
+def execute_script_submodule(directory:str):
+    success = False
+    cmd = [sys.executable, SCRIPT_FILENAME]
+    cmd.extend(['--no_commit', 'True', '--submodule', 'True'])
+    with chdir_context(directory):
+        proc = EasyProcess(cmd).call()
+        ret = proc.return_code
+        success = ret == 0
+        if not success:
+            logger_print(f"Failed to execute script at directory '{directory}'")
+    return success
+
+
+def recursive_install_and_execute_script_to_lower_git_directories():
+    success = False
+    candidate_dirs = set()
+    
+    # TODO: skip symlinks
+    for dirpath, dirnames, filenames in os.walk(".", followlinks = False):
+        if BACKUP_BASE_DIR not in dirpath and os.path.basename(dirpath) == GITDIR:
+            submodule_dir, _ = os.path.split(dirpath)
+            if submodule_dir != '.':
+                logger_print(f"adding submodule git directory '{submodule_dir}'")
+                candidate_dirs.add(submodule_dir)
+    if len(candidate_dirs) == 0:
+        logger_print(f"no submodule git directory found")
+        success = True
+    for install_dir in candidate_dirs:
+        logger_print(f"installing and executing script at submodule '{install_dir}")
+        success = install_script(install_dir, source_dir = ".")
+        if success:
+            success = execute_script_submodule(install_dir) # enable SUBMODULE & NO_COMMIT
+        if not success:
+            raise Exception(f"submodule execution failed at: '{install_dir}'")
+    return success
 
 
 # TODO: check necessarity of commitment
@@ -694,7 +843,15 @@ def atomic_commit():
     #     logger_print("failed to add safe directory")
     #     return success
 
+    # now we recursively install and execute this script (skipping commit) to lower `.git` directories, skipping symbolic links
+    if not config.SUBMODULE:
+        recursive_install_and_execute_script_to_lower_git_directories()
+
     can_commit = atomic_commit_common()
+
+    if config.NO_COMMIT:
+        logger_print("skipping commit action because configuration")
+        return can_commit
 
     if can_commit:
         status = get_repo_status()

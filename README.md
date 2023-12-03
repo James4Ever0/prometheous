@@ -4,9 +4,15 @@ As before, our past is complete chaos because of inadequate knowledge and time f
 
 Find tools for searching our code, build a semantic chatbot to serve us, for hacking, earning and creating.
 
+## AI Based Client Side Documentation for All My Projects
+
+Theoriotically it applies to any project that is messy and time consuming to document.
+
+This can be a great challange for me and helpful feature for developers.
+
 ## Environments and Models
 
-[Pyenv](), [virtualenv]() and [conda]()/[mamba]() are used for environment management. To store model cache other than default `$HOME` (*nix) or `%USERPROFILE%` (Windows) you may need to change the home directory of current user. Complex solutions such as [overlayfs]() may apply but not preferred.
+[Pyenv](https://github.com/pyenv/pyenv), [virtualenv](https://virtualenv.pypa.io/en/latest/installation.html) and [conda](https://docs.conda.io/projects/conda/en/latest/user-guide/install/index.html)/[mamba](https://mamba.readthedocs.io/en/latest/installation/mamba-installation.html) are used for environment management. To store model cache other than default `$HOME` (*nix) or `%USERPROFILE%` (Windows) you may need to change the home directory of current user. Complex solutions such as [overlayfs](https://www.baeldung.com/linux/overlayfs-usage) may apply but not preferred.
 
 ## Libraries
 
