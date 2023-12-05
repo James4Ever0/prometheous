@@ -82,8 +82,8 @@ def detect_upstream_branch():
         upstream = subprocess.check_output(['git', 'rev-parse', '--abbrev-ref', '@{upstream}'], stderr=subprocess.STDOUT).decode().strip()
         logger_print("Upstream branch: " + upstream)
         return upstream
-    except subprocess.CalledProcessError:
-        raise Exception("Error: Current branch has no upstream branch set\nHint: git branch --set-upstream-to=<origin name>/<branch> <current branch>")
+    except subprocess.CalledProcessError as e:
+        raise Exception(e, "Error: Current branch has no upstream branch set\nHint: git branch --set-upstream-to=<origin name>/<branch> <current branch>")
 
 def detect_upstream_branch_and_add_safe_directory():
     success = False
@@ -174,8 +174,9 @@ def check_repo_status(encoding="utf-8"):
     b_out, b_err = proc.communicate()
 
     out = b_out.decode(encoding)
-    err = b_err.decode(encoding)
-    if err != "":
+    err = b_err
+    # err = b_err.decode(encoding)
+    if err != b"":
         raise Exception(
             f"error checking repo status.\n[stdout]\n{out}\n[stderr]\n{err}"
         )
