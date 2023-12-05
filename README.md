@@ -6,9 +6,35 @@ Find tools for searching our code, build a semantic chatbot to serve us, for hac
 
 ## AI Based Client Side Documentation for All My Projects
 
+can put this to huggingface space
+
+---
+
+you need [webllm](https://github.com/mlc-ai/web-llm), tensorflow.js or pytorch ported to web
+
+prepare two versions (at least) of `index.html` and scripts to load resources from different origin
+
+---
+
+web resources are limited. you can either prompt the llm to generate search keywords to enhance query, or use sentence transformers to semantically search instead, but not both (on conventional computers). you may design two different websites. or for more powerful ones, use both.
+
+---
+
+next you would search for: `ai code repository documentation generation`
+
+---
+
 Theoriotically it applies to any project that is messy and time consuming to document.
 
 This can be a great challange for me and helpful feature for developers.
+
+----
+
+Also, your notes, your browsing history, and some agents being trained with your personal data.
+
+## Local Setup
+
+it is been a long time that we have not fully reviewed our browsing history. we need to find out those influencers (like 老麦的工具库, kuxai), media sources and trace down everything they have posted in the past, not to miss any detail in order to develop the best information retrieval enhanced LLM, which can support our research and workflow, integrate into our projects like pyjom.
 
 ## Environments and Models
 
@@ -93,3 +119,7 @@ The bot needs to learn and modify itself.
 ## Requirements
 
 You might want a bigger SSD for storing all these data. It is simply overwhelming. Also for faster searching and training, you may want bigger RAM.
+
+## Star History
+
+<img src="https://api.star-history.com/svg?repos=james4ever0/prometheous&Timeline" style="filter: invert(100%);"></img>
