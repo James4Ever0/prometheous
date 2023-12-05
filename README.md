@@ -36,6 +36,14 @@ Also, your notes, your browsing history, and some agents being trained with your
 
 it is been a long time that we have not fully reviewed our browsing history. we need to find out those influencers (like 老麦的工具库, kuxai), media sources and trace down everything they have posted in the past, not to miss any detail in order to develop the best information retrieval enhanced LLM, which can support our research and workflow, integrate into our projects like pyjom.
 
+---
+
+for your local files, i guess we need to setup some threshold that eliminates low priority indexes, otherwise taking too much space.
+
+what makes things prioritized? usefulness. can be checked by ai itself or human queries.
+
+we can setup some dynamic buffer space if something is not found in solid vector space, recurse till found.
+
 ## Environments and Models
 
 [Pyenv](https://github.com/pyenv/pyenv), [virtualenv](https://virtualenv.pypa.io/en/latest/installation.html) and [conda](https://docs.conda.io/projects/conda/en/latest/user-guide/install/index.html)/[mamba](https://mamba.readthedocs.io/en/latest/installation/mamba-installation.html) are used for environment management. To store model cache other than default `$HOME` (*nix) or `%USERPROFILE%` (Windows) you may need to change the home directory of current user. Complex solutions such as [overlayfs](https://www.baeldung.com/linux/overlayfs-usage) may apply but not preferred.
