@@ -6,6 +6,12 @@ Find tools for searching our code, build a semantic chatbot to serve us, for hac
 
 ## AI Based Client Side Documentation for All My Projects
 
+refuse to generate detailed documentation on huge project at once. only generate for limited number of code within limited areas. others might be summarized and hyperlinked.
+
+the search algorithm goes recursively, and will not pursue all computational power at once. it will improve based on feedback, and only search in chunks.
+
+---
+
 can put this to huggingface space
 
 ---
