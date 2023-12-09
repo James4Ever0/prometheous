@@ -8,7 +8,7 @@ export OPENAI_API_BASE=http://0.0.0.0:8000
 export BETTER_EXCEPTIONS=1
 # write-the docs example.py
 
-python3 custom_doc_writer /media/root/Toshiba XG3/works/agi_computer_control_python_doc/src/use_logging.py
+python3 custom_doc_writer.py /media/root/Toshiba XG3/works/agi_computer_control_python_doc/src/use_logging.py
 
 # cd "/media/root/Toshiba XG3/works/agi_computer_control_python_doc/src"
 # cp ../../agi_computer_control/*.py .
