@@ -51,6 +51,10 @@
         document.addEventListener('DOMContentLoaded', registerSearchEventListener);
     </script>
     <style type="text/css">
+        body {
+            font-family: 'Roboto', sans-serif;
+        }
+
         .container {
             display: flex;
             flex-direction: column;
@@ -83,6 +87,7 @@
 
 <body>
     <div class="container">
+        <h1>Search document</h1>
         <input type="text" id="searchInput" placeholder="Search...">
         <ul id="searchResults"></ul>
     </div>
