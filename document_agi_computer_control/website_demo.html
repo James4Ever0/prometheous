@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Search Code By Comment</title>
+    <script src="./flexsearch.bundle.js"></script>
+    <script type="text/javascript" defer>
+        // Sample data for demonstration
+        const data = [
+            { id: 1, title: "JavaScript is a programming language" },
+            { id: 2, title: "Python is a popular language for data science" },
+            { id: 3, title: "JavaScript and Python are both used in web development" }
+        ];
+
+        // Create a new FlexSearch instance with the required configuration
+        const index = new FlexSearch.Index({
+            tokenize: "full",
+            doc: {
+                id: "id",
+                field: "title"
+            }
+        });
+
+        // Add the data to the search index
+        data.forEach(item => {
+            index.add(item.id, item.title);
+        });
+
+        // Event listener for the search input
+        function registerSearchEventListener() {
+            document.getElementById('searchInput').addEventListener('input', function () {
+                const searchTerm = this.value;
+                const results = index.search(searchTerm, 5); // Limiting to 5 results for demonstration
+
+                // Display the search results
+                const searchResults = document.getElementById('searchResults');
+                searchResults.innerHTML = '';
+                results.forEach(result => {
+                    const listItem = document.createElement('li');
+                    listItem.textContent = result.title;
+                    searchResults.appendChild(listItem);
+                });
+            });
+        }
+        document.addEventListener('DOMContentLoaded', registerSearchEventListener);
+
+    </script>
+</head>
+
+<body>
+    <input type="text" id="searchInput" placeholder="Search...">
+    <ul id="searchResults"></ul>
+</body>
+
+</html>
