@@ -17,6 +17,10 @@
         // Create a new FlexSearch instance with the required configuration
         const doc = new FlexSearch.Document({
             tokenize: "full",
+            document: {
+                id: "id",
+                index: ["title"]
+            }
         });
 
         // Add the data to the search index
@@ -34,20 +38,54 @@
                 const searchResults = document.getElementById('searchResults');
                 searchResults.innerHTML = '';
                 results.forEach(result => {
-                    const listItem = document.createElement('li');
-                    listItem.textContent = data[result].title;
-                    searchResults.appendChild(listItem);
+                    const field = result.field;
+                    const ids = result.result;
+                    ids.forEach(id => {
+                        const listItem = document.createElement('li');
+                        listItem.textContent = `[${field}] ${data[id][field]}`;
+                        searchResults.appendChild(listItem);
+                    });
                 });
             });
         }
         document.addEventListener('DOMContentLoaded', registerSearchEventListener);
-
     </script>
+    <style type="text/css">
+        .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+        }
+
+        input[type="text"] {
+            padding: 10px;
+            border-radius: 10px;
+            border: 2px solid #ccc;
+        }
+
+        ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        ul li {
+            background-color: #f2f2f2;
+            padding: 10px;
+            margin: 5px;
+            border-radius: 10px;
+            box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1);
+        }
+    </style>
 </head>
 
 <body>
-    <input type="text" id="searchInput" placeholder="Search...">
-    <ul id="searchResults"></ul>
+    <div class="container">
+        <input type="text" id="searchInput" placeholder="Search...">
+        <ul id="searchResults"></ul>
+    </div>
 </body>
 
 </html>
