@@ -1,6 +1,7 @@
-import os
 import argparse
 import json
+import os
+
 from beartype import beartype
 from jinja2 import Template
 
@@ -19,12 +20,12 @@ def parse_arguments():
     parser.add_argument(
         "-f",
         "--file",
-        help=f"directory of code to process",
+        help="directory of code to process",
     )
     parser.add_argument(
         "-d",
         "--document",
-        help=f"directory of document json to read",
+        help="directory of document json to read",
     )
     parser.add_argument("-o", "--output", help="document output path", default="")
     args = parser.parse_args()
