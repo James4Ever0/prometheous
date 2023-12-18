@@ -4,6 +4,15 @@ import json
 from beartype import beartype
 from jinja2 import Template
 
+# it is better structured like:
+
+# db: shared, unified mapping between filename, document json name (uuid) and document summary
+
+# search results again in selected documents, from entry level
+# search results in selected folder (you may click different part of the filepath to jump)
+# search results in detail of each document file (if clicked in)
+
+# or, just build a unified search index out of the entire repo.
 
 def parse_arguments():
     parser = argparse.ArgumentParser()

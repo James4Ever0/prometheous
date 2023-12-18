@@ -8,7 +8,6 @@ import json
 from custom_doc_writer import construct_llm_and_write_code_comment, parse_arguments
 from beartype import beartype
 
-
 @beartype
 def scan_code_dir_and_write_to_comment_dir(
     code_dir_path: str, output_dir_path: str #, summary_dir_path: str
