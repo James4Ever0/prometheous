@@ -2,7 +2,7 @@ even though we want to document many things, making this tool into some priority
 
 ---
 
-client based searching is just impossible. it takes eternal to load the model and the performance will just be very bad.
+client based semantic searching is just impossible. it takes eternal to load the model and the performance will just be very bad.
 
 ---
 
@@ -11,3 +11,9 @@ write-the just provide class/function docstrings. we want the full-code explaina
 or we would do that later, first make this thing work all over the codebase, and then find a way to connect the dots (webpage).
 
 ---
+
+you need some makeup of the website.
+
+first the search page
+
+next the content browsing page
