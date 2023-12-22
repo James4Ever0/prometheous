@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
-    <!-- visit with anchor: #mycode.12-14 -->
+<!-- visit with anchor: #mycode.12-14 -->
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -366,18 +367,32 @@
             margin: auto;
             max-width: 900px;
         }
+
+        header {
+            position: fixed;
+            /* Set the header to be fixed */
+            top: 0;
+            /* Stick the header to the top of the viewport */
+            width: 100%;
+            /* Set the width to fill the viewport */
+            background-color: #f2f2f2;
+            padding: 10px 20px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            z-index: 100;
+            /* Ensure the header appears above other content */
+        }
     </style>
 </head>
 
 <body>
 
-    <header data-plugin-header="line-numbers"></header>
-    <h1>Python Code Example with Anchors</h1>
+    <header data-plugin-header="line-numbers">
+        <h1>Python Code Example with Anchors</h1>
+    </header>
     <section>
         <pre id="mycode" class="language-python" data-src="code_view_demo.py">
   </pre>
     </section>
-
 
 </body>
 

@@ -34,18 +34,17 @@ class ZeroCutIndex(Exception):
 
 
 @beartype
-def commentProcessMethodFactory(
-    model: LLM, prompt_generator: Callable[[str, str], str]
-):
+def commentProcessMethodFactory(model: LLM, prompt_generator: Callable):
     # better not to
     @beartype
     def commentProcessMethod(
         content: NonEmptyString,
         location: NonEmptyString,
         response_token_limit: int = 60,
+        previous_comment: str = "",
     ) -> tuple[bool, str]:
         success = False
-        prompt = prompt_generator(content, location)
+        prompt = prompt_generator(content, location, previous_comment=previous_comment)
         result = model.run(prompt)
         success = True
         return success, result
@@ -67,6 +66,7 @@ class DocProcessQueue:
         self.queue = []
         self.locations = []
         self.result_all = []
+        self.previous_comment = ""
 
     def init_limits_and_counters(self, char_limit: int, line_limit: int):
         self.char_limit = char_limit
@@ -173,11 +173,14 @@ class DocProcessQueue:
         processed, content, location = self.process_by_limit(final=final)
         if processed:
             if is_bearable(content, NonEmptyString):
-                success, result = self.process_method(content, location)
+                success, result = self.process_method(
+                    content, location, self.previous_comment
+                )
                 if not success:
                     raise DocumentProcessingException(
                         "Failed to process code at:", location
                     )
+                self.previous_comment = result
                 yield dict(comment=result, location=location, content=content)
         if final:
             if len(self.queue) != 0:
@@ -217,44 +220,34 @@ def process_code_and_get_result(process_queue: DocProcessQueue, filepath: str):
     return result_all
 
 
-def parse_arguments(assert_file=True):
+@beartype
+def assert_exists_as_absolute_directory(basepath: str):
+    assert os.path.isabs(basepath)
+    assert os.path.isdir(basepath)
+
+
+@beartype
+def join_and_assert_exists_as_absolute_directory(basepath: str, name: str):
+    joined_path = os.path.join(basepath, name)
+    assert_exists_as_absolute_directory(joined_path)
+    return joined_path
+
+
+def parse_arguments():
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        "-f",
-        "--file",
-        help=f"{'directory' if not assert_file else 'filename'} to process",
-    )
-    parser.add_argument(
-        "-o",
-        "--output",
-        help=f"{'directory of ' if not assert_file else ''}document json to store",
-    )
-    # parser.add_argument(
-    #     "-s",
-    #     "--summary",
-    #     help=f"{'directory of ' if not assert_file else ''}summary json to store",
-    # )
-    parser.add_argument(
-        "-l", "--language", help="programming language specification", default=""
+        "-d",
+        "--document_dir",
+        help=f"document directory, contains 'src' as source code directory, 'doc' as comment json directory",
     )
     args = parser.parse_args()
 
-    code_file_path = args.file
-    output_path = args.output
-    # summary_path = args.summary
-    programming_language = args.language
-    if assert_file:
-        assert os.path.isabs(code_file_path)
-        assert os.path.isfile(code_file_path)
-    else:
-        assert os.path.isabs(code_file_path)
-        assert os.path.isabs(output_path)
-        # assert os.path.isabs(summary_path)
+    document_dir = args.document_dir
+    assert_exists_as_absolute_directory(document_dir)
+    join_and_assert_exists_as_absolute_directory(document_dir, "src")
+    join_and_assert_exists_as_absolute_directory(document_dir, "doc")
 
-        assert os.path.isdir(code_file_path)
-        assert os.path.isdir(output_path)
-        # assert os.path.isdir(summary_path)
-    return programming_language, code_file_path, output_path  # , summary_path
+    return document_dir
 
 
 @beartype
@@ -267,7 +260,7 @@ def summary_code_comment_return_value(ret: list[dict]):
 @beartype
 def process_code_and_write_result(
     model: LLM,
-    prompt_generator: Callable[[str, str], str],
+    prompt_generator: Callable,
     code_file_path: str,
     output_path: str,
 ):
@@ -288,23 +281,90 @@ def process_code_and_write_result(
 
 
 @beartype
+def filter_empty_elements(mlist: list):
+    return [elem for elem in mlist if elem]
+
+
+@beartype
+def generate_location_component(location: str):
+    return f"""Storage location: {location}"""
+
+
+@beartype
+def generate_previous_comment_component(previous_comment: str):
+    return (
+        f"""Previous code comment:
+{previous_comment}"""
+        if previous_comment
+        else ""
+    )
+
+
+@beartype
+def generate_code_component(programming_language: str, code: str):
+    return f"""Code:
+```{programming_language}
+{code}
+```"""
+
+
+def generate_comment_coponent():
+    return """Comment for code:
+"""
+
+
+@beartype
+def generate_prompt_components(
+    code: str, location: str, programming_language: str, previous_comment: str
+):
+    location_component = generate_location_component(location)
+    previous_comment_component = generate_previous_comment_component(previous_comment)
+    code_component = generate_code_component(programming_language, code)
+    comment_component = generate_comment_coponent()
+    components = [
+        location_component,
+        previous_comment_component,
+        code_component,
+        comment_component,
+    ]
+    return components
+
+
+@beartype
+def assemble_prompt_components(components: list[str]):
+    components = filter_empty_elements(components)
+    ret = "\n".join(components)
+    return ret
+
+
+@beartype
+def generate_prompt_generator(programming_language: str):
+    @beartype
+    def prompt_generator(code: str, location: str, previous_comment: str = ""):
+        components = generate_prompt_components(
+            code, location, programming_language, previous_comment
+        )
+        ret = assemble_prompt_components(components)
+        return ret
+
+    return prompt_generator
+
+
+@beartype
+def generate_prompt_base(word_limit: int):
+    return f"""You are reading code from codebase in chunks. You would understand what the code is doing and return brief comments (under {word_limit} words)."""
+
+
+@beartype
 def construct_llm_and_write_code_comment(
     code_file_path: str,
     output_path: str,
     programming_language: str = "",
     word_limit: int = 15,
 ):
-    prompt_base = f"""You are reading code from codebase in chunks. You would understand what the code is doing and return brief comments (under {word_limit} words)."""
+    prompt_base = generate_prompt_base(word_limit)
 
-    prompt_generator = (
-        lambda code, location: f"""Storage location: {location}
-Code:
-```{programming_language}
-{code}
-```
-Comment for code:
-"""
-    )
+    prompt_generator = generate_prompt_generator(programming_language)
 
     model = LLM(prompt_base)
 
