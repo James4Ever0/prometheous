@@ -1,7 +1,7 @@
 import hashlib
 import os
 from contextlib import contextmanager
-from typing import Callable
+from typing import Any, Callable, Iterable, Literal, Tuple, Union, overload
 
 import pydantic
 import tinydb
@@ -32,6 +32,7 @@ class CacheManager:
 
     def __init__(self, db_path: str):
         self.init_db(db_path)
+        self.init_query()
 
     def init_db(self, db_path: str):
         self.db_path = db_path
@@ -80,8 +81,8 @@ class CacheManager:
 
     @classmethod
     def get_record_file_path_and_hash(cls, record: dict, key: str):
-        filepath = record[key][cls.source]
-        filehash = record[key][cls.hash]
+        filepath: str = record[key][cls.source]
+        filehash: str = record[key][cls.hash]
         return filepath, filehash
 
     @classmethod
@@ -129,7 +130,6 @@ class CacheManager:
         )
 
 
-
 @contextmanager
 def CacheContextManager(db_path: str):
     manager = CacheManager(db_path)
@@ -137,6 +137,7 @@ def CacheContextManager(db_path: str):
         yield manager
     finally:
         del manager
+
 
 @beartype
 def verify_filehash(filepath: str, filehash: str):
@@ -147,7 +148,6 @@ def verify_filehash(filepath: str, filehash: str):
     return False
 
 
-
 class TargetGeneratorParameter(pydantic.BaseModel):
     target_dir_path: str
     source_path: str
@@ -156,11 +156,11 @@ class TargetGeneratorParameter(pydantic.BaseModel):
 @beartype
 def generate_and_hash_target(
     param: TargetGeneratorParameter,
-    target_path_generator: Callable,
-    target_file_geneator: Callable,
+    target_path_generator: Callable[[TargetGeneratorParameter], str],
+    target_file_geneator: Callable[[str, str], Any],
 ):
     target_path = target_path_generator(param)
-    ret = target_file_geneator(param.source_path, target_path)
+    _ = target_file_geneator(param.source_path, target_path)
     target_hash = hash_file(target_path)
     return target_path, target_hash
 
@@ -209,18 +209,21 @@ def check_if_target_exists_with_source_in_record(
         has_record = True
     else:
         manager.db.remove(manager.target_path_eq(record_target_path))
-    return has_record
+    return has_record, record_target_path
 
 
 @beartype
-def check_if_source_exists_in_record(source_path: str, manager: CacheManager):
+def check_if_source_exists_in_record(
+    source_path: str, manager: CacheManager
+) -> Union[Tuple[Literal[True], str, str], Tuple[Literal[False], str, Literal[None]]]:
     has_record = False
+    record_target_path = None
     record, source_hash = manager.get_record_by_computing_source_hash(source_path)
     if record:
-        has_record = check_if_target_exists_with_source_in_record(
+        has_record, record_target_path = check_if_target_exists_with_source_in_record(
             record, source_path, source_hash, manager
         )
-    return has_record, source_hash
+    return has_record, source_hash, record_target_path  # type:ignore
 
 
 class SourceIteratorAndTargetGeneratorParam(pydantic.BaseModel):
@@ -232,26 +235,67 @@ class SourceIteratorAndTargetGeneratorParam(pydantic.BaseModel):
 @beartype
 def iterate_source_dir_and_generate_to_target_dir(
     param: SourceIteratorAndTargetGeneratorParam,
-    source_walker: Callable,
-    target_path_generator: Callable,
-    target_file_geneator: Callable,
-):
-    with CacheContextManager(param.db_path) as manager:
-        for dirpath, fpath in source_walker(param.source_dir_path):
-            # use object to pass value around.
-            print("processing:", fpath)
-            source_path = os.path.join(param.source_dir_path, fpath)
-            has_record, source_hash = check_if_source_exists_in_record(
-                source_path, manager
-            )
-            if has_record:
-                continue
-            target_path, target_hash = generate_and_hash_target(
-                TargetGeneratorParameter(
-                    target_dir_path=param.target_dir_path, source_path=source_path
-                ),
-                target_path_generator,
-                target_file_geneator,
-            )
-            manager.upsert_data(source_path, source_hash, target_path, target_hash)
+    source_walker: Callable[[str], Iterable[tuple[Any, str]]],
+    target_path_generator: Callable[[TargetGeneratorParameter], str],
+    target_file_geneator: Callable[[str, str], Any],
+    join_source_dir: bool = True,
+) -> list[str]:
+    @beartype
+    def process_source_and_return_target_path(
+        manager: CacheManager,
+        source_path: str,
+        source_hash: str,
+    ):
+        target_path, target_hash = generate_and_hash_target(
+            TargetGeneratorParameter(
+                target_dir_path=param.target_dir_path, source_path=source_path
+            ),
+            target_path_generator,
+            target_file_geneator,
+        )
+        manager.upsert_data(source_path, source_hash, target_path, target_hash)
+        return target_path
 
+    @beartype
+    def get_target_path_by_checking_manager_or_processing(
+        manager: CacheManager, source_path: str
+    ):
+        (
+            has_record,
+            source_hash,
+            record_target_path,
+        ) = check_if_source_exists_in_record(source_path, manager)
+        if not isinstance(record_target_path, str) or (not has_record):
+            target_path = process_source_and_return_target_path(
+                manager,
+                source_path,
+                source_hash,
+            )
+        else:
+            target_path = record_target_path
+        return target_path
+
+    @beartype
+    def process_file_and_append_to_cache_paths(
+        manager: CacheManager, fpath: str, processed_cache_paths: list[str]
+    ):
+        source_path = (
+            os.path.join(param.source_dir_path, fpath) if join_source_dir else fpath
+        )
+        target_path = get_target_path_by_checking_manager_or_processing(
+            manager, source_path
+        )
+        processed_cache_paths.append(target_path)
+
+    @beartype
+    def get_processed_cache_paths():
+        processed_cache_paths: list[str] = []
+        with CacheContextManager(param.db_path) as manager:
+            for _, fpath in source_walker(param.source_dir_path):
+                print("processing:", fpath)
+                process_file_and_append_to_cache_paths(
+                    manager, fpath, processed_cache_paths
+                )
+        return processed_cache_paths
+
+    return get_processed_cache_paths()

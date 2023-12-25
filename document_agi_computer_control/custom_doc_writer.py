@@ -4,7 +4,7 @@
 # TODO: specify location like: module -> filename -> block name (class/method) -> lineno
 
 # usually the line is not so long. but if it does, we cut it.
-from typing import Callable
+from typing import Callable, Iterable
 
 import argparse, os
 import json
@@ -12,9 +12,12 @@ from beartype import beartype
 from beartype.door import is_bearable
 from beartype.vale import Is
 from typing import Annotated, Optional  # <--------------- if Python ≥ 3.9.0
-from llm import LLM
+from llm import LLM, llm_context  # type:ignore
 import copy
-from codepiece_summarizer import comment_summarizer
+from codepiece_summarizer import comment_summarizer  # type:ignore
+from typing import TypedDict
+
+UTF8 = "utf-8"
 
 
 NonEmptyString = Annotated[str, Is[lambda str_obj: len(str_obj.strip()) > 0]]
@@ -34,17 +37,18 @@ class ZeroCutIndex(Exception):
 
 
 @beartype
-def commentProcessMethodFactory(model: LLM, prompt_generator: Callable):
-    # better not to
+def commentProcessMethodFactory(
+    model: LLM, prompt_generator: Callable[[str, str, str], str]
+):
     @beartype
     def commentProcessMethod(
         content: NonEmptyString,
         location: NonEmptyString,
-        response_token_limit: int = 60,
         previous_comment: str = "",
+        response_token_limit: int = 60,
     ) -> tuple[bool, str]:
         success = False
-        prompt = prompt_generator(content, location, previous_comment=previous_comment)
+        prompt = prompt_generator(content, location, previous_comment)
         result = model.run(prompt)
         success = True
         return success, result
@@ -52,10 +56,20 @@ def commentProcessMethodFactory(model: LLM, prompt_generator: Callable):
     return commentProcessMethod
 
 
+class DocProcessingItem(TypedDict):
+    comment: str
+    location: str
+    content: str
+
+
 @beartype
 class DocProcessQueue:
     def __init__(
-        self, process_method: Callable, filepath: str, char_limit=1000, line_limit=15
+        self,
+        process_method: Callable,
+        filepath: str,
+        char_limit: int = 1000,
+        line_limit: int = 15,
     ):
         self.init_limits_and_counters(char_limit, line_limit)
         self.init_storage()
@@ -65,7 +79,7 @@ class DocProcessQueue:
     def init_storage(self):
         self.queue = []
         self.locations = []
-        self.result_all = []
+        self.result_all: list[DocProcessingItem] = []
         self.previous_comment = ""
 
     def init_limits_and_counters(self, char_limit: int, line_limit: int):
@@ -122,8 +136,10 @@ class DocProcessQueue:
             remained_content,
             remained_location,
         ) = self.get_cut_and_remained_params_by_char_limit()
-        content, location = self.prepare_content_and_location(cut_index, cut_content)
-        self.strip_storage_by_cut_index(cut_index)
+        content, location = self.prepare_content_and_location(
+            cut_index, cut_content  # type:ignore
+        )
+        self.strip_storage_by_cut_index(cut_index)  # type:ignore
 
         if remained_content:
             self.queue.insert(0, remained_content)
@@ -169,19 +185,21 @@ class DocProcessQueue:
             self.update_counters()
         return processed, content, location
 
-    def process(self, final=True):
+    def process(self, final=True) -> Iterable[DocProcessingItem]:
         processed, content, location = self.process_by_limit(final=final)
         if processed:
             if is_bearable(content, NonEmptyString):
                 success, result = self.process_method(
-                    content, location, self.previous_comment
+                    content, location, previous_comment=self.previous_comment
                 )
                 if not success:
                     raise DocumentProcessingException(
                         "Failed to process code at:", location
                     )
                 self.previous_comment = result
-                yield dict(comment=result, location=location, content=content)
+                yield DocProcessingItem(
+                    comment=result, location=location, content=content  # type:ignore
+                )
         if final:
             if len(self.queue) != 0:
                 yield from self.process(final=True)
@@ -206,14 +224,12 @@ class DocProcessQueue:
 
 
 @beartype
-def process_code_and_get_result(process_queue: DocProcessQueue, filepath: str):
-    with open(filepath, "r") as f:
-        content = f.read()
-        lines = content.split("\n")
+def process_content_and_get_result(process_queue: DocProcessQueue, content: str):
+    lines = content.split("\n")
 
-        for lineno, line in enumerate(lines):
-            if is_bearable(line, NonEmptyString):
-                process_queue.push_and_process(line, lineno)
+    for lineno, line in enumerate(lines):
+        if is_bearable(line, NonEmptyString):
+            process_queue.push_and_process(line, lineno)  # type: ignore
 
     process_queue.process_and_collect_all()
     result_all = copy.copy(process_queue.result_all)
@@ -251,33 +267,59 @@ def parse_arguments():
 
 
 @beartype
-def summary_code_comment_return_value(ret: list[dict]):
+def summary_code_comment_return_value(ret: list[DocProcessingItem]):
     comment_list = [elem["comment"] for elem in ret]
     summary = comment_summarizer(comment_list)
     return summary
 
 
+class DocProcessingResult(TypedDict):
+    summary: str
+    details: list[DocProcessingItem]
+
+
+@beartype
+def process_content_and_return_result(
+    model: LLM,
+    prompt_generator: Callable[[str, str, str], str],
+    code_file_path: str,
+    content: str,
+) -> DocProcessingResult:
+    commentProcessMethod = commentProcessMethodFactory(model, prompt_generator)
+    process_queue = DocProcessQueue(commentProcessMethod, code_file_path)
+    result_all = process_content_and_get_result(process_queue, content)
+    summary = summary_code_comment_return_value(result_all)
+    data = DocProcessingResult(summary=summary, details=result_all)
+    del process_queue
+    return data
+
+
+@beartype
+def read_file(file_path: str, encoding=UTF8):
+    with open(file_path, "r", encoding=encoding) as f:
+        content = f.read()
+    return content
+
+
+@beartype
+def serialize_dict_and_write_to_file(data_dict: dict, file_path: str, encoding=UTF8):
+    with open(file_path, "w+", encoding=encoding) as f:
+        f.write(json.dumps(data_dict, indent=4))
+
+
 @beartype
 def process_code_and_write_result(
     model: LLM,
-    prompt_generator: Callable,
+    prompt_generator: Callable[[str, str, str], str],
     code_file_path: str,
     output_path: str,
-):
-    commentProcessMethod = commentProcessMethodFactory(model, prompt_generator)
-    process_queue = DocProcessQueue(commentProcessMethod, code_file_path)
-    result_all = process_code_and_get_result(process_queue, code_file_path)
-
-    summary = summary_code_comment_return_value(result_all)
-
-    data = {"summary": summary, "details": result_all}
-
-    serialized = json.dumps(data, ensure_ascii=False, indent=4)
-
-    with open(output_path, "w+") as f:
-        f.write(serialized)
-    del process_queue
-    return result_all
+) -> DocProcessingResult:
+    content = read_file(code_file_path)
+    data = process_content_and_return_result(
+        model, prompt_generator, code_file_path, content
+    )
+    serialize_dict_and_write_to_file(data, output_path)  # type:ignore
+    return data
 
 
 @beartype
@@ -366,18 +408,19 @@ def construct_llm_and_write_code_comment(
 
     prompt_generator = generate_prompt_generator(programming_language)
 
-    model = LLM(prompt_base)
-
-    ret = process_code_and_write_result(
-        model, prompt_generator, code_file_path, output_path
-    )
-
-    del model
+    with llm_context(prompt_base) as model:
+        ret = process_code_and_write_result(
+            model, prompt_generator, code_file_path, output_path
+        )
     return ret
 
 
-if __name__ == "__main__":
+def main():
     programming_language, code_file_path, output_path = parse_arguments()
     construct_llm_and_write_code_comment(
         code_file_path, output_path, programming_language=programming_language
     )
+
+
+if __name__ == "__main__":
+    main()

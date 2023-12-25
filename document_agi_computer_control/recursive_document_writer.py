@@ -7,10 +7,10 @@ import uuid
 
 from beartype import beartype
 
-from cache_db_context import (SourceIteratorAndTargetGeneratorParam,
+from cache_db_context import (SourceIteratorAndTargetGeneratorParam,#type:ignore
                               TargetGeneratorParameter,
                               iterate_source_dir_and_generate_to_target_dir)
-from custom_doc_writer import (construct_llm_and_write_code_comment,
+from custom_doc_writer import (construct_llm_and_write_code_comment,#type:ignore
                                parse_arguments)
 
 

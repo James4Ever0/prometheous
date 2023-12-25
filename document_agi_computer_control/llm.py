@@ -1,5 +1,6 @@
 # from langchain.prompts import Prompt
 # from langchain.chains import LLMChain
+from contextlib import contextmanager
 from langchain.llms import OpenAI
 import tiktoken
 
@@ -66,3 +67,11 @@ class LLM:
         """
         encoding = tiktoken.encoding_for_model("gpt-4")
         return len(encoding.encode(text))
+
+@contextmanager
+def llm_context(prompt: str, temperature=0, gpt_4=False):
+    model = LLM(prompt, temperature=temperature, gpt_4=gpt_4)
+    try:
+        yield model
+    finally:
+        del model
