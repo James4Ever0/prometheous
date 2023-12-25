@@ -1,11 +1,16 @@
 import hashlib
 import os
 from contextlib import contextmanager
-from typing import Any, Callable, Iterable, Literal, Tuple, Union, overload
+from typing import Any, Callable, Iterable, Literal, Optional, Tuple, Union
+import uuid
 
 import pydantic
 import tinydb
 from beartype import beartype
+from tinydb.queries import QueryLike
+import tempfile
+
+UTF8 = "utf-8"
 
 
 @beartype
@@ -119,13 +124,24 @@ class CacheManager:
         }
         return data
 
+    def has_document_matching_condition(self, cond: Optional[QueryLike] = None):
+        candidates = []
+        if cond is not None:
+            candidates = self.db.search(cond)
+        has_document = len(candidates) > 0
+        return has_document
+
+    def better_upsert(self, data: dict, cond: Optional[QueryLike] = None):
+        has_document = self.has_document_matching_condition(cond)
+        self.db.upsert(data, cond=cond if has_document else None)
+
     def upsert_data(
         self, source_path: str, source_hash: str, target_path: str, target_hash: str
     ):
         data = self.construct_upsert_data(
             source_path, source_hash, target_path, target_hash
         )
-        self.db.upsert(
+        self.better_upsert(
             data, cond=self.source_path_query(self.source_path_eq(source_path))
         )
 
@@ -299,3 +315,83 @@ def iterate_source_dir_and_generate_to_target_dir(
         return processed_cache_paths
 
     return get_processed_cache_paths()
+
+
+@beartype
+def make_and_return_dir_path(base_dir: str, subdir: str):
+    dirpath = os.path.join(base_dir, subdir)
+    os.mkdir(dirpath)
+    return dirpath
+
+
+@beartype
+def make_source_and_target_dirs(base_dir: str):
+    @beartype
+    def make_and_return_dir_path_under_base_dir(subdir: str):
+        return make_and_return_dir_path(base_dir, subdir)
+
+    source_dir = make_and_return_dir_path_under_base_dir("source")
+    target_dir = make_and_return_dir_path_under_base_dir("target")
+    return source_dir, target_dir
+
+
+@beartype
+def read_file(fpath: str):
+    with open(fpath, "r", encoding=UTF8) as f:
+        return f.read()
+
+
+@beartype
+def write_file(fpath: str, content: str):
+    with open(fpath, "w+", encoding=UTF8) as f:
+        f.write(content)
+
+
+def test_main():
+    @beartype
+    def target_file_generator(source_path: str, target_path: str):
+        content = read_file(source_path)
+        write_file(target_path, content)
+
+    @beartype
+    def target_path_generator(param: TargetGeneratorParameter):
+        fname = str(uuid.uuid4())
+        ret = os.path.join(param.target_dir_path, fname)
+        return ret
+
+    @beartype
+    def prepare_test_param(temp_dir: str):
+        source_dir, target_dir = make_source_and_target_dirs(temp_dir)
+        db_path = os.path.join(temp_dir, "cache.db")
+        param = SourceIteratorAndTargetGeneratorParam(
+            source_dir_path=source_dir, target_dir_path=target_dir, db_path=db_path
+        )
+        return param
+
+    @beartype
+    def generate_test_source_walker(source_dir: str):
+        @beartype
+        def source_walker(dirpath: str):
+            return [(dirpath, it) for it in os.listdir(source_dir)]
+
+        return source_walker
+
+    @beartype
+    def prepare_test_file(source_dir: str):
+        test_file_path = os.path.join(source_dir, "test_file.txt")
+        write_file(test_file_path, "test")
+
+    def test_in_temporary_directory():
+        with tempfile.TemporaryDirectory() as temp_dir:
+            param = prepare_test_param(temp_dir)
+            prepare_test_file(param.source_dir_path)
+            source_walker = generate_test_source_walker(param.source_dir_path)
+            iterate_source_dir_and_generate_to_target_dir(
+                param, source_walker, target_path_generator, target_file_generator
+            )
+
+    test_in_temporary_directory()
+
+
+if __name__ == "__main__":
+    test_main()
