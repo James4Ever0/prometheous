@@ -4,7 +4,8 @@
 # TODO: specify location like: module -> filename -> block name (class/method) -> lineno
 
 # usually the line is not so long. but if it does, we cut it.
-from typing import Callable, Iterable
+from typing import Callable
+import random
 
 import argparse, os
 import json
@@ -45,7 +46,6 @@ def commentProcessMethodFactory(
         content: NonEmptyString,
         location: NonEmptyString,
         previous_comment: str = "",
-        response_token_limit: int = 60,
     ) -> tuple[bool, str]:
         success = False
         prompt = prompt_generator(content, location, previous_comment)
@@ -66,15 +66,21 @@ class DocProcessingItem(TypedDict):
 class DocProcessQueue:
     def __init__(
         self,
-        process_method: Callable,
+        process_method: Callable[[str, str, str], tuple[bool, str]],
         filepath: str,
         char_limit: int = 1000,
         line_limit: int = 15,
+        sample_size: Optional[int] = None,
     ):
         self.init_limits_and_counters(char_limit, line_limit)
         self.init_storage()
+        self.init_sample(sample_size)
         self.process_method = process_method
         self.filepath = filepath
+
+    def init_sample(self, sample_size: Optional[int]):
+        self.sample_size = sample_size  # type: ignore
+        self.random_sample = self.sample_size is not None
 
     def init_storage(self):
         self.queue = []
@@ -185,55 +191,81 @@ class DocProcessQueue:
             self.update_counters()
         return processed, content, location
 
-    def process(self, final=True) -> Iterable[DocProcessingItem]:
-        processed, content, location = self.process_by_limit(final=final)
-        if processed:
-            if is_bearable(content, NonEmptyString):
-                success, result = self.process_method(
-                    content, location, previous_comment=self.previous_comment
-                )
-                if not success:
-                    raise DocumentProcessingException(
-                        "Failed to process code at:", location
-                    )
-                self.previous_comment = result
-                yield DocProcessingItem(
-                    comment=result, location=location, content=content  # type:ignore
-                )
-        if final:
-            if len(self.queue) != 0:
-                yield from self.process(final=True)
+    def iterate_all_content_and_location_pairs(self):
+        while True:
+            try:
+                processed, content, location = self.process_by_limit(final=True)
+                if processed:
+                    yield content, location
+                else:
+                    break
+            except ZeroCutIndex:
+                break
 
-    def process_and_collect_all(self, final=True):
-        ret = list(self.process(final=final))
-        self.result_all.extend(ret)
+    def process_content_and_location_pair(self, content: str, location: str):
+        success, result = self.process_method(
+            content, location, previous_comment=self.previous_comment  # type:ignore
+        )
+        if not success:
+            raise DocumentProcessingException("Failed to process code at:", location)
+        self.previous_comment = result
+        ret = DocProcessingItem(
+            comment=result, location=location, content=content  # type:ignore
+        )
         return ret
+
+    def collect_all_content_and_location_pairs(self):
+        ret = []
+        for content, location in self.iterate_all_content_and_location_pairs():
+            if is_bearable(content, NonEmptyString):
+                it = (content, location)
+                ret.append(it)
+        return ret
+
+    def sample_content_and_location_pairs(self):
+        pairs = self.collect_all_content_and_location_pairs()
+        pair_count = len(pairs)
+        if self.random_sample:
+            self.sample_size: int
+            if pair_count > self.sample_size:
+                pairs = random.sample(pairs, k=self.sample_size)
+        return pairs
+
+    def process_and_collect_all(self):
+        for content, location in self.sample_content_and_location_pairs():
+            it = self.process_content_and_location_pair(content, location)
+            self.result_all.append(it)
+        return copy.copy(self.result_all)
 
     def update_counter_after_push(self, content: str):
         self.char_count += len(content)
         self.line_count += 1
 
     def push(self, content: str, lineno: int):
-        self.queue.append(content)
-        self.locations.append(lineno)
-        self.update_counter_after_push(content)
+        if is_bearable(content, NonEmptyString):
+            self.queue.append(content)
+            self.locations.append(lineno)
+            self.update_counter_after_push(content)  # type:ignore
 
-    def push_and_process(self, content: str, lineno: int):
-        self.push(content, lineno)
-        return self.process_and_collect_all(final=False)  # final
+
+@beartype
+def split_by_line(content: str, newline="\n"):
+    return content.split(newline)
 
 
 @beartype
 def process_content_and_get_result(process_queue: DocProcessQueue, content: str):
-    lines = content.split("\n")
+    @beartype
+    def iterate_and_push_line_to_process_queue(lines: list[str]):
+        for lineno, line in enumerate(lines):
+            process_queue.push(line, lineno)
 
-    for lineno, line in enumerate(lines):
-        if is_bearable(line, NonEmptyString):
-            process_queue.push_and_process(line, lineno)  # type: ignore
+    def split_and_process_lines():
+        lines = split_by_line(content)
+        iterate_and_push_line_to_process_queue(lines)
+        return process_queue.process_and_collect_all()
 
-    process_queue.process_and_collect_all()
-    result_all = copy.copy(process_queue.result_all)
-    return result_all
+    return split_and_process_lines()
 
 
 @beartype
@@ -256,14 +288,21 @@ def parse_arguments():
         "--document_dir",
         help=f"document directory, contains 'src' as source code directory, 'doc' as comment json directory",
     )
+
+    parser.add_argument(
+        "-u",
+        "--repository_url",
+        help=f"url of source code repository",
+    )
     args = parser.parse_args()
 
     document_dir = args.document_dir
+    repository_url = args.repository_url
     assert_exists_as_absolute_directory(document_dir)
     join_and_assert_exists_as_absolute_directory(document_dir, "src")
     join_and_assert_exists_as_absolute_directory(document_dir, "doc")
 
-    return document_dir
+    return document_dir,repository_url
 
 
 @beartype
@@ -284,9 +323,18 @@ def process_content_and_return_result(
     prompt_generator: Callable[[str, str, str], str],
     code_file_path: str,
     content: str,
+    char_limit: int = 1000,
+    line_limit: int = 15,
+    sample_size: Optional[int] = None,
 ) -> DocProcessingResult:
     commentProcessMethod = commentProcessMethodFactory(model, prompt_generator)
-    process_queue = DocProcessQueue(commentProcessMethod, code_file_path)
+    process_queue = DocProcessQueue(
+        commentProcessMethod,
+        code_file_path,
+        char_limit=char_limit,
+        line_limit=line_limit,
+        sample_size=sample_size,
+    )
     result_all = process_content_and_get_result(process_queue, content)
     summary = summary_code_comment_return_value(result_all)
     data = DocProcessingResult(summary=summary, details=result_all)
@@ -313,10 +361,19 @@ def process_code_and_write_result(
     prompt_generator: Callable[[str, str, str], str],
     code_file_path: str,
     output_path: str,
+    char_limit: int = 1000,
+    line_limit: int = 15,
+    sample_size: Optional[int] = None,
 ) -> DocProcessingResult:
     content = read_file(code_file_path)
     data = process_content_and_return_result(
-        model, prompt_generator, code_file_path, content
+        model,
+        prompt_generator,
+        code_file_path,
+        content,
+        char_limit=char_limit,
+        line_limit=line_limit,
+        sample_size=sample_size,
     )
     serialize_dict_and_write_to_file(data, output_path)  # type:ignore
     return data

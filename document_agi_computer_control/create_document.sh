@@ -8,7 +8,9 @@ export OPENAI_API_BASE=http://0.0.0.0:8000
 export BETTER_EXCEPTIONS=1
 # write-the docs example.py
 
-python3 recursive_document_writer.py -f "/media/root/Toshiba XG3/works/agi_computer_control_python_doc/src" -o "/media/root/Toshiba XG3/works/agi_computer_control_python_doc/doc"
+python3 recursive_document_writer.py -d "/media/root/Toshiba XG3/works/agi_computer_control_python_doc/"
+
+# python3 recursive_document_writer.py -f "/media/root/Toshiba XG3/works/agi_computer_control_python_doc/src" -o "/media/root/Toshiba XG3/works/agi_computer_control_python_doc/doc"
 
 # python3 custom_doc_writer.py -f "/media/root/Toshiba XG3/works/agi_computer_control_python_doc/src/use_logging.py" -o "/media/root/Toshiba XG3/works/agi_computer_control_python_doc/doc/use_logging_py.json" -l python
 

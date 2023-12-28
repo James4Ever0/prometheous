@@ -30,6 +30,16 @@ class LLM:
         self.gpt_4 = gpt_4
         self.model_name = "gpt-4" if self.gpt_4 else "text-davinci-003"
         self.max_tokens = 4097 * 2 if self.gpt_4 else 4097
+        self.show_init_config()
+
+    def show_init_config(self):
+        print_center("init params")
+        print(f"Model: {self.model_name}")
+        print(f"Max Tokens: {self.max_tokens}")
+        print(f"Prompt Size: {self.prompt_size}")
+        print(f"Temperature: {self.temperature}")
+        print_center("init config")
+        print(self.prompt)
 
     def run(self, query):
         """
@@ -67,6 +77,7 @@ class LLM:
         """
         encoding = tiktoken.encoding_for_model("gpt-4")
         return len(encoding.encode(text))
+
 
 @contextmanager
 def llm_context(prompt: str, temperature=0, gpt_4=False):

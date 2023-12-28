@@ -1,13 +1,11 @@
 import hashlib
 import os
 from contextlib import contextmanager
-from typing import Any, Callable, Iterable, Literal, Optional, Tuple, Union
-import uuid
+from typing import Any, Callable, Iterable, Optional, Tuple
 
 import pydantic
 import tinydb
 from beartype import beartype
-from tinydb.queries import QueryLike
 import tempfile
 
 UTF8 = "utf-8"
@@ -30,10 +28,12 @@ def hash_file(filename: str):
 
 @beartype
 class CacheManager:
-    path = "path"
-    hash = "hash"
-    source = "source"
-    target = "target"
+    class subkey:
+        path = "path"
+        hash = "hash"
+    class key:
+        source = "source"
+        target = "target"
 
     def __init__(self, db_path: str):
         self.init_db(db_path)
@@ -46,10 +46,10 @@ class CacheManager:
     def init_query(self):
         self.query = tinydb.Query()
         self.source_path_query, self.source_hash_query = self.construct_query_by_key(
-            self.source
+            self.key.source
         )
         self.target_path_query, self.target_hash_query = self.construct_query_by_key(
-            self.target
+            self.key.target
         )
 
     def source_hash_eq(self, other: str):
@@ -70,12 +70,9 @@ class CacheManager:
         return subkey_query
 
     def construct_query_by_key(self, key: str):
-        path_query = self.construct_query_by_key_and_subkey(key, self.path)
-        hash_query = self.construct_query_by_key_and_subkey(key, self.hash)
+        path_query = self.construct_query_by_key_and_subkey(key, self.subkey.path)
+        hash_query = self.construct_query_by_key_and_subkey(key, self.subkey.hash)
         return path_query, hash_query
-
-    def abc(self, source_path: str, target_path: str):
-        ...
 
     def get_record_by_computing_source_hash(self, source_path: str):
         source_hash = hash_file(source_path)
@@ -85,18 +82,18 @@ class CacheManager:
         return record, source_hash
 
     @classmethod
-    def get_record_file_path_and_hash(cls, record: dict, key: str):
-        filepath: str = record[key][cls.source]
-        filehash: str = record[key][cls.hash]
+    def get_record_file_path_and_hash(cls, record: dict, key: str)->tuple[str,str]:
+        filepath= record[key][cls.subkey.path]
+        filehash= record[key][cls.subkey.hash]
         return filepath, filehash
 
     @classmethod
     def get_record_source_path_and_hash(cls, record: dict):
-        return cls.get_record_file_path_and_hash(record, cls.source)
+        return cls.get_record_file_path_and_hash(record, cls.key.source)
 
     @classmethod
     def get_record_target_path_and_hash(cls, record: dict):
-        return cls.get_record_file_path_and_hash(record, cls.target)
+        return cls.get_record_file_path_and_hash(record, cls.key.target)
 
     @classmethod
     def verify_record_file_hash(cls, record: dict, key: str):
@@ -106,12 +103,12 @@ class CacheManager:
 
     @classmethod
     def verify_record_source_hash(cls, record: dict):
-        verified = cls.verify_record_file_hash(record, cls.source)
+        verified = cls.verify_record_file_hash(record, cls.key.source)
         return verified
 
     @classmethod
     def verify_record_target_hash(cls, record: dict):
-        verified = cls.verify_record_file_hash(record, cls.target)
+        verified = cls.verify_record_file_hash(record, cls.key.target)
         return verified
 
     @classmethod
@@ -119,21 +116,10 @@ class CacheManager:
         cls, source_path: str, source_hash: str, target_path: str, target_hash: str
     ):
         data = {
-            cls.source: {cls.path: source_path, cls.hash: source_hash},
-            cls.target: {cls.path: target_path, cls.hash: target_hash},
+            cls.key.source: {cls.subkey.path: source_path, cls.subkey.hash: source_hash},
+            cls.key.target: {cls.subkey.path: target_path, cls.subkey.hash: target_hash},
         }
         return data
-
-    def has_document_matching_condition(self, cond: Optional[QueryLike] = None):
-        candidates = []
-        if cond is not None:
-            candidates = self.db.search(cond)
-        has_document = len(candidates) > 0
-        return has_document
-
-    def better_upsert(self, data: dict, cond: Optional[QueryLike] = None):
-        has_document = self.has_document_matching_condition(cond)
-        self.db.upsert(data, cond=cond if has_document else None)
 
     def upsert_data(
         self, source_path: str, source_hash: str, target_path: str, target_hash: str
@@ -141,8 +127,9 @@ class CacheManager:
         data = self.construct_upsert_data(
             source_path, source_hash, target_path, target_hash
         )
-        self.better_upsert(
-            data, cond=self.source_path_query(self.source_path_eq(source_path))
+        self.db.upsert(
+            data,
+            cond=self.source_path_eq(source_path),
         )
 
 
@@ -231,7 +218,7 @@ def check_if_target_exists_with_source_in_record(
 @beartype
 def check_if_source_exists_in_record(
     source_path: str, manager: CacheManager
-) -> Union[Tuple[Literal[True], str, str], Tuple[Literal[False], str, Literal[None]]]:
+) -> Tuple[bool, str, Optional[str]]:
     has_record = False
     record_target_path = None
     record, source_hash = manager.get_record_by_computing_source_hash(source_path)
@@ -239,8 +226,7 @@ def check_if_source_exists_in_record(
         has_record, record_target_path = check_if_target_exists_with_source_in_record(
             record, source_path, source_hash, manager
         )
-    return has_record, source_hash, record_target_path  # type:ignore
-
+    return has_record, source_hash, record_target_path
 
 class SourceIteratorAndTargetGeneratorParam(pydantic.BaseModel):
     source_dir_path: str
@@ -275,13 +261,13 @@ def iterate_source_dir_and_generate_to_target_dir(
     @beartype
     def get_target_path_by_checking_manager_or_processing(
         manager: CacheManager, source_path: str
-    ):
+    ) -> str:
         (
             has_record,
             source_hash,
             record_target_path,
         ) = check_if_source_exists_in_record(source_path, manager)
-        if not isinstance(record_target_path, str) or (not has_record):
+        if not has_record or not isinstance(record_target_path, str):
             target_path = process_source_and_return_target_path(
                 manager,
                 source_path,
@@ -348,21 +334,29 @@ def write_file(fpath: str, content: str):
 
 
 def test_main():
+    test_file_basename = "test_file.txt"
+    test_db_basename = "cache.db"
+    test_source_content = "test"
+
     @beartype
-    def target_file_generator(source_path: str, target_path: str):
+    def test_target_file_generator(source_path: str, target_path: str):
         content = read_file(source_path)
         write_file(target_path, content)
 
     @beartype
-    def target_path_generator(param: TargetGeneratorParameter):
-        fname = str(uuid.uuid4())
-        ret = os.path.join(param.target_dir_path, fname)
+    def join_dir_path_with_test_file_basename(dir_path: str):
+        ret = os.path.join(dir_path, test_file_basename)
+        return ret
+
+    @beartype
+    def test_target_path_generator(param: TargetGeneratorParameter):
+        ret = join_dir_path_with_test_file_basename(param.target_dir_path)
         return ret
 
     @beartype
     def prepare_test_param(temp_dir: str):
         source_dir, target_dir = make_source_and_target_dirs(temp_dir)
-        db_path = os.path.join(temp_dir, "cache.db")
+        db_path = os.path.join(temp_dir, test_db_basename)
         param = SourceIteratorAndTargetGeneratorParam(
             source_dir_path=source_dir, target_dir_path=target_dir, db_path=db_path
         )
@@ -371,26 +365,50 @@ def test_main():
     @beartype
     def generate_test_source_walker(source_dir: str):
         @beartype
-        def source_walker(dirpath: str):
+        def test_source_walker(dirpath: str):
             return [(dirpath, it) for it in os.listdir(source_dir)]
 
-        return source_walker
+        return test_source_walker
 
     @beartype
-    def prepare_test_file(source_dir: str):
-        test_file_path = os.path.join(source_dir, "test_file.txt")
-        write_file(test_file_path, "test")
+    def write_test_content_to_file(file_path: str):
+        write_file(file_path, test_source_content)
+
+    @beartype
+    def assert_file_content_as_test_content(file_path):
+        test_target_content = read_file(file_path)
+        assert test_target_content == test_source_content
+
+    @contextmanager
+    @beartype
+    def prepare_test_file_context(source_dir: str, target_dir: str):
+        test_source_path = join_dir_path_with_test_file_basename(source_dir)
+        test_target_path = join_dir_path_with_test_file_basename(target_dir)
+        write_test_content_to_file(test_source_path)
+        try:
+            yield
+        finally:
+            assert_file_content_as_test_content(test_target_path)
+    
+    def test_and_assert(param:SourceIteratorAndTargetGeneratorParam):
+        with prepare_test_file_context(
+            param.source_dir_path, param.target_dir_path
+        ):
+            test_source_walker = generate_test_source_walker(param.source_dir_path)
+            iterate_source_dir_and_generate_to_target_dir(
+                param,
+                test_source_walker,
+                test_target_path_generator,
+                test_target_file_generator,
+            )
 
     def test_in_temporary_directory():
         with tempfile.TemporaryDirectory() as temp_dir:
             param = prepare_test_param(temp_dir)
-            prepare_test_file(param.source_dir_path)
-            source_walker = generate_test_source_walker(param.source_dir_path)
-            iterate_source_dir_and_generate_to_target_dir(
-                param, source_walker, target_path_generator, target_file_generator
-            )
+            test_and_assert(param)
 
     test_in_temporary_directory()
+    print("test passed")
 
 
 if __name__ == "__main__":
