@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        /* Styles for mobile devices */
+        @media (max-width: 767px) {
+
+            .container {
+                border: 2px solid #ccc;
+            }
+
+            .left-half,
+            .right-half {
+                padding: 10px;
+            }
+        }
+
+        /* Styles for desktop devices */
+        @media (min-width: 768px) {
+
+            .container {
+                display: flex;
+                border: 2px solid #ccc;
+            }
+
+            .left-half,
+            .right-half {
+                flex: 1;
+                padding: 10px;
+
+            }
+        }
+
+        .left-half {
+            background-color: #f1f1f1;
+        }
+
+        .right-half {
+            background-color: #ccc;
+        }
+
+        .monospace-text {
+            font-family: "Courier New", monospace;
+            color: #333;
+        }
+
+        .searchItem {
+            padding: 10px;
+            border: 2px solid #ccc;
+        }
+
+        .searchItemInfo {
+            padding: 10px;
+        }
+    </style>
+    <title>Split Div Demo</title>
+</head>
+
+<body>
+    <div class="searchItem">
+        <div class="searchItemInfo">
+            <p class="monospace-text">/test.py</p>
+            <p> this is the file printing hello world</p>
+        </div>
+        <div class="container">
+            <div class="left-half">
+                <p class="monospace-text">/test.py:0-2</p>
+                <p>This code is printing hello world.</p>
+            </div>
+            <div class="right-half">
+                <p class="monospace-text">print("hello world")</p>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>
