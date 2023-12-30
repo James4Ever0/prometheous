@@ -87,6 +87,7 @@
 
     </script>
 
+<script src="https://cdn.jsdelivr.net/npm/mark.js"></script>
 <script type="text/javascript" defer>
     // Sample data for demonstration
     const data = {
@@ -174,13 +175,13 @@
             }
             const searchHighlightTerms = getHighlightTerms(searchSubTerms);
 
-            function highlightTerm(innerContent){
+            /*function highlightTerm(innerContent){
                 var newContent = innerContent;
                 for (var it of searchHighlightTerms){
                         newContent = newContent.replaceAll(it,  `<span class="highlight">${it}</span>`);
                 }
                 return newContent;
-            }
+            }*/
             const results = doc.search(searchTerm, 5); // Limiting to 5 results for demonstration
             const detail_types = ["code", "comment"];
 
@@ -224,7 +225,7 @@
                 search_header.className = "searchItemInfo";
                 const location_p = document.createElement('p');
                 location_p.className = "monospace-text";
-                location_p.innerHTML = highlightTerm(it.header.filepath);
+                location_p.innerHTML = (it.header.filepath);
                 search_header.appendChild(location_p);
 
                 var skip_summary = false;
@@ -236,7 +237,7 @@
                 }
                 if (!skip_summary) {
                     const summary_p = document.createElement('p');
-                    summary_p.innerHTML = highlightTerm(it.header.summary);
+                    summary_p.innerHTML = (it.header.summary);
                     search_header.appendChild(summary_p);
                 }
 
@@ -251,10 +252,10 @@
                     pair_left.className = "left-half";
                     const code_location_p = document.createElement('p');
                     code_location_p.className = "monospace-text";
-                    code_location_p.innerHTML = highlightTerm(pair.location);
+                    code_location_p.innerHTML = (pair.location);
                     pair_left.appendChild(code_location_p);
                     const comment_p = document.createElement('p');
-                    comment_p.innerHTML = highlightTerm(pair.right);
+                    comment_p.innerHTML = (pair.right);
                     pair_left.appendChild(comment_p);
                     
                     const pair_right = document.createElement('div');
@@ -277,16 +278,28 @@
                 //li_elem = document.createElement('li');
                 //li_elem.appendChild(item);
                 //searchResults.appendChild(li_elem);
+
                 searchResults.appendChild(item);
-                Prism.highlightAllUnder(searchResults);
             }
 
+            Prism.highlightAllUnder(searchResults);
+            const markInstance = new Mark(document.getElementById('searchResults'));
+            markInstance.unmark(); // Clear previous marks
+            markInstance.mark(searchHighlightTerms);
         });
     }
     document.addEventListener('DOMContentLoaded', registerSearchEventListener);
 </script>
 
 
+<style>
+/* CSS for highlighted text */
+    mark {
+        background-color: yellow;
+        color: black;
+        font-weight: bold;
+    }
+</style>
 <link href="https://cdn.jsdelivr.net/npm/prismjs@v1.x/themes/prism.css" rel="stylesheet" />
 <style>
     .search-container{
@@ -343,6 +356,7 @@
         font-family: "Courier New", monospace;
         color: #333;
     }
+    /* useless now */
     pre {
         overflow-x: auto;
         white-space: pre-wrap;
