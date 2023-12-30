@@ -97,7 +97,7 @@
                         const entry_id = file_metadata.entry_id;
                         const summary = data[entry_id + 1].content;
                         const filepath = file_metadata.filepath;
-                        const language_id = file_mapping.language_id;
+                        const language_id = file_metadata.language_id;
                         searchResultItems[file_id] = {"header": {"summary":summary, "filepath": filepath}, "pairs":{}, "language_id": language_id};
                     }
                     if (detail_types.indexOf(data_type) != -1){
@@ -156,8 +156,14 @@
                     const pair_right = document.createElement('div');
                     pair_right.className = "right-half";
                     const code_pre = document.createElement('pre');
-                    code_pre.className = "monospace-text";
-                    code_pre.innerHTML = highlightTerm(pair.left);
+                    const code_code = document.createElement('code');
+                    code_code.className = `language-${it.language_id}`
+                    // Set the "data-dependencies" attribute
+                    // code_code.setAttribute('data-dependencies', it.language_id+"!");
+                    code_code.textContent = pair.left;
+                    code_pre.appendChild(code_code);
+                    //code_pre.className = "monospace-text";
+                    //code_pre.innerHTML = highlightTerm(pair.left);
                     pair_right.appendChild(code_pre);
 
                     pair_container.append(pair_left);
@@ -168,6 +174,7 @@
                 //li_elem.appendChild(item);
                 //searchResults.appendChild(li_elem);
                 searchResults.appendChild(item);
+                Prism.highlightAllUnder(searchResults);
             }
 
         });
@@ -176,6 +183,7 @@
 </script>
 {%endblock%}
 {%block stylesheet%}
+<link href="https://cdn.jsdelivr.net/npm/prismjs@v1.x/themes/prism.css" rel="stylesheet" />
 <style>
     .search-container{
         margin-bottom: 10px;
@@ -216,11 +224,11 @@
     }
 
     .left-half {
-        background-color: #f1f1f1;
+        background-color: #ccc;
     }
 
     .right-half {
-        background-color: #ccc;
+        background-color: #f1f1f1;
     }
     .highlight {
         background-color: yellow !important;
@@ -249,8 +257,6 @@
 
     .searchItemInfo {
         padding: 10px;
-        padding-left:0;
-        padding-right:0;
     }
 </style>
 <style type="text/css">
@@ -270,7 +276,7 @@
         justify-content: center;
         text-align: left;
         margin: 3%;
-        margin-bottom: 1.5%;
+        margin-bottom: 10px;
         margin-top: 1.5%;
     }
 
@@ -291,7 +297,7 @@
 
     ul li {
         background-color: #f2f2f2;
-        margin-bottom: 1.5%;
+        margin-bottom: 10px;
         /*border-radius: 10px;*/
         box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1);
     }
@@ -300,6 +306,8 @@
 {%block body%}
 
 <body>
+	<script src="https://cdn.jsdelivr.net/npm/prismjs@v1.x/components/prism-core.min.js"></script>
+	<script src="https://cdn.jsdelivr.net/npm/prismjs@v1.x/plugins/autoloader/prism-autoloader.min.js"></script>
     <header class="container">
         <h2><a href="{{repository_url}}" class="github-icon"><i class="fab fa-github"></i></a> Document Index<span class="repository-url"> of:
             {{partial_repository_url}} </span></h2>

@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <link href="https://cdn.jsdelivr.net/npm/prismjs@v1.x/themes/prism.css" rel="stylesheet" />
+</head>
+
+<body>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@v1.x/components/prism-core.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@v1.x/plugins/autoloader/prism-autoloader.min.js"></script>
+    <script type="text/javascript">
+        // The code snippet you want to highlight, as a string
+        // document.addEventListener("DOMContentLoaded", function () {
+        //     Prism.plugins.autoloader.loadLanguages(['python']).then(() => {
+        //         // The code snippet you want to highlight, as a string
+        //         const code = `print('hello world')`;
+        //         // Returns a highlighted HTML string
+        //         const highlighted_code = Prism.highlight(code, Prism.languages.python, 'python');
+        //         document.getElementById('code-container').innerHTML = highlighted_code;
+        //     })
+        // })
+        document.addEventListener("DOMContentLoaded", function () {
+            const pre_elem = document.createElement('pre');
+            const code_elem = document.createElement('code');
+            code_elem.className = "language-css"
+            code_elem.textContent = "p { color: red }"
+            pre_elem.appendChild(code_elem);
+            document.getElementById('code-container').appendChild(pre_elem);
+        })
+    </script>
+    <div id="code-container"></div>
+    <!-- <pre><code class="language-css">p { color: red }</code></pre> -->
+</body>
+
+</html>
