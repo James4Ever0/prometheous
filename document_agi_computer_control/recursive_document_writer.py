@@ -2,7 +2,7 @@
 # os.environ["OPENAI_API_BASE"] = "http://0.0.0.0:8000"
 # os.environ["BETTER_EXCEPTIONS"] = "1"
 import os
-from typing import Union
+from typing import Literal, Optional, Union
 import uuid
 import json
 
@@ -10,6 +10,7 @@ from beartype import beartype
 
 from cache_db_context import (
     CacheContextManager,
+    CacheManager,
     SourceIteratorAndTargetGeneratorParam,  # type:ignore
     TargetGeneratorParameter,
     iterate_source_dir_and_generate_to_target_dir,
@@ -74,6 +75,44 @@ from jinja2 import Environment, FileSystemLoader, Template
 
 
 @beartype
+class SearchIndexData(dict):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.counter = 0
+        self.file_id: Optional[int] = None
+
+    def insert_filepath_and_summary(self, file_id: int, filepath: str, summary: str):
+        self.file_id = file_id
+        self.insert(
+            content=filepath,
+            type="filepath",
+        )
+        self.insert(
+            content=summary,
+            type="summary",
+        )
+
+    def insert_code_and_comment(self, code: str, comment: str):
+        self.insert(
+            content=code,
+            type="code",
+        )
+        self.insert(
+            content=comment,
+            type="comment",
+        )
+
+    def insert(
+        self,
+        content: str,
+        type: Literal["filepath", "summary", "comment", "code"],
+    ):
+        assert isinstance(self.file_id, int)
+        self[self.counter] = dict(file_id=self.file_id, content=content, type=type)
+        self.counter += 1
+
+
+@beartype
 def render_document_webpage(
     document_dir_path: str,
     param: SourceIteratorAndTargetGeneratorParam,
@@ -81,6 +120,7 @@ def render_document_webpage(
     template_dir: str = ".",
     template_filename: str = "website_template.html.j2",
     output_filename: str = "index.html",
+    url_prefix: str = "https://github.com/",
 ):
     @beartype
     def load_template() -> Template:
@@ -101,57 +141,61 @@ def render_document_webpage(
 
     @beartype
     def get_template_render_params() -> dict[str, Union[dict, str]]:
-        data = {}
-        counter = 0
-        file_mapping = {}
-        # if only have one file, we should return one
-        with CacheContextManager(param.db_path) as manager:
-            for file_id, (_, source_path) in enumerate(
-                dirpath_and_fpath_walker(param.source_dir_path)
-            ):
-                source_relative_path = source_path[len(param.source_dir_path) :]
-                record, _ = manager.get_record_by_computing_source_hash(source_path)
-                if record:
-                    file_mapping[file_id] = dict(
-                        filepath=source_relative_path, entry_id=counter
-                    )
-                    target_path, _ = manager.get_record_target_path_and_hash(record)
-                    target_data = json.loads(read_file(target_path))
+        data = SearchIndexData()
+        file_mapping: dict[int, dict[str, Union[str, int]]] = {}
 
-                    data[counter] = dict(
-                        fiie_id=file_id,
-                        content=source_relative_path,
-                        type="filepath",
-                    )
-                    counter += 1
-                    data[counter] = dict(
-                        fiie_id=file_id,
-                        content=target_data["summary"],
-                        type="summary",
-                    )
-                    counter += 1
-                    for detail in target_data["details"]:
-                        data[counter] = dict(
-                            fiie_id=file_id,
-                            content=detail["comment"],
-                            type="comment",
-                        )
-                        counter += 1
+        @beartype
+        def update_data_by_target_data(
+            target_data: dict, file_id: int, source_relative_path: str
+        ):
+            data.insert_filepath_and_summary(
+                file_id=file_id,
+                filepath=source_relative_path,
+                summary=target_data["summary"],
+            )
+            for detail in target_data["details"]:
+                data.insert_code_and_comment(
+                    code=detail["content"],
+                    comment=detail["comment"],
+                )
 
-                        data[counter] = dict(
-                            fiie_id=file_id,
-                            content=detail["content"],
-                            type="code",
+        @beartype
+        def update_data_and_file_mapping(
+            manager: CacheManager, record: dict, file_id: int, source_relative_path: str
+        ):
+            file_mapping[file_id] = dict(
+                filepath=source_relative_path, entry_id=data.counter
+            )
+            target_path, _ = manager.get_record_target_path_and_hash(record)
+            target_data = json.loads(read_file(target_path))
+            update_data_by_target_data(target_data, file_id, source_relative_path)
+
+        def assemble_render_params():
+            partial_repository_url = repository_url.replace(url_prefix, "")
+            render_params = dict(
+                datadict=data,
+                repository_url=repository_url,
+                file_mapping=file_mapping,
+                partial_repository_url=partial_repository_url,
+            )
+            return render_params
+
+        def iterate_source_dir_and_assemble_render_params():
+            # if only have one file, we should return one
+            with CacheContextManager(param.db_path) as manager:
+                for file_id, (_, source_path) in enumerate(
+                    dirpath_and_fpath_walker(param.source_dir_path)
+                ):
+                    source_relative_path = source_path[len(param.source_dir_path) :]
+                    record, _ = manager.get_record_by_computing_source_hash(source_path)
+                    if record:
+                        update_data_and_file_mapping(
+                            manager, record, file_id, source_relative_path
                         )
-                        counter += 1
-        partial_repository_url = repository_url.replace("https://github.com/", "")
-        render_params = dict(
-            datadict=data,
-            repository_url=repository_url,
-            file_mapping=file_mapping,
-            partial_repository_url=partial_repository_url,
-        )
-        return render_params
+
+            return assemble_render_params()
+
+        return iterate_source_dir_and_assemble_render_params()
 
     @beartype
     def render_template(template: Template):
@@ -167,8 +211,12 @@ def render_document_webpage(
     render_to_output_path()
 
 
-if __name__ == "__main__":
+def main():
     (document_dir_path, repository_url) = parse_arguments()
     param = scan_code_dir_and_write_to_comment_dir(document_dir_path)
     # not done yet. we have to create the webpage.
     render_document_webpage(document_dir_path, param, repository_url)
+
+
+if __name__ == "__main__":
+    main()
