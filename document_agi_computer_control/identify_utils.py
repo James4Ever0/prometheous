@@ -7,7 +7,7 @@ TEXT = "text"
 
 @beartype
 def get_language_id_from_filename(filename: str) -> str:
-    language_id = ""
+    language_id = TEXT # default language
     tags = identify.tags_from_filename(filename)
     if TEXT in tags:
         candidates = [it for it in tags if it != TEXT]
