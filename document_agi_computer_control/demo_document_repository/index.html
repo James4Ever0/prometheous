@@ -139,7 +139,48 @@
     // Event listener for the search input
     function registerSearchEventListener() {
         document.getElementById('searchInput').addEventListener('input', function () {
+            const englishSymbols = ["!", "\"", "#", "$", "%", "&", "'", "(", ")", "*", "+", ",", "-", ".", "/", ":", ";", "<", "=", ">", "?", "@", "[", "\\", "]", "^", "_", "`", "{", "|", "}", "~"];
+            function capitalizeFirstLetter(text) {
+                return text.charAt(0).toUpperCase() + text.slice(1);
+            }
+            function mutateText(text){
+                var lowerText =  text.toLowerCase()
+                var upperText = text.toUpperCase()
+                var lowerCapitalized = capitalizeFirstLetter(lowerText)
+                return [text ,lowerText ,upperText ,lowerCapitalized]
+            }
+
+            function getSubTerms(it)
+            {   var new_it = it;
+                for (const sym of englishSymbols){
+                    new_it = new_it.replaceAll(sym, " ")
+                }
+                return new_it.split(" ");
+            }
             const searchTerm = this.value;
+            const searchSubTerms = getSubTerms(searchTerm);
+            function getHighlightTerms(msubterms){
+                var ret = []
+                for (var it of msubterms){
+                    if (it.length > 0) {
+                        for (var mut of mutateText(it)){
+                            if (ret.indexOf(mut) == -1){
+                                ret.push(mut);
+                            }
+                        }
+                    }
+                }
+                return ret;
+            }
+            const searchHighlightTerms = getHighlightTerms(searchSubTerms);
+
+            function highlightTerm(innerContent){
+                var newContent = innerContent;
+                for (var it of searchHighlightTerms){
+                        newContent = newContent.replaceAll(it,  `<span class="highlight">${it}</span>`);
+                }
+                return newContent;
+            }
             const results = doc.search(searchTerm, 5); // Limiting to 5 results for demonstration
             const detail_types = ["code", "comment"];
 
@@ -176,13 +217,14 @@
             });
             for (var file_id of searchResultItemIds) {
                 const it = searchResultItems[file_id];
-                const item = document.createElement('div');
+                const item = document.createElement('li');
+                //const item = document.createElement('div');
                 item.className = "searchItem"; 
                 const search_header = document.createElement('div');
                 search_header.className = "searchItemInfo";
                 const location_p = document.createElement('p');
                 location_p.className = "monospace-text";
-                location_p.textContent = it.header.filepath;
+                location_p.innerHTML = highlightTerm(it.header.filepath);
                 search_header.appendChild(location_p);
 
                 var skip_summary = false;
@@ -194,7 +236,7 @@
                 }
                 if (!skip_summary) {
                     const summary_p = document.createElement('p');
-                    summary_p.textContent = it.header.summary;
+                    summary_p.innerHTML = highlightTerm(it.header.summary);
                     search_header.appendChild(summary_p);
                 }
 
@@ -209,23 +251,26 @@
                     pair_left.className = "left-half";
                     const code_location_p = document.createElement('p');
                     code_location_p.className = "monospace-text";
-                    code_location_p.textContent = pair.location;
+                    code_location_p.innerHTML = highlightTerm(pair.location);
                     pair_left.appendChild(code_location_p);
                     const comment_p = document.createElement('p');
-                    comment_p.textContent = pair.right;
+                    comment_p.innerHTML = highlightTerm(pair.right);
                     pair_left.appendChild(comment_p);
                     
                     const pair_right = document.createElement('div');
                     pair_right.className = "right-half";
                     const code_pre = document.createElement('pre');
                     code_pre.className = "monospace-text";
-                    code_pre.textContent = pair.left;
+                    code_pre.innerHTML = highlightTerm(pair.left);
                     pair_right.appendChild(code_pre);
 
                     pair_container.append(pair_left);
                     pair_container.append(pair_right);
                     item.appendChild(pair_container);
                 }
+                //li_elem = document.createElement('li');
+                //li_elem.appendChild(item);
+                //searchResults.appendChild(li_elem);
                 searchResults.appendChild(item);
             }
 
@@ -278,6 +323,10 @@
     .right-half {
         background-color: #ccc;
     }
+    .highlight {
+        background-color: yellow !important;
+        color: black !important;
+    }
 
     .monospace-text {
         font-family: "Courier New", monospace;
@@ -302,8 +351,13 @@
     }
 </style>
 <style type="text/css">
-    body {
+    html, body {
         font-family: 'Roboto', sans-serif;
+        height: 100%;
+        margin: 0;
+        padding: 0;
+        display: flex;
+        flex-direction: column;
     }
 
     .container {
@@ -313,6 +367,7 @@
         justify-content: center;
         text-align: left;
         margin: 3%;
+        margin-bottom: 1%;
     }
 
     input[type="text"] {
@@ -322,19 +377,19 @@
     }
 
     ul {
+        flex: 1; /* Fill the remaining space */
+        overflow-y: auto; /* Enable vertical scrolling */
         list-style: none;
         padding: 0;
-        margin: 0;
-        margin-top: 5px;
+        margin: 3%;
+        margin-top: 0;
     }
 
     ul li {
         background-color: #f2f2f2;
-        padding: 10px;
-        margin: 5px;
+        margin-top: 5px;
         /*border-radius: 10px;*/
         box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1);
-        text-align: left;
     }
 </style>
 
@@ -342,12 +397,12 @@
 
 
 <body>
-    <div class="container">
+    <header class="container">
         <h2><a href="https://github.com/james4ever0/agi_computer_control" class="github-icon"><i class="fab fa-github"></i></a> Document Index<span class="repository-url"> of:
             james4ever0/agi_computer_control </span></h2>
         <input type="text" id="searchInput" placeholder="Search...">
-        <ul id="searchResults"></ul>
-    </div>
+    </header>
+    <ul id="searchResults"></ul>
 </body>
 
 
