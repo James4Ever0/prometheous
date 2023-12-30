@@ -5,6 +5,9 @@ import os
 from typing import Literal, Optional, Union
 import uuid
 import json
+import parse
+
+CODE_LOCATION_FORMAT = '"{code_path}":{line_start:d}-{line_end:d}'
 
 from beartype import beartype
 
@@ -21,6 +24,7 @@ from custom_doc_writer import (
     construct_llm_and_write_code_comment,  # type:ignore
     parse_arguments,
 )
+from identify_utils import get_language_id_from_filename
 
 
 @beartype
@@ -92,11 +96,8 @@ class SearchIndexData(dict):
             type="summary",
         )
 
-    def insert_code_and_comment(self, code: str, comment: str):
-        self.insert(
-            content=code,
-            type="code",
-        )
+    def insert_code_and_comment(self, code: str, comment: str, location: str):
+        self.insert(content=code, type="code", location=location)
         self.insert(
             content=comment,
             type="comment",
@@ -106,9 +107,15 @@ class SearchIndexData(dict):
         self,
         content: str,
         type: Literal["filepath", "summary", "comment", "code"],
+        location: Optional[str] = None,
     ):
         assert isinstance(self.file_id, int)
-        self[self.counter] = dict(file_id=self.file_id, content=content, type=type)
+        self[self.counter] = dict(
+            file_id=self.file_id,
+            content=content,
+            type=type,
+            **(dict(location=location) if location else {}),
+        )
         self.counter += 1
 
 
@@ -145,6 +152,17 @@ def render_document_webpage(
         file_mapping: dict[int, dict[str, Union[str, int]]] = {}
 
         @beartype
+        def strip_path_prefix(path: str):
+            return path[len(param.source_dir_path) :]
+
+        @beartype
+        def strip_location(location: str):
+            result = parse.parse(CODE_LOCATION_FORMAT, location)
+            assert isinstance(result, parse.Result)
+            stripped_path = strip_path_prefix(result["code_path"])
+            return f"{stripped_path}:{result['line_start']+1}-{result['line_end']+1}"
+
+        @beartype
         def update_data_by_target_data(
             target_data: dict, file_id: int, source_relative_path: str
         ):
@@ -157,6 +175,7 @@ def render_document_webpage(
                 data.insert_code_and_comment(
                     code=detail["content"],
                     comment=detail["comment"],
+                    location=strip_location(detail["location"]),
                 )
 
         @beartype
@@ -164,7 +183,9 @@ def render_document_webpage(
             manager: CacheManager, record: dict, file_id: int, source_relative_path: str
         ):
             file_mapping[file_id] = dict(
-                filepath=source_relative_path, entry_id=data.counter
+                filepath=source_relative_path,
+                entry_id=data.counter,
+                language_id=get_language_id_from_filename(source_relative_path),
             )
             target_path, _ = manager.get_record_target_path_and_hash(record)
             target_data = json.loads(read_file(target_path))
@@ -186,7 +207,7 @@ def render_document_webpage(
                 for file_id, (_, source_path) in enumerate(
                     dirpath_and_fpath_walker(param.source_dir_path)
                 ):
-                    source_relative_path = source_path[len(param.source_dir_path) :]
+                    source_relative_path = strip_path_prefix(source_path)
                     record, _ = manager.get_record_by_computing_source_hash(source_path)
                     if record:
                         update_data_and_file_mapping(
