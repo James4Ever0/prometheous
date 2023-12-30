@@ -26,6 +26,7 @@
             code_elem.textContent = "p { color: red }"
             pre_elem.appendChild(code_elem);
             document.getElementById('code-container').appendChild(pre_elem);
+            Prism.highlightAll();
         })
     </script>
     <div id="code-container"></div>
