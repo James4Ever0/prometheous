@@ -5,7 +5,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Python Code with Anchors</title>
+    <title>Code View</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.min.css">
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
@@ -366,6 +366,8 @@
                 const queryParams = new URLSearchParams(window.location.search);
                 const language = queryParams.get('language');
                 const code_path = queryParams.get('file');
+                const h1_element = document.getElementById('code-path');
+                h1_element.textContent = code_path.slice('src/'.length);
                 pre_elem.className = `language-${language}`
                 pre_elem.id = "mycode";
                 pre_elem.setAttribute("data-src", code_path);
@@ -425,7 +427,7 @@
 
 <body>
     <header class="container" data-plugin-header="line-numbers">
-        <h1>Python Code Example with Anchors</h1>
+        <h1 id="code-path">Python Code Example with Anchors</h1>
     </header>
     <section id="code-section">
         <!-- <pre id="mycode" class="language-python" data-src="code_view_demo.py">
