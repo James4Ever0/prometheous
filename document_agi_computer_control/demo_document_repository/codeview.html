@@ -366,8 +366,9 @@
                 const queryParams = new URLSearchParams(window.location.search);
                 const language = queryParams.get('language');
                 const code_path = queryParams.get('file');
+                const project_name = "agi_computer_control"
                 const h1_element = document.getElementById('code-path');
-                h1_element.textContent = code_path.slice('src/'.length);
+                h1_element.textContent = project_name+"/"+code_path.slice('src/'.length);
                 pre_elem.className = `language-${language}`
                 pre_elem.id = "mycode";
                 pre_elem.setAttribute("data-src", code_path);

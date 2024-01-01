@@ -219,8 +219,27 @@ def render_document_webpage(
         return iterate_source_dir_and_assemble_render_params()
 
     @beartype
+    def write_render_params(render_params: dict):
+        datadict = render_params["datadict"]
+        metadata = dict()
+        metadata["url"] = dict(
+            full=render_params["repository_url"],
+            partial=render_params["partial_repository_url"],
+        )
+        metadata["file_mapping"] = render_params["file_mapping"]
+        split_count = 0
+        datadict_split = {}
+        ## split by size of 100
+        # for splited_dict in ...:
+        #     datadict_split[split_count] = splited_dict
+        #     split_count +=1
+        # metadata["split_count"] = split_count
+
+    @beartype
     def render_template(template: Template):
         render_params = get_template_render_params()
+        write_render_params(render_params)
+        # do something else, like writing to files.
         ret = template.render(**render_params)
         return ret
 

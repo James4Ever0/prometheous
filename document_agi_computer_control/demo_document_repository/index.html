@@ -238,7 +238,7 @@
                 search_header.className = "searchItemInfo";
                 const location_p = document.createElement('p');
                 location_p.className = "monospace-text codelink";
-                location_p.innerHTML = (it.header.filepath);
+                location_p.innerHTML = (it.header.filepath.slice(1));
 
                 location_p.setAttribute('onclick', `navigateToPage(${JSON.stringify(it.header.filepath)}, ${JSON.stringify(it.language_id)})`)
                 search_header.appendChild(location_p);
@@ -269,7 +269,7 @@
                     pair_left.className = "left-half";
                     const code_location_p = document.createElement('p');
                     code_location_p.className = "monospace-text codelink";
-                    code_location_p.innerHTML = (pair.location);
+                    code_location_p.innerHTML = (pair.location.slice(1));
                     code_location_p.setAttribute('onclick', `navigateToPage(${JSON.stringify(it.header.filepath)}, ${JSON.stringify(it.language_id)}, ${JSON.stringify(pair.location)})`)
 
                     pair_left.appendChild(code_location_p);
