@@ -71,12 +71,14 @@ class DocProcessQueue:
         char_limit: int = 1000,
         line_limit: int = 15,
         sample_size: Optional[int] = None,
+        use_previous_comment:bool = True
     ):
         self.init_limits_and_counters(char_limit, line_limit)
         self.init_storage()
         self.init_sample(sample_size)
         self.process_method = process_method
         self.filepath = filepath
+        self.use_previous_comment = use_previous_comment
 
     def init_sample(self, sample_size: Optional[int]):
         self.sample_size = sample_size  # type: ignore
@@ -204,7 +206,7 @@ class DocProcessQueue:
 
     def process_content_and_location_pair(self, content: str, location: str):
         success, result = self.process_method(
-            content, location, previous_comment=self.previous_comment  # type:ignore
+            content, location, **({} if not self.use_previous_comment else dict(previous_comment=self.previous_comment)) # type:ignore
         )
         if not success:
             raise DocumentProcessingException("Failed to process code at:", location)
@@ -326,6 +328,7 @@ def process_content_and_return_result(
     char_limit: int = 1000,
     line_limit: int = 15,
     sample_size: Optional[int] = None,
+    use_previous_comment:bool = True,
 ) -> DocProcessingResult:
     commentProcessMethod = commentProcessMethodFactory(model, prompt_generator)
     process_queue = DocProcessQueue(
@@ -334,6 +337,7 @@ def process_content_and_return_result(
         char_limit=char_limit,
         line_limit=line_limit,
         sample_size=sample_size,
+        use_previous_comment=use_previous_comment
     )
     result_all = process_content_and_get_result(process_queue, content)
     summary = summary_code_comment_return_value(result_all)
@@ -364,6 +368,7 @@ def process_code_and_write_result(
     char_limit: int = 1000,
     line_limit: int = 15,
     sample_size: Optional[int] = None,
+    use_previous_comment = True,
 ) -> DocProcessingResult:
     content = read_file(code_file_path)
     data = process_content_and_return_result(
@@ -374,6 +379,7 @@ def process_code_and_write_result(
         char_limit=char_limit,
         line_limit=line_limit,
         sample_size=sample_size,
+        use_previous_comment=use_previous_comment,
     )
     serialize_dict_and_write_to_file(data, output_path)  # type:ignore
     return data
@@ -460,6 +466,7 @@ def construct_llm_and_write_code_comment(
     output_path: str,
     programming_language: str = "",
     word_limit: int = 15,
+    use_previous_comment:bool = False # different from our blog summarizer.
 ):
     prompt_base = generate_prompt_base(word_limit)
 
@@ -467,7 +474,7 @@ def construct_llm_and_write_code_comment(
 
     with llm_context(prompt_base) as model:
         ret = process_code_and_write_result(
-            model, prompt_generator, code_file_path, output_path
+            model, prompt_generator, code_file_path, output_path, use_previous_comment=use_previous_comment
         )
     return ret
 
