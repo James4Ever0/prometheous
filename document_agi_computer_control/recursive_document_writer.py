@@ -231,9 +231,13 @@ def render_document_webpage(
         metadata["project_name"] = render_params["partial_repository_url"].split("/")[-1]
         split_count = 0
         # datadict_split = {}
+
+        data_dir = os.path.join(document_dir_path,"data")
+        if not os.path.exists(data_dir):
+            os.mkdir(data_dir)
         for chunk in split_dict_into_chunks(datadict, DATA_SLICE_LENGTH):
             write_file(
-                os.path.join(document_dir_path, f"data_{split_count}.json"),
+                os.path.join(data_dir, f"{split_count}.json"),
                 json.dumps(chunk, indent=4, ensure_ascii=False),
             )
             split_count += 1

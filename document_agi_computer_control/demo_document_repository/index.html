@@ -115,7 +115,6 @@
         }
 
         #progress-bar {
-            width: 50%;
             height: 20px;
             background-color: #f2f2f2;
             border: 1px solid #ccc;
@@ -129,6 +128,9 @@
         }
 </style>
 <style>
+    input{
+        background-color: transparent !important;
+    }
     .search-container {
         margin-bottom: 10px;
     }
@@ -143,6 +145,10 @@
 
     /* Styles for mobile devices */
     @media (max-width: 767px) {
+        #progress-bar {
+        
+            width: 60%;
+        }
 
         /*(h2{
             font-size: 27px;
@@ -168,7 +174,7 @@
         }
 
         .left-half {
-            padding-left: 10px;
+            padding-left: 15px;
             padding-right: 10px;
 
             padding-top: 5px;
@@ -177,21 +183,25 @@
 
         #searchResults,
         #searchInput {
-            font-size: 10px;
+            font-size: 14px;
         }
 
         #searchInput {
-            text-indent: 10px;
+            text-indent: 15px;
         }
 
         .searchItemInfo {
-           text-indent: 10px; 
+           padding-left: 15px; 
         }
     }
 
     /* Styles for desktop devices */
     @media (min-width: 768px) {
 
+        #progress-bar {
+        
+            width: 50%;
+        }
         #searchInput {
             text-indent: 20px;
         }
@@ -394,7 +404,7 @@
 
         var data_var = {}
         for (let i = 0; i < split_count; i++) {
-            let data_req = await fetch(`data_${i}.json`)// load from server
+            let data_req = await fetch(`data/${i}.json`)// load from server
             let data_part = JSON.parse(await data_req.text())
             data_var = { ...data_part, ...data_var }
             const progressPercentage = (i+1 / split_count) * 100;

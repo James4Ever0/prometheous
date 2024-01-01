@@ -292,6 +292,8 @@
                     return;
                 }
 
+                // now we have hash.
+
                 if (!pre.hasAttribute('data-line')) {
                     pre.setAttribute('data-line', '');
                 }
@@ -394,7 +396,7 @@
         }());
     </script>
     <style>
-        h2 {
+        #code-path {
             /* overflow-x:scroll; */
             white-space: nowrap; /* Prevent the text from wrapping */
             overflow: hidden; /* Hide the overflowing text */
@@ -433,11 +435,16 @@
             text-align: left;
         }
 
+        .monospace-text {
+                font-family: "Courier New", monospace;
+                color: #333;
+            }
         @media (max-width: 767px) {
 
             .container{
                 padding-left:10px;
             } 
+
 
             html,
             body {
@@ -447,8 +454,11 @@
             }
 
             #code-section {
-                font-size: 10px;
+                font-size: 14px;
             }
+        }
+        #code-section{
+            border: 2px solid #ccc;
         }
 
         /* Styles for desktop devices */
@@ -473,7 +483,7 @@
 
 <body>
     <header class="container" data-plugin-header="line-numbers">
-        <h2 id="code-path">Code Preview</h2>
+        <p id="code-path" class="monospace-text">Code Preview</p>
     </header>
     <section id="code-section">
         <!-- <pre id="mycode" class="language-python" data-src="code_view_demo.py">
