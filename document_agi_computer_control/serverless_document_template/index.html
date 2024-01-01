@@ -5,6 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
+ <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='currentColor' class='bi bi-search' viewBox='0 0 16 16'%3E%3Cpath d='M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0'/%3E%3C/svg%3E" type="image/svg+xml">
 <title>Search Code By Comment</title>
 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
@@ -88,98 +89,365 @@
     </script>
 
 <script src="https://cdn.jsdelivr.net/npm/mark.js"></script>
-<script type="text/javascript" defer>
+
+
+<style>
+    /* CSS for highlighted text */
+    mark {
+        background-color: yellow;
+        color: black;
+        font-weight: bold;
+    }
+</style>
+<link href="https://cdn.jsdelivr.net/npm/prismjs@v1.x/themes/prism.css" rel="stylesheet" />
+<style>
+        #progress-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+        }
+
+        #progress-bar {
+            width: 50%;
+            height: 20px;
+            background-color: #f2f2f2;
+            border: 1px solid #ccc;
+            overflow: hidden;
+        }
+
+        #progress-bar .progress {
+            width: 0;
+            height: 100%;
+            background-color: #4caf50 !important;
+        }
+</style>
+<style>
+    .search-container {
+        margin-bottom: 10px;
+    }
+
+    p {
+        line-height: 1.5;
+    }
+
+    h2 {
+        overflow-x: auto;
+    }
+
+    /* Styles for mobile devices */
+    @media (max-width: 767px) {
+
+        /*(h2{
+            font-size: 27px;
+        }*/
+        html,
+        body {
+
+            margin-left: 3%;
+            margin-right: 3%;
+        }
+
+        .repository-url {
+            display: none;
+        }
+
+        .search-container {
+            border: 2px solid #ccc;
+        }
+
+        .right-half {
+            /*padding-left: 10px;*/
+            padding-right: 10px;
+        }
+
+        .left-half {
+            padding-left: 10px;
+            padding-right: 10px;
+
+            padding-top: 5px;
+            padding-bottom: 5px;
+        }
+
+        #searchResults,
+        #searchInput {
+            font-size: 10px;
+        }
+
+        #searchInput {
+            text-indent: 10px;
+        }
+
+        .searchItemInfo {
+           text-indent: 10px; 
+        }
+    }
+
+    /* Styles for desktop devices */
+    @media (min-width: 768px) {
+
+        #searchInput {
+            text-indent: 20px;
+        }
+
+        html,
+        body {
+
+            margin-left: 5%;
+            margin-right: 5%;
+        }
+
+        #searchResults,
+        #searchInput {
+            font-size: 17px;
+        }
+
+        .searchItemInfo {
+            padding-left: 20px;
+        }
+
+        .search-container {
+            display: flex;
+            border: 2px solid #ccc;
+        }
+
+        .left-half,
+        .right-half {
+            flex: 1;
+            overflow-x: auto;
+        }
+
+        .right-half {
+
+            padding-right: 20px;
+        }
+
+        .left-half {
+            padding-top: 5px;
+            padding-left: 20px;
+            padding-right: 20px;
+        }
+    }
+
+    .left-half {
+        background-color: #ccc;
+
+    }
+
+    .right-half {
+        background-color: #f1f1f1;
+    }
+
+    .highlight {
+        background-color: yellow !important;
+        color: black !important;
+    }
+
+    .monospace-text {
+        font-family: "Courier New", monospace;
+        color: #333;
+    }
+
+    /* useless now */
+    pre {
+        overflow-x: auto;
+        white-space: pre-wrap;
+        white-space: -moz-pre-wrap;
+        white-space: -pre-wrap;
+        white-space: -o-pre-wrap;
+        word-wrap: break-word;
+    }
+
+    .codelink:hover {
+        cursor: pointer;
+    }
+
+    /*
+    .searchItemInfo:hover {
+         cursor: pointer;
+    }
+    .search-container:hover {
+         cursor: pointer;
+    }
+    */
+    .searchItem {
+        padding: 10px;
+        padding-bottom: 0;
+        padding-top: 0;
+        border: 2px solid #ccc;
+    }
+/*
+    .searchItemInfo {
+        padding: 10px;
+    }
+*/
+</style>
+<style type="text/css">
+    html,
+    body {
+        /*max-width: 900px;*/
+        font-family: 'Roboto', sans-serif;
+        height: 100%;
+        /* margin: 0; */
+        padding: 0;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .container {
+        display: flex;
+        flex-direction: column;
+        align-items: left;
+        justify-content: center;
+        text-align: left;
+        /* margin: 5%; */
+        margin-bottom: 10px;
+        margin-top: 1.5%;
+    }
+
+    input[type="text"] {
+        padding: 10px;
+        /*border-radius: 10px;*/
+        border: 2px solid #ccc;
+    }
+
+    ul {
+        flex: 1;
+        /* Fill the remaining space */
+        overflow-y: auto;
+        /* Enable vertical scrolling */
+        list-style: none;
+        padding: 0;
+        /* margin: 5%; */
+        margin-top: 0;
+    }
+
+    ul li {
+        background-color: #f2f2f2;
+        margin-bottom: 10px;
+        /*border-radius: 10px;*/
+        box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1);
+    }
+</style>
+
+</head>
+
+
+<body>
+
+    <div id="progress-overlay">
+        <div id="progress-bar">
+            <div class="progress"></div>
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@v1.x/components/prism-core.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@v1.x/plugins/autoloader/prism-autoloader.min.js"></script>
+    <header class="container">
+        <h2><a id="github-link" class="github-icon"><i class="fab fa-github"></i></a> Document Index<span class="repository-url"> of:
+                <span id="partial-repository-url"></span></span></h2>
+        <input type="text" id="searchInput" placeholder="Search...">
+    </header>
+    <ul id="searchResults"></ul>
+    <script type="text/javascript" defer>
     const RESULT_LIMIT = 50;
-    function navigateToPage(base_filepath, language_id, detail_filepath = "") {
-      // Use a relative path to navigate to a specific page
-      let page_param = "codeview.html";
-      let file_param = 'src'+base_filepath;
-      file_param = encodeURIComponent(file_param);
-      let language_param = language_id
-      let jump_link = `${page_param}?file=${file_param}&language=${language_id}`;
-      if (detail_filepath !== ""){
-        let location_range =  detail_filepath.slice(base_filepath.length+1);
-        let location_param = `mycode.${location_range}`;
-        jump_link = `${jump_link}#${location_param}`;
-      }
-      window.location.href = jump_link;
+    const progressOverlay = document.getElementById('progress-overlay');
+    const progressBar = document.querySelector('.progress');
+    function navigateToPage(base_filepath, language_id, project_id, detail_filepath = "") {
+        // Use a relative path to navigate to a specific page
+        let page_param = "codeview.html";
+        let file_param = 'src' + base_filepath;
+        file_param = encodeURIComponent(file_param);
+        let language_param = language_id
+        let jump_link = `${page_param}?file=${file_param}&language=${language_id}&project=${project_id}`;
+        if (detail_filepath !== "") {
+            let location_range = detail_filepath.slice(base_filepath.length + 1);
+            let location_param = `mycode.${location_range}`;
+            jump_link = `${jump_link}#${location_param}`;
+        }
+        window.location.href = jump_link;
     }
+    async function waitForDOMContentLoaded() {
+  return new Promise(resolve => {
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', resolve);
+    } else {
+      resolve();
+    }
+  });
+}
     // Sample data for demonstration
-    const data = {
+    async function async_main() {
 
-    0: {'file_id': 0, 'content': '/test.py', 'type': 'filepath'},
-    
-    1: {'file_id': 0, 'content': 'This code prints the string "hello world" to the console.', 'type': 'summary'},
-    
-    2: {'file_id': 0, 'content': "print('hello world')", 'type': 'code', 'location': '/test.py:1-1'},
-    
-    3: {'file_id': 0, 'content': 'This code prints the string "hello world" to the console.', 'type': 'comment'},
-    
-    4: {'file_id': 1, 'content': '/identify_utils.py', 'type': 'filepath'},
-    
-    5: {'file_id': 1, 'content': 'The code imports an "identify" module, checks tags from file names and returns language IDs if a specific tag ("TEXT") is present. It tests this functionality using the "test()" function and prints the results.', 'type': 'summary'},
-    
-    6: {'file_id': 1, 'content': 'from identify import identify\nfrom beartype import beartype\nimport random  # this is magic\nTEXT = "text"\n@beartype\ndef get_language_id_from_filename(filename: str) -> str:\n    language_id = ""\n    tags = identify.tags_from_filename(filename)\n    if TEXT in tags:\n        candidates = [it for it in tags if it != TEXT]\n        if candidates:\n            language_id = random.choice(candidates)\n    return language_id\ndef test():\n    names = ["test.bash", "test.py", "test.js"]', 'type': 'code', 'location': '/identify_utils.py:1-20'},
-    
-    7: {'file_id': 1, 'content': 'This code imports the "identify" module and uses it to get tags from file names. It then checks if "TEXT" (likely a constant) is in the tags, selects a random candidate tag if "TEXT" is present, and returns the language ID. The "test()" function tests this functionality with some file name examples.', 'type': 'comment'},
-    
-    8: {'file_id': 1, 'content': '    for name in names:\n        language_id = get_language_id_from_filename(name)\n        print(f"{name} -> {language_id}")\nif __name__ == "__main__":\n    test()', 'type': 'code', 'location': '/identify_utils.py:21-27'},
-    
-    9: {'file_id': 1, 'content': 'This code runs the "test()" function to test the functionality of getting language IDs from file names and prints the results.', 'type': 'comment'},
-    
-        };
+        const metadata_req = await fetch("metadata.json")// load from server
+        const metadata = JSON.parse(await metadata_req.text())
+        const github_url = metadata.url.full;
+        const project_id = metadata.project_name;
+        const github_partial_url = metadata.url.partial;
+        const file_mapping = metadata.file_mapping
+        const split_count = metadata.split_count
 
-    const file_mapping = {
-
-    0: {'filepath': '/test.py', 'entry_id': 0, 'language_id': 'python'},
-    
-    1: {'filepath': '/identify_utils.py', 'entry_id': 4, 'language_id': 'python'},
-    
-        };
-
-
-    // Create a new FlexSearch instance with the required configuration
-    const doc = new FlexSearch.Document({
-        tokenize: "full",
-        document: {
-            id: "id",
-            index: ["content"]
+        var data_var = {}
+        for (let i = 0; i < split_count; i++) {
+            let data_req = await fetch(`data_${i}.json`)// load from server
+            let data_part = JSON.parse(await data_req.text())
+            data_var = { ...data_part, ...data_var }
+            const progressPercentage = (i+1 / split_count) * 100;
+            progressBar.style.width = `${progressPercentage}%`;
         }
-    });
+            progressOverlay.style.display = 'none';
 
-    // Add the data to the search index
-    Object.keys(data).forEach(id => {
-        doc.add(id, data[id]);
-    });
-    const englishSymbols = ["!", "\"", "#", "$", "%", "&", "'", "(", ")", "*", "+", ",", "-", ".", "/", ":", ";", "<", "=", ">", "?", "@", "[", "\\", "]", "^", "_", "`", "{", "|", "}", "~"];
 
-    function getSubTerms(it) {
-        var m_str = it
-        for (const sym of englishSymbols){
-            m_str = m_str.replaceAll(sym, " ");
+        const data = data_var // obviously not constant.
+        // debugger
+
+        // Create a new FlexSearch instance with the required configuration
+        const doc = new FlexSearch.Document({
+            tokenize: "full",
+            document: {
+                id: "id",
+                index: ["content"]
+            }
+        });
+
+        // Add the data to the search index
+        Object.keys(data).forEach(id => {
+            doc.add(id, data[id]);
+        });
+        const englishSymbols = ["!", "\"", "#", "$", "%", "&", "'", "(", ")", "*", "+", ",", "-", ".", "/", ":", ";", "<", "=", ">", "?", "@", "[", "\\", "]", "^", "_", "`", "{", "|", "}", "~"];
+
+        function getSubTerms(it) {
+            var m_str = it
+            for (const sym of englishSymbols) {
+                m_str = m_str.replaceAll(sym, " ");
+            }
+            return m_str.split(" ");
         }
-        return m_str.split(" ");
-    }
-    function searchInputEventListener() {
-            
+        function searchInputEventListener() {
+
             function capitalizeFirstLetter(text) {
                 return text.charAt(0).toUpperCase() + text.slice(1);
             }
-            function mutateText(text){
+            function mutateText(text) {
                 var lowerText = text.toLowerCase()
                 var upperText = text.toUpperCase()
                 var lowerCapitalized = capitalizeFirstLetter(lowerText)
-                return [text ,lowerText ,upperText ,lowerCapitalized]
+                return [text, lowerText, upperText, lowerCapitalized]
             }
 
             const searchTerm = this.value;
             const searchSubTerms = getSubTerms(searchTerm);
-            function getHighlightTerms(msubterms){
+            function getHighlightTerms(msubterms) {
                 var ret = []
-                for (var it of msubterms){
+                for (var it of msubterms) {
                     if (it.length > 0) {
-                        for (var mut of mutateText(it)){
-                            if (ret.indexOf(mut) == -1){
+                        for (var mut of mutateText(it)) {
+                            if (ret.indexOf(mut) == -1) {
                                 ret.push(mut);
                             }
                         }
@@ -217,12 +485,12 @@
                         const summary = data[entry_id + 1].content;
                         const filepath = file_metadata.filepath;
                         const language_id = file_metadata.language_id;
-                        searchResultItems[file_id] = {"header": {"summary":summary, "filepath": filepath}, "pairs":{}, "language_id": language_id};
+                        searchResultItems[file_id] = { "header": { "summary": summary, "filepath": filepath }, "pairs": {}, "language_id": language_id };
                     }
-                    if (detail_types.indexOf(data_type) != -1){
-                        const pair_id = ((data_type === "code")?id : (id-1));
-                        if (searchResultItems[file_id].pairs[pair_id] === undefined){
-                            searchResultItems[file_id].pairs[pair_id] = {"left":data[pair_id].content , "right":data[pair_id-1].content, "location":data[pair_id].location};
+                    if (detail_types.indexOf(data_type) != -1) {
+                        const pair_id = ((data_type === "code") ? id : (id - 1));
+                        if (searchResultItems[file_id].pairs[pair_id] === undefined) {
+                            searchResultItems[file_id].pairs[pair_id] = { "left": data[pair_id].content, "right": data[pair_id - 1].content, "location": data[pair_id].location };
                         }
                     }
                     // listItem.textContent = `[${field}][${data_type}] ${data[id][field]}`;
@@ -233,20 +501,20 @@
                 const it = searchResultItems[file_id];
                 const item = document.createElement('li');
                 //const item = document.createElement('div');
-                item.className = "searchItem"; 
+                item.className = "searchItem";
                 const search_header = document.createElement('div');
                 search_header.className = "searchItemInfo";
                 const location_p = document.createElement('p');
                 location_p.className = "monospace-text codelink";
                 location_p.innerHTML = (it.header.filepath.slice(1));
 
-                location_p.setAttribute('onclick', `navigateToPage(${JSON.stringify(it.header.filepath)}, ${JSON.stringify(it.language_id)})`)
+                location_p.setAttribute('onclick', `navigateToPage(${JSON.stringify(it.header.filepath)}, ${JSON.stringify(it.language_id)}, ${JSON.stringify(project_id)})`)
                 search_header.appendChild(location_p);
 
                 var skip_summary = false;
 
-                if (Object.keys(it.pairs).length == 1){
-                    if (it.pairs[Object.keys(it.pairs)[0]].right == it.header.summary){
+                if (Object.keys(it.pairs).length == 1) {
+                    if (it.pairs[Object.keys(it.pairs)[0]].right == it.header.summary) {
                         skip_summary = true;
                     }
                 }
@@ -259,7 +527,7 @@
 
 
                 item.appendChild(search_header);
-                for (var pair_id in it.pairs){
+                for (var pair_id in it.pairs) {
 
                     const pair_container = document.createElement('div');
                     pair_container.className = "search-container";
@@ -270,13 +538,13 @@
                     const code_location_p = document.createElement('p');
                     code_location_p.className = "monospace-text codelink";
                     code_location_p.innerHTML = (pair.location.slice(1));
-                    code_location_p.setAttribute('onclick', `navigateToPage(${JSON.stringify(it.header.filepath)}, ${JSON.stringify(it.language_id)}, ${JSON.stringify(pair.location)})`)
+                    code_location_p.setAttribute('onclick', `navigateToPage(${JSON.stringify(it.header.filepath)}, ${JSON.stringify(it.language_id)},  ${JSON.stringify(project_id)}, ${JSON.stringify(pair.location)})`)
 
                     pair_left.appendChild(code_location_p);
                     const comment_p = document.createElement('p');
                     comment_p.innerHTML = (pair.right);
                     pair_left.appendChild(comment_p);
-                    
+
                     const pair_right = document.createElement('div');
                     pair_right.className = "right-half";
                     const code_pre = document.createElement('pre');
@@ -309,238 +577,43 @@
             markInstance.mark(searchHighlightTerms);
         }
 
-        
-    // Event listener for the search input
-    function registerSearchEventListener() {
-        // get query parameters.
-        const searchInputElem=document.getElementById('searchInput');
-        searchInputElem.addEventListener('input',
-searchInputEventListener
-    );
-    
-    function setTextAndTriggerInputEvent(queryString) {
-      searchInputElem.value = queryString; // Set text into the input box
-      searchInputElem.dispatchEvent(new Event('input')); // Fire an input event
-    }
-    function displayFile(file_path){
- // TODO: handle file query string
-    }
 
-        const queryParams = new URLSearchParams(window.location.search);
-        const query_from_url = queryParams.get('q');
-        const file_path_from_url = queryParams.get('file');
-        if (query_from_url != null){
-        setTextAndTriggerInputEvent(query_from_url)
-        }else if (file_path_from_url != null){
-            displayFile(file_path_from_url)
+        // Event listener for the search input
+        function registerSearchEventListener() {
+            // this is never called
+            document.getElementById("partial-repository-url").innerText = github_partial_url;
+            document.getElementById("github-link").setAttribute("href", github_url);
+            // get query parameters.
+            const searchInputElem = document.getElementById('searchInput');
+            searchInputElem.addEventListener('input',
+                searchInputEventListener
+            );
+
+            function setTextAndTriggerInputEvent(queryString) {
+                searchInputElem.value = queryString; // Set text into the input box
+                searchInputElem.dispatchEvent(new Event('input')); // Fire an input event
+            }
+            function displayFile(file_path) {
+                // TODO: handle file query string
+            }
+
+            const queryParams = new URLSearchParams(window.location.search);
+            const query_from_url = queryParams.get('q');
+            const file_path_from_url = queryParams.get('file');
+            if (query_from_url != null) {
+                setTextAndTriggerInputEvent(query_from_url)
+            } else if (file_path_from_url != null) {
+                displayFile(file_path_from_url)
+            }
         }
-    }
 
-    document.addEventListener('DOMContentLoaded', registerSearchEventListener);
+        //document.addEventListener('DOMContentLoaded', registerSearchEventListener);
+        // waitForDOMContentLoaded();
+        registerSearchEventListener()
+        // console.log("event listener registered")
+    }
+    async_main()
 </script>
-
-
-<style>
-/* CSS for highlighted text */
-    mark {
-        background-color: yellow;
-        color: black;
-        font-weight: bold;
-    }
-</style>
-<link href="https://cdn.jsdelivr.net/npm/prismjs@v1.x/themes/prism.css" rel="stylesheet" />
-<style>
-    .search-container{
-        margin-bottom: 10px;
-    }
-    p{
-        line-height: 1.5;
-    }
-    h2 {
-        overflow-x: auto;
-    }
-    /* Styles for mobile devices */
-    @media (max-width: 767px) {
-        /*(h2{
-            font-size: 27px;
-        }*/
-        html,body{
-
-        margin-left:3%;
-        margin-right: 3%;
-        }
-        .repository-url{
-            display:none;
-        }
-        .search-container {
-            border: 2px solid #ccc;
-        }
-
-        .right-half {
-            /*padding-left: 10px;*/
-            padding-right: 10px;
-        }
-
-        .left-half{
-            padding-left:10px;
-            padding-right:10px;
-
-            padding-top:5px;
-            padding-bottom:5px;
-        }
-        
-        #searchResults, #searchInput{
-        font-size: 10px;
-        } 
-
-        #searchInput{
-            text-indent: 10px;
-        }
-    }
-
-    /* Styles for desktop devices */
-    @media (min-width: 768px) {
-
-        #searchInput{
-            text-indent: 20px;
-        }
-        html,body{
-
-        margin-left: 5%;
-        margin-right: 5%;
-        }
-        #searchResults, #searchInput{
-        font-size: 17px;} 
-        .searchItemInfo{
-            text-indent:10px;
-        }
-        .search-container {
-            display: flex;
-            border: 2px solid #ccc;
-        }
-
-        .left-half,
-        .right-half {
-            flex: 1;
-            overflow-x: auto;
-        }
-        .right-half{
-
-            padding-right:20px;
-        }
-        .left-half{
-            padding-top:5px;
-            padding-left:20px;
-            padding-right:20px;
-        }
-    }
-
-    .left-half {
-        background-color: #ccc;
-        
-    }
-
-    .right-half {
-        background-color: #f1f1f1;
-    }
-    .highlight {
-        background-color: yellow !important;
-        color: black !important;
-    }
-
-    .monospace-text {
-        font-family: "Courier New", monospace;
-        color: #333;
-    }
-    /* useless now */
-    pre {
-        overflow-x: auto;
-        white-space: pre-wrap;
-        white-space: -moz-pre-wrap;
-        white-space: -pre-wrap;
-        white-space: -o-pre-wrap;
-        word-wrap: break-word;
-    }
-
-    .codelink:hover {
-         cursor: pointer;
-    }
-    /*
-    .searchItemInfo:hover {
-         cursor: pointer;
-    }
-    .search-container:hover {
-         cursor: pointer;
-    }
-    */
-    .searchItem {
-        padding: 10px;
-        padding-bottom:0;
-        padding-top:0;
-        border: 2px solid #ccc;
-    }
-
-    .searchItemInfo {
-        padding: 10px;
-    }
-</style>
-<style type="text/css">
-    html, body {
-        /*max-width: 900px;*/
-        font-family: 'Roboto', sans-serif;
-        height: 100%;
-        /* margin: 0; */
-        padding: 0;
-        display: flex;
-        flex-direction: column;
-    }
-
-    .container {
-        display: flex;
-        flex-direction: column;
-        align-items: left;
-        justify-content: center;
-        text-align: left;
-        /* margin: 5%; */
-        margin-bottom: 10px;
-        margin-top: 1.5%;
-    }
-
-    input[type="text"] {
-        padding: 10px;
-        /*border-radius: 10px;*/
-        border: 2px solid #ccc;
-    }
-
-    ul {
-        flex: 1; /* Fill the remaining space */
-        overflow-y: auto; /* Enable vertical scrolling */
-        list-style: none;
-        padding: 0;
-        /* margin: 5%; */
-        margin-top:0;
-    }
-
-    ul li {
-        background-color: #f2f2f2;
-        margin-bottom: 10px;
-        /*border-radius: 10px;*/
-        box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1);
-    }
-</style>
-
-</head>
-
-
-<body>
-	<script src="https://cdn.jsdelivr.net/npm/prismjs@v1.x/components/prism-core.min.js"></script>
-	<script src="https://cdn.jsdelivr.net/npm/prismjs@v1.x/plugins/autoloader/prism-autoloader.min.js"></script>
-    <header class="container">
-        <h2><a href="https://github.com/james4ever0/agi_computer_control" class="github-icon"><i class="fab fa-github"></i></a> Document Index<span class="repository-url"> of:
-            james4ever0/agi_computer_control </span></h2>
-        <input type="text" id="searchInput" placeholder="Search...">
-    </header>
-    <ul id="searchResults"></ul>
 </body>
 
 
