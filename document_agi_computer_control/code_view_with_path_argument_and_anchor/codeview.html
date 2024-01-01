@@ -391,12 +391,16 @@
         }());
     </script>
     <style>
+        h2 {
+            overflow-x: auto
+        }
+
         html,
         body {
             /* max-width: 900px; */
             /* margin: 0 auto; */
-            margin-left: 5%;
-            margin-right: 5%;
+            /* margin-left: 5%;
+            margin-right: 5%; */
             height: 100%;
             display: flex;
             flex-direction: column;
@@ -422,12 +426,45 @@
             text-align: left;
         }
 
+        @media (max-width: 767px) {
+
+            /* h1 {
+                font-size: 27px;
+            } */
+
+            html,
+            body {
+
+                margin-left: 3%;
+                margin-right: 3%;
+            }
+
+            #code-section {
+                font-size: 10px;
+            }
+        }
+
+        /* Styles for desktop devices */
+        @media (min-width: 768px) {
+
+            html,
+            body {
+
+                margin-left: 5%;
+                margin-right: 5%;
+            }
+
+            #code-section {
+                font-size: 17px;
+            }
+
+        }
     </style>
 </head>
 
 <body>
     <header class="container" data-plugin-header="line-numbers">
-        <h1 id="code-path">Python Code Example with Anchors</h1>
+        <h2 id="code-path">Code Preview</h2>
     </header>
     <section id="code-section">
         <!-- <pre id="mycode" class="language-python" data-src="code_view_demo.py">

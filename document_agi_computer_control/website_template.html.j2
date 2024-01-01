@@ -5,7 +5,7 @@
 {%block searchscript%}
 <script src="https://cdn.jsdelivr.net/npm/mark.js"></script>
 <script type="text/javascript" defer>
-
+    const RESULT_LIMIT = 50;
     function navigateToPage(base_filepath, language_id, detail_filepath = "") {
       // Use a relative path to navigate to a specific page
       let page_param = "codeview.html";
@@ -47,28 +47,27 @@
     Object.keys(data).forEach(id => {
         doc.add(id, data[id]);
     });
+    const englishSymbols = ["!", "\"", "#", "$", "%", "&", "'", "(", ")", "*", "+", ",", "-", ".", "/", ":", ";", "<", "=", ">", "?", "@", "[", "\\", "]", "^", "_", "`", "{", "|", "}", "~"];
 
-    // Event listener for the search input
-    function registerSearchEventListener() {
-        document.getElementById('searchInput').addEventListener('input', function () {
-            const englishSymbols = ["!", "\"", "#", "$", "%", "&", "'", "(", ")", "*", "+", ",", "-", ".", "/", ":", ";", "<", "=", ">", "?", "@", "[", "\\", "]", "^", "_", "`", "{", "|", "}", "~"];
+    function getSubTerms(it) {
+        var m_str = it
+        for (const sym of englishSymbols){
+            m_str = m_str.replaceAll(sym, " ");
+        }
+        return m_str.split(" ");
+    }
+    function searchInputEventListener() {
+            
             function capitalizeFirstLetter(text) {
                 return text.charAt(0).toUpperCase() + text.slice(1);
             }
             function mutateText(text){
-                var lowerText =  text.toLowerCase()
+                var lowerText = text.toLowerCase()
                 var upperText = text.toUpperCase()
                 var lowerCapitalized = capitalizeFirstLetter(lowerText)
                 return [text ,lowerText ,upperText ,lowerCapitalized]
             }
 
-            function getSubTerms(it)
-            {   var new_it = it;
-                for (const sym of englishSymbols){
-                    new_it = new_it.replaceAll(sym, " ")
-                }
-                return new_it.split(" ");
-            }
             const searchTerm = this.value;
             const searchSubTerms = getSubTerms(searchTerm);
             function getHighlightTerms(msubterms){
@@ -93,7 +92,7 @@
                 }
                 return newContent;
             }*/
-            const results = doc.search(searchTerm, 5); // Limiting to 5 results for demonstration
+            const results = doc.search(searchTerm, RESULT_LIMIT); // Limiting to 5 results for demonstration
             const detail_types = ["code", "comment"];
 
             // Display the search results
@@ -122,7 +121,6 @@
                             searchResultItems[file_id].pairs[pair_id] = {"left":data[pair_id].content , "right":data[pair_id-1].content, "location":data[pair_id].location};
                         }
                     }
-
                     // listItem.textContent = `[${field}][${data_type}] ${data[id][field]}`;
                     // searchResults.appendChild(listItem);
                 });
@@ -135,8 +133,10 @@
                 const search_header = document.createElement('div');
                 search_header.className = "searchItemInfo";
                 const location_p = document.createElement('p');
-                location_p.className = "monospace-text";
+                location_p.className = "monospace-text codelink";
                 location_p.innerHTML = (it.header.filepath);
+
+                location_p.setAttribute('onclick', `navigateToPage(${JSON.stringify(it.header.filepath)}, ${JSON.stringify(it.language_id)})`)
                 search_header.appendChild(location_p);
 
                 var skip_summary = false;
@@ -151,7 +151,7 @@
                     summary_p.innerHTML = (it.header.summary);
                     search_header.appendChild(summary_p);
                 }
-                search_header.setAttribute('onclick', `navigateToPage(${JSON.stringify(it.header.filepath)}, ${JSON.stringify(it.language_id)})`)
+                //search_header.setAttribute('onclick', `navigateToPage(${JSON.stringify(it.header.filepath)}, ${JSON.stringify(it.language_id)})`)
 
 
                 item.appendChild(search_header);
@@ -164,8 +164,10 @@
                     const pair_left = document.createElement('div');
                     pair_left.className = "left-half";
                     const code_location_p = document.createElement('p');
-                    code_location_p.className = "monospace-text";
+                    code_location_p.className = "monospace-text codelink";
                     code_location_p.innerHTML = (pair.location);
+                    code_location_p.setAttribute('onclick', `navigateToPage(${JSON.stringify(it.header.filepath)}, ${JSON.stringify(it.language_id)}, ${JSON.stringify(pair.location)})`)
+
                     pair_left.appendChild(code_location_p);
                     const comment_p = document.createElement('p');
                     comment_p.innerHTML = (pair.right);
@@ -186,7 +188,7 @@
 
                     pair_container.append(pair_right);
                     pair_container.append(pair_left);
-                    pair_container.setAttribute('onclick', `navigateToPage(${JSON.stringify(it.header.filepath)}, ${JSON.stringify(it.language_id)}, ${JSON.stringify(pair.location)})`)
+                    //pair_container.setAttribute('onclick', `navigateToPage(${JSON.stringify(it.header.filepath)}, ${JSON.stringify(it.language_id)}, ${JSON.stringify(pair.location)})`)
                     item.appendChild(pair_container);
                 }
                 //li_elem = document.createElement('li');
@@ -201,8 +203,35 @@
             const markInstance = new Mark(document.getElementById('searchResults'));
             markInstance.unmark(); // Clear previous marks
             markInstance.mark(searchHighlightTerms);
-        });
+        }
+
+        
+    // Event listener for the search input
+    function registerSearchEventListener() {
+        // get query parameters.
+        const searchInputElem=document.getElementById('searchInput');
+        searchInputElem.addEventListener('input',
+searchInputEventListener
+    );
+    
+    function setTextAndTriggerInputEvent(queryString) {
+      searchInputElem.value = queryString; // Set text into the input box
+      searchInputElem.dispatchEvent(new Event('input')); // Fire an input event
     }
+    function displayFile(file_path){
+ // TODO: handle file query string
+    }
+
+        const queryParams = new URLSearchParams(window.location.search);
+        const query_from_url = queryParams.get('q');
+        const file_path_from_url = queryParams.get('file');
+        if (query_from_url != null){
+        setTextAndTriggerInputEvent(query_from_url)
+        }else if (file_path_from_url != null){
+            displayFile(file_path_from_url)
+        }
+    }
+
     document.addEventListener('DOMContentLoaded', registerSearchEventListener);
 </script>
 {%endblock%}
@@ -220,8 +249,22 @@
     .search-container{
         margin-bottom: 10px;
     }
+    p{
+        line-height: 1.5;
+    }
+    h2 {
+        overflow-x: auto;
+    }
     /* Styles for mobile devices */
     @media (max-width: 767px) {
+        /*(h2{
+            font-size: 27px;
+        }*/
+        html,body{
+
+        margin-left:3%;
+        margin-right: 3%;
+        }
         .repository-url{
             display:none;
         }
@@ -242,6 +285,11 @@
     /* Styles for desktop devices */
     @media (min-width: 768px) {
 
+        html,body{
+
+        margin-left: 5%;
+        margin-right: 5%;
+        }
         #searchResults, #searchInput{
         font-size: 17px;} 
         .search-container {
@@ -283,12 +331,17 @@
         word-wrap: break-word;
     }
 
+    .codelink:hover {
+         cursor: pointer;
+    }
+    /*
     .searchItemInfo:hover {
          cursor: pointer;
     }
     .search-container:hover {
          cursor: pointer;
     }
+    */
     .searchItem {
         padding: 10px;
         padding-bottom:0;
@@ -306,8 +359,6 @@
         font-family: 'Roboto', sans-serif;
         height: 100%;
         /* margin: 0; */
-        margin-left: 5%;
-        margin-right: 5%;
         padding: 0;
         display: flex;
         flex-direction: column;
@@ -353,8 +404,8 @@
 	<script src="https://cdn.jsdelivr.net/npm/prismjs@v1.x/components/prism-core.min.js"></script>
 	<script src="https://cdn.jsdelivr.net/npm/prismjs@v1.x/plugins/autoloader/prism-autoloader.min.js"></script>
     <header class="container">
-        <h1><a href="{{repository_url}}" class="github-icon"><i class="fab fa-github"></i></a> Document Index<span class="repository-url"> of:
-            {{partial_repository_url}} </span></h1>
+        <h2><a href="{{repository_url}}" class="github-icon"><i class="fab fa-github"></i></a> Document Index<span class="repository-url"> of:
+            {{partial_repository_url}} </span></h2>
         <input type="text" id="searchInput" placeholder="Search...">
     </header>
     <ul id="searchResults"></ul>
