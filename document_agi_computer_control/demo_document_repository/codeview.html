@@ -366,7 +366,7 @@
                 const queryParams = new URLSearchParams(window.location.search);
                 const language = queryParams.get('language');
                 const code_path = queryParams.get('file');
-                const project_name = "agi_computer_control"
+                const project_name =  queryParams.get('project');
                 const h1_element = document.getElementById('code-path');
                 // h1_element.textContent = code_path.slice('src/'.length);
                 h1_element.textContent = project_name+"/"+code_path.slice('src/'.length);

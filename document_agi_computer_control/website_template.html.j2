@@ -98,6 +98,10 @@
         #searchInput {
             text-indent: 10px;
         }
+
+        .searchItemInfo {
+           text-indent: 10px; 
+        }
     }
 
     /* Styles for desktop devices */
@@ -120,7 +124,7 @@
         }
 
         .searchItemInfo {
-            text-indent: 10px;
+            padding-left: 20px;
         }
 
         .search-container {
@@ -193,10 +197,11 @@
         padding-top: 0;
         border: 2px solid #ccc;
     }
-
+/*
     .searchItemInfo {
         padding: 10px;
     }
+*/
 </style>
 <style type="text/css">
     html,
@@ -258,8 +263,7 @@
     <script src="https://cdn.jsdelivr.net/npm/prismjs@v1.x/components/prism-core.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/prismjs@v1.x/plugins/autoloader/prism-autoloader.min.js"></script>
     <header class="container">
-        <h2><a id="github-link" class="github-icon"><i class="fab fa-github"></i></a> Document Index<span
-                class="repository-url"> of:
+        <h2><a id="github-link" class="github-icon"><i class="fab fa-github"></i></a> Document Index<span class="repository-url"> of:
                 <span id="partial-repository-url"></span></span></h2>
         <input type="text" id="searchInput" placeholder="Search...">
     </header>
@@ -268,13 +272,13 @@
     const RESULT_LIMIT = 50;
     const progressOverlay = document.getElementById('progress-overlay');
     const progressBar = document.querySelector('.progress');
-    function navigateToPage(base_filepath, language_id, detail_filepath = "") {
+    function navigateToPage(base_filepath, language_id, project_id, detail_filepath = "") {
         // Use a relative path to navigate to a specific page
         let page_param = "codeview.html";
         let file_param = 'src' + base_filepath;
         file_param = encodeURIComponent(file_param);
         let language_param = language_id
-        let jump_link = `${page_param}?file=${file_param}&language=${language_id}`;
+        let jump_link = `${page_param}?file=${file_param}&language=${language_id}&project=${project_id}`;
         if (detail_filepath !== "") {
             let location_range = detail_filepath.slice(base_filepath.length + 1);
             let location_param = `mycode.${location_range}`;
@@ -297,6 +301,7 @@
         const metadata_req = await fetch("metadata.json")// load from server
         const metadata = JSON.parse(await metadata_req.text())
         const github_url = metadata.url.full;
+        const project_id = metadata.project_name;
         const github_partial_url = metadata.url.partial;
         const file_mapping = metadata.file_mapping
         const split_count = metadata.split_count
@@ -417,7 +422,7 @@
                 location_p.className = "monospace-text codelink";
                 location_p.innerHTML = (it.header.filepath.slice(1));
 
-                location_p.setAttribute('onclick', `navigateToPage(${JSON.stringify(it.header.filepath)}, ${JSON.stringify(it.language_id)})`)
+                location_p.setAttribute('onclick', `navigateToPage(${JSON.stringify(it.header.filepath)}, ${JSON.stringify(it.language_id)}, ${JSON.stringify(project_id)})`)
                 search_header.appendChild(location_p);
 
                 var skip_summary = false;
@@ -447,7 +452,7 @@
                     const code_location_p = document.createElement('p');
                     code_location_p.className = "monospace-text codelink";
                     code_location_p.innerHTML = (pair.location.slice(1));
-                    code_location_p.setAttribute('onclick', `navigateToPage(${JSON.stringify(it.header.filepath)}, ${JSON.stringify(it.language_id)}, ${JSON.stringify(pair.location)})`)
+                    code_location_p.setAttribute('onclick', `navigateToPage(${JSON.stringify(it.header.filepath)}, ${JSON.stringify(it.language_id)},  ${JSON.stringify(project_id)}, ${JSON.stringify(pair.location)})`)
 
                     pair_left.appendChild(code_location_p);
                     const comment_p = document.createElement('p');
