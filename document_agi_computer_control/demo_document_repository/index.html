@@ -288,8 +288,8 @@
                     //code_pre.innerHTML = highlightTerm(pair.left);
                     pair_right.appendChild(code_pre);
 
-                    pair_container.append(pair_left);
                     pair_container.append(pair_right);
+                    pair_container.append(pair_left);
                     pair_container.setAttribute('onclick', `navigateToPage(${JSON.stringify(it.header.filepath)}, ${JSON.stringify(it.language_id)}, ${JSON.stringify(pair.location)})`)
                     item.appendChild(pair_container);
                 }
@@ -301,6 +301,7 @@
             }
 
             Prism.highlightAllUnder(searchResults);
+            // let's try understand that.
             const markInstance = new Mark(document.getElementById('searchResults'));
             markInstance.unmark(); // Clear previous marks
             markInstance.mark(searchHighlightTerms);
@@ -336,15 +337,17 @@
         .right-half {
             padding: 10px;
         }
-        #searchResults{
-        font-size: 5px;}
+        
+        #searchResults, #searchInput{
+        font-size: 10px;
+        } 
     }
 
     /* Styles for desktop devices */
     @media (min-width: 768px) {
 
-        #searchResults{
-        font-size: 7px;}
+        #searchResults, #searchInput{
+        font-size: 17px;} 
         .search-container {
             display: flex;
             border: 2px solid #ccc;
@@ -353,8 +356,8 @@
         .left-half,
         .right-half {
             flex: 1;
+            overflow-x: auto;
             padding: 10px;
-
         }
     }
 
@@ -406,7 +409,9 @@
         /*max-width: 900px;*/
         font-family: 'Roboto', sans-serif;
         height: 100%;
-        margin: 0;
+        /* margin: 0; */
+        margin-left: 5%;
+        margin-right: 5%;
         padding: 0;
         display: flex;
         flex-direction: column;
@@ -418,7 +423,7 @@
         align-items: left;
         justify-content: center;
         text-align: left;
-        margin: 5%;
+        /* margin: 5%; */
         margin-bottom: 10px;
         margin-top: 1.5%;
     }
@@ -434,7 +439,7 @@
         overflow-y: auto; /* Enable vertical scrolling */
         list-style: none;
         padding: 0;
-        margin: 5%;
+        /* margin: 5%; */
         margin-top:0;
     }
 
@@ -453,8 +458,8 @@
 	<script src="https://cdn.jsdelivr.net/npm/prismjs@v1.x/components/prism-core.min.js"></script>
 	<script src="https://cdn.jsdelivr.net/npm/prismjs@v1.x/plugins/autoloader/prism-autoloader.min.js"></script>
     <header class="container">
-        <h2><a href="https://github.com/james4ever0/agi_computer_control" class="github-icon"><i class="fab fa-github"></i></a> Document Index<span class="repository-url"> of:
-            james4ever0/agi_computer_control </span></h2>
+        <h1><a href="https://github.com/james4ever0/agi_computer_control" class="github-icon"><i class="fab fa-github"></i></a> Document Index<span class="repository-url"> of:
+            james4ever0/agi_computer_control </span></h1>
         <input type="text" id="searchInput" placeholder="Search...">
     </header>
     <ul id="searchResults"></ul>

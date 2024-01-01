@@ -184,8 +184,8 @@
                     //code_pre.innerHTML = highlightTerm(pair.left);
                     pair_right.appendChild(code_pre);
 
-                    pair_container.append(pair_left);
                     pair_container.append(pair_right);
+                    pair_container.append(pair_left);
                     pair_container.setAttribute('onclick', `navigateToPage(${JSON.stringify(it.header.filepath)}, ${JSON.stringify(it.language_id)}, ${JSON.stringify(pair.location)})`)
                     item.appendChild(pair_container);
                 }
@@ -197,6 +197,7 @@
             }
 
             Prism.highlightAllUnder(searchResults);
+            // let's try understand that.
             const markInstance = new Mark(document.getElementById('searchResults'));
             markInstance.unmark(); // Clear previous marks
             markInstance.mark(searchHighlightTerms);
@@ -232,15 +233,17 @@
         .right-half {
             padding: 10px;
         }
-        #searchResults{
-        font-size: 5px;}
+        
+        #searchResults, #searchInput{
+        font-size: 10px;
+        } 
     }
 
     /* Styles for desktop devices */
     @media (min-width: 768px) {
 
-        #searchResults{
-        font-size: 7px;}
+        #searchResults, #searchInput{
+        font-size: 17px;} 
         .search-container {
             display: flex;
             border: 2px solid #ccc;
@@ -249,8 +252,8 @@
         .left-half,
         .right-half {
             flex: 1;
+            overflow-x: auto;
             padding: 10px;
-
         }
     }
 
@@ -350,8 +353,8 @@
 	<script src="https://cdn.jsdelivr.net/npm/prismjs@v1.x/components/prism-core.min.js"></script>
 	<script src="https://cdn.jsdelivr.net/npm/prismjs@v1.x/plugins/autoloader/prism-autoloader.min.js"></script>
     <header class="container">
-        <h2><a href="{{repository_url}}" class="github-icon"><i class="fab fa-github"></i></a> Document Index<span class="repository-url"> of:
-            {{partial_repository_url}} </span></h2>
+        <h1><a href="{{repository_url}}" class="github-icon"><i class="fab fa-github"></i></a> Document Index<span class="repository-url"> of:
+            {{partial_repository_url}} </span></h1>
         <input type="text" id="searchInput" placeholder="Search...">
     </header>
     <ul id="searchResults"></ul>
