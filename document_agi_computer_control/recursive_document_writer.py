@@ -5,10 +5,11 @@ import os
 from typing import Literal, Optional, Union
 import uuid
 import json
+from slice_utils import split_dict_into_chunks
 import parse
 
 CODE_LOCATION_FORMAT = '"{code_path}":{line_start:d}-{line_end:d}'
-
+DATA_SLICE_LENGTH = 100
 from beartype import beartype
 
 from cache_db_context import (
@@ -227,13 +228,20 @@ def render_document_webpage(
             partial=render_params["partial_repository_url"],
         )
         metadata["file_mapping"] = render_params["file_mapping"]
+        metadata["project_name"] = render_params["partial_repository_url"].split("/")[-1]
         split_count = 0
-        datadict_split = {}
-        ## split by size of 100
-        # for splited_dict in ...:
-        #     datadict_split[split_count] = splited_dict
-        #     split_count +=1
-        # metadata["split_count"] = split_count
+        # datadict_split = {}
+        for chunk in split_dict_into_chunks(datadict, DATA_SLICE_LENGTH):
+            write_file(
+                os.path.join(document_dir_path, f"data_{split_count}.json"),
+                json.dumps(chunk, indent=4, ensure_ascii=False),
+            )
+            split_count += 1
+        metadata["split_count"] = split_count
+        write_file(
+            os.path.join(document_dir_path, "metadata.json"),
+            json.dumps(metadata, indent=4, ensure_ascii=False),
+        )
 
     @beartype
     def render_template(template: Template):

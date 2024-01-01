@@ -368,6 +368,7 @@
                 const code_path = queryParams.get('file');
                 const project_name = "agi_computer_control"
                 const h1_element = document.getElementById('code-path');
+                // h1_element.textContent = code_path.slice('src/'.length);
                 h1_element.textContent = project_name+"/"+code_path.slice('src/'.length);
                 pre_elem.className = `language-${language}`
                 pre_elem.id = "mycode";
@@ -393,7 +394,11 @@
     </script>
     <style>
         h2 {
-            overflow-x: auto
+            /* overflow-x:scroll; */
+            white-space: nowrap; /* Prevent the text from wrapping */
+            overflow: hidden; /* Hide the overflowing text */
+            text-overflow: ellipsis;
+            direction: rtl;
         }
 
         html,
@@ -429,9 +434,9 @@
 
         @media (max-width: 767px) {
 
-            /* h1 {
-                font-size: 27px;
-            } */
+            .container{
+                padding-left:10px;
+            } 
 
             html,
             body {
@@ -447,7 +452,9 @@
 
         /* Styles for desktop devices */
         @media (min-width: 768px) {
-
+            .container{
+                padding-left: 1.6%;
+            }
             html,
             body {
 
