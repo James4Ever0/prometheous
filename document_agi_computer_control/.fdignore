@@ -1,0 +1,16 @@
+*
+!*/
+
+# use .fdignore instead of .docignore
+
+# # you may sort and show file size & processing time in tree structure
+# you may compare the selected files and the unselected files, using diff
+# full | whitelist | blacklist
+
+# list newly included files and excluded files
+# cache a version of recently confirmed-to-be-generated files
+
+# list possible file extensions, mark their distribution across directories and estimated processing time
+
+!*.py
+# *.{min.js}
