@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-{%block title%}{%endblock%}
+    {%block title%}{%endblock%}
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
     <script type="text/javascript">
         /**
@@ -15,7 +15,8 @@
          * https://github.com/nextapps-de/flexsearch
          */
         (function _f(self) {
-            'use strict'; try { if (module) self = module } catch (e) { } self._factory = _f; var t; function u(a) { return "undefined" !== typeof a ? a : !0 } function aa(a) { const b = Array(a); for (let c = 0; c < a; c++)b[c] = v(); return b } function v() { return Object.create(null) } function ba(a, b) { return b.length - a.length } function x(a) { return "string" === typeof a } function C(a) { return "object" === typeof a } function D(a) { return "function" === typeof a }; function ca(a, b) { var c = da; if (a && (b && (a = E(a, b)), this.H && (a = E(a, this.H)), this.J && 1 < a.length && (a = E(a, this.J)), c || "" === c)) { a = a.split(c); if (this.filter) { b = this.filter; c = a.length; const d = []; for (let e = 0, f = 0; e < c; e++) { const g = a[e]; g && !b[g] && (d[f++] = g) } a = d } return a } return a } const da = /[\p{Z}\p{S}\p{P}\p{C}]+/u, ea = /[\u0300-\u036f]/g;
+            'use strict'; try { if (module) self = module } catch (e) { } self._factory = _f; var t; function u(a) { return "undefined" !== typeof a ? a : !0 } function aa(a) { const b = Array(a); for (let c = 0; c < a; c++)b[c] = v(); return b } function v() { return Object.create(null) } function ba(a, b) { return b.length - a.length } function x(a) { return "string" === typeof a } function C(a) { return "object" === typeof a } function D(a) { return "function" === typeof a }; function ca(a, b) { var c = da; if (a && (b && (a = E(a, b)), this.H && (a = E(a, this.H)), this.J && 1 < a.length && (a = E(a, this.J)), c || "" === c)) { a = a.split(c); if (this.filter) { b = this.filter; c = a.length; const d = []; for (let e = 0, f = 0; e < c; e++) { const g = a[e]; g && !b[g] && (d[f++] = g) } a = d } return a } return a } const da = /[\s\xA0\u2000-\u200B\u2028\u2029\u3000\ufeff!"#$%&'()*+,\-./:;<=>?@[\\\]^_`{|}~]/
+ /* /[\p{Z}\p{S}\p{P}\p{C}]+/u */, ea = /[\u0300-\u036f]/g;
             function fa(a, b) { const c = Object.keys(a), d = c.length, e = []; let f = "", g = 0; for (let h = 0, k, m; h < d; h++)k = c[h], (m = a[k]) ? (e[g++] = F(b ? "(?!\\b)" + k + "(\\b|_)" : k), e[g++] = m) : f += (f ? "|" : "") + k; f && (e[g++] = F(b ? "(?!\\b)(" + f + ")(\\b|_)" : "(" + f + ")"), e[g] = ""); return e } function E(a, b) { for (let c = 0, d = b.length; c < d && (a = a.replace(b[c], b[c + 1]), a); c += 2); return a } function F(a) { return new RegExp(a, "g") } function ha(a) { let b = "", c = ""; for (let d = 0, e = a.length, f; d < e; d++)(f = a[d]) !== c && (b += c = f); return b }; var ja = { encode: ia, F: !1, G: "" }; function ia(a) { return ca.call(this, ("" + a).toLowerCase(), !1) }; const ka = {}, G = {}; function la(a) { I(a, "add"); I(a, "append"); I(a, "search"); I(a, "update"); I(a, "remove") } function I(a, b) { a[b + "Async"] = function () { const c = this, d = arguments; var e = d[d.length - 1]; let f; D(e) && (f = e, delete d[d.length - 1]); e = new Promise(function (g) { setTimeout(function () { c.async = !0; const h = c[b].apply(c, d); c.async = !1; g(h) }) }); return f ? (e.then(f), this) : e } }; function ma(a, b, c, d) {
                 const e = a.length; let f = [], g, h, k = 0; d && (d = []); for (let m = e - 1; 0 <= m; m--) { const n = a[m], w = n.length, q = v(); let r = !g; for (let l = 0; l < w; l++) { const p = n[l], z = p.length; if (z) for (let B = 0, A, y; B < z; B++)if (y = p[B], g) { if (g[y]) { if (!m) if (c) c--; else if (f[k++] = y, k === b) return f; if (m || d) q[y] = 1; r = !0 } if (d && (A = (h[y] || 0) + 1, h[y] = A, A < e)) { const H = d[A - 2] || (d[A - 2] = []); H[H.length] = y } } else q[y] = 1 } if (d) g || (h = q); else if (!r) return []; g = q } if (d) for (let m = d.length - 1, n, w; 0 <= m; m--) {
                     n = d[m]; w = n.length; for (let q = 0, r; q < w; q++)if (r =
@@ -84,8 +85,8 @@
         }(this));
 
     </script>
-{%block searchscript%}{%endblock%}
-{%block stylesheet%}{%endblock%}
+    {%block searchscript%}{%endblock%}
+    {%block stylesheet%}{%endblock%}
 </head>
 {%block body%}{%endblock%}
 

@@ -5,7 +5,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='currentColor' class='bi bi-code-square' viewBox='0 0 16 16'%3E%3Cpath d='M14 1a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1zM2 0a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2z'/%3E%3Cpath d='M6.854 4.646a.5.5 0 0 1 0 .708L4.207 8l2.647 2.646a.5.5 0 0 1-.708.708l-3-3a.5.5 0 0 1 0-.708l3-3a.5.5 0 0 1 .708 0zm2.292 0a.5.5 0 0 0 0 .708L11.793 8l-2.647 2.646a.5.5 0 0 0 .708.708l3-3a.5.5 0 0 0 0-.708l-3-3a.5.5 0 0 0-.708 0z'/%3E%3C/svg%3E" type="image/svg+xml">
+    <link rel="icon"
+        href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='currentColor' class='bi bi-code-square' viewBox='0 0 16 16'%3E%3Cpath d='M14 1a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1zM2 0a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2z'/%3E%3Cpath d='M6.854 4.646a.5.5 0 0 1 0 .708L4.207 8l2.647 2.646a.5.5 0 0 1-.708.708l-3-3a.5.5 0 0 1 0-.708l3-3a.5.5 0 0 1 .708 0zm2.292 0a.5.5 0 0 0 0 .708L11.793 8l-2.647 2.646a.5.5 0 0 0 .708.708l3-3a.5.5 0 0 0 0-.708l-3-3a.5.5 0 0 0-.708 0z'/%3E%3C/svg%3E"
+        type="image/svg+xml">
     <title>Code View</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.min.css">
 
@@ -363,16 +365,30 @@
                     setTimeout(conditionalApplyHash, 500)
                 }
             }
+            function getQueryParams() {
+                var search = window.location.search.substring(1); // Remove leading '?'
+                var queryParams = {};
+                search.split('&').forEach(function (pair) {
+                    var parts = pair.split('=');
+                    var key = decodeURIComponent(parts[0]);
+                    var value = decodeURIComponent(parts[1]);
+                    queryParams[key] = value;
+                });
+                return queryParams;
+            }
             function loadedAction() {
+                // console.log('location search:', window.location.search);
                 const section_elem = document.getElementById('code-section');
                 const pre_elem = document.createElement('pre');
-                const queryParams = new URLSearchParams(window.location.search);
-                const language = queryParams.get('language');
-                const code_path = queryParams.get('file');
-                const project_name =  queryParams.get('project');
+                const queryParams = getQueryParams(window.location.search);
+                // const queryParams = new URLSearchParams(window.location.search);
+                const language = queryParams.language;
+                const code_path = queryParams.file;
+                const project_name = queryParams.project;
                 const h1_element = document.getElementById('code-path');
                 // h1_element.textContent = code_path.slice('src/'.length);
-                h1_element.textContent = project_name+"/"+code_path.slice('src/'.length);
+                // debugger;
+                h1_element.textContent = project_name + "/" + code_path.slice('src/'.length);
                 pre_elem.className = `language-${language}`
                 pre_elem.id = "mycode";
                 pre_elem.setAttribute("data-src", code_path);
@@ -383,6 +399,7 @@
                 // Prism.highlightElement(pre_elem, () => {applyHash()});
                 // Prism.highlightElement(pre_elem).then(applyHash);
             }
+            // window.addEventListener('load', loadedAction);
             document.addEventListener('DOMContentLoaded', loadedAction);
             window.addEventListener('resize', function () {
                 var actions = $$('pre')
@@ -396,10 +413,16 @@
         }());
     </script>
     <style>
+
+        html, body{
+            background-color: transparent !important;
+        }
         #code-path {
             /* overflow-x:scroll; */
-            white-space: nowrap; /* Prevent the text from wrapping */
-            overflow: hidden; /* Hide the overflowing text */
+            white-space: nowrap;
+            /* Prevent the text from wrapping */
+            overflow: hidden;
+            /* Hide the overflowing text */
             text-overflow: ellipsis;
             direction: rtl;
         }
@@ -436,14 +459,15 @@
         }
 
         .monospace-text {
-                font-family: "Courier New", monospace;
-                color: #333;
-            }
+            font-family: "Courier New", monospace;
+            color: #333;
+        }
+
         @media (max-width: 767px) {
 
-            .container{
-                padding-left:10px;
-            } 
+            .container {
+                padding-left: 10px;
+            }
 
 
             html,
@@ -457,15 +481,17 @@
                 font-size: 14px;
             }
         }
-        #code-section{
+
+        #code-section {
             border: 1px solid #ccc;
         }
 
         /* Styles for desktop devices */
         @media (min-width: 768px) {
-            .container{
+            .container {
                 padding-left: 1.6%;
             }
+
             html,
             body {
 
