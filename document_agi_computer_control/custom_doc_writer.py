@@ -480,7 +480,11 @@ def construct_llm_and_write_code_comment(
 
 
 def main():
-    programming_language, code_file_path, output_path = parse_arguments()
+    document_dir,repository_url = parse_arguments()
+    # programming_language, code_file_path, output_path = parse_arguments()
+    programming_language = ""
+    code_file_path = os.path.join(document_dir, "src")
+    output_path = "doc"
     construct_llm_and_write_code_comment(
         code_file_path, output_path, programming_language=programming_language
     )
