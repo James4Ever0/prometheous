@@ -20,10 +20,18 @@ def size_to_readable_string(size: int):
 
 
 GREY = "bright_black"
-full_json = "all_tree.json"
-selected_json = "selected_tree.json"
 
-basepath = "/media/root/Toshiba XG3/works/prometheous/document_agi_computer_control"
+import argparse
+
+parser = argparse.ArgumentParser()
+parser.add_argument("--full", help="full tree", type=str, required=True)
+parser.add_argument("--selected", help="selected tree", type=str, required=True)
+parser.add_argument("--basepath", help="path to the base" , type=str, required=True)
+args = parser.parse_args()
+
+full_json = args.full
+selected_json = args.selected
+basepath = args.basepath
 
 tree_data = json.load(open(full_json))
 selected_json = json.load(open(selected_json))  # could be different.
@@ -43,12 +51,16 @@ def add_tree_contents(parent, contents, basedir=".", basemap={}):
                 guide_style=GREY,
             )
             basemap[os.path.join(basedir, item["name"] + "/")] = subtree
-            add_tree_contents(
+            dirfs = 0
+            for fs in add_tree_contents(
                 subtree,
                 item.get("contents", []),
                 os.path.join(basedir, item["name"]),
                 basemap,
-            )
+            ):
+                dirfs+= fs
+                yield fs
+            size_map[os.path.join(basedir, item["name"] + "/")] = dirfs
         else:  # file
             # subtree = parent.add(item['name'])
             filesize = os.path.getsize(
@@ -58,11 +70,15 @@ def add_tree_contents(parent, contents, basedir=".", basemap={}):
             filesize_human = size_to_readable_string(filesize)
             subtree = parent.add(f"[{filesize_human}] " + item["name"], style=GREY)
             basemap[os.path.join(basedir, item["name"])] = subtree
-    return basemap
+            yield filesize
 
-
+def dirsplit(path):
+    if path.endswith("/"):
+        path = path[:-1]
+    return os.path.split(path)
+    
 def patch_missing_files(path, basemap):
-    subpath, filename = os.path.split(path)
+    subpath, filename = dirsplit(path)
     # breakpoint()
     if basemap.get(path) is None:
         subtree = patch_missing_files(subpath + "/", basemap)
@@ -91,7 +107,11 @@ def iterate_all_keys(contents, basemap, basedir="."):
             if subpaths:
                 selected_dirs.append(os.path.join(basedir, item["name"] + "/"))
                 set_path_to_white(os.path.join(basedir, item["name"] + "/"), basemap)
-                iterate_all_keys(subpaths, basemap, os.path.join(basedir, item["name"]))
+                dirlc = 0
+                for lc in iterate_all_keys(subpaths, basemap, os.path.join(basedir, item["name"])):
+                    dirlc += lc
+                    yield lc
+                line_map[os.path.join(basedir, item["name"] + "/")] = dirlc
         else:  # file
             # breakpoint()
             selected_keys.append(os.path.join(basedir, item["name"]))
@@ -110,7 +130,10 @@ def iterate_all_keys(contents, basemap, basedir="."):
                 error = False
             if error:
                 error_map[os.path.join(basedir, item["name"])].append(label)
+            else:
+                yield linecount
             subtree.label = f"[{label}] "+ item['name']
+            
 
 def read_file_and_get_line_count(filepath:str):
     if not os.path.exists(filepath): return -1
@@ -131,14 +154,31 @@ def get_selected_keys(tree_data, basemap):
 tree = Tree("agi_computer_control")
 # tree = Tree("agi_computer_control", style=GREY, guide_style=GREY)
 root = tree_data[0]  # Assuming the first item in the JSON is the root directory
-mymap = add_tree_contents(tree, root.get("contents", []))
-iterate_all_keys(selected_json[0].get("contents", []), mymap)
+mymap = {}
+total_size = sum(add_tree_contents(tree, root.get("contents", []), basemap = mymap))
+total_lines = sum(iterate_all_keys(selected_json[0].get("contents", []), mymap))
 # Print the tree
+tree.label = Text.assemble((f"[{total_lines} L] " + tree.label, "magenta"))
+
+
+def estimate_time_from_lines(line_count:int):
+    seconds = (line_count / 10 ) * 100
+    return humanize.naturaltime(datetime.timedelta(seconds=seconds)).split(' ago')[0]
+
+
+for k, v in mymap.items():
+    if k.endswith("/"):
+        _, name = dirsplit(k)
+        if k in selected_dirs:
+            v.label = f"[{line_map[k]} L] "+ name
+            # v.label = f"[{estimate_time_from_lines(line_map[k])}] "+ name
+        else:
+            v.label = f"[{size_to_readable_string(size_map[k])}] "+ name
 
 console = Console()
 console.print(tree)
 
-total_size = sum(size_map.values())
+# total_size = sum(size_map.values())
 selected_size = sum(size_map[k] for k in selected_keys)
 
 # make mapping between displayed tree and actual tree
@@ -149,11 +189,7 @@ print(
     )
 )
 
-def estimate_time_from_lines(line_count:int):
-    seconds = (line_count / 10 ) * 100
-    return humanize.naturaltime(datetime.timedelta(seconds=seconds)).split(' ago')[0]
-
-total_lines = sum(line_map.values())
+# total_lines = sum(line_map.values())
 print(dict(selected_lines=humanize.intword(total_lines) + " lines"))
 processing_time = estimate_time_from_lines(total_lines)
 print(dict(processing_time=processing_time))
