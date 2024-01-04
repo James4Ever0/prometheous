@@ -8,7 +8,7 @@ import subprocess
 from jinja2 import Template
 from argparse import ArgumentParser
 from beartype import beartype
-import datetime
+from datetime import datetime
 # import os
 
 import asyncio
@@ -84,11 +84,17 @@ class VisualIgnoreApp(App):
                 # ["python3", "run_simple.py", "-d", self.diffpath]
             )
             # cont = diff_content.decode()
+            has_error = False
             for it in cont.split("\n"):
                 if it.startswith("{"):
                     if "processing_time" in it and "selected_lines" in it:
                         self.label.renderable = "ETA: "+it + " "+ datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-                        self.label.refresh()
+                    if it.endswith("}"):
+                        if "Error" in it or "Empty" in it or "Missing" in it:
+                            has_error  = True
+            if has_error:
+                self.label.renderable += " [Error]"
+            self.label.refresh()
             # with TemporaryDirectory() as tempdir:
             #     content = render_script_template(self.diffpath, tempdir)
             #     script_path = os.path.join(tempdir, RELATIVE_TEMP_DIR_SCRIPT_PATH)
