@@ -111,7 +111,7 @@ def add_tree_contents(parent, contents, basedir=".", basemap={}):
             size_map[os.path.join(basedir, item["name"])] = filesize
             filesize_human = size_to_readable_string(filesize)
             # subtree = patch_missing_files(os.path.join(basedir, item["name"]),basemap, GREY, lambda x: f"[{filesize_human}] " + x)
-            subtree = parent.add(f"x [{filesize_human}] " + item["name"], style=GREY)
+            subtree = parent.add(f"x <{filesize_human}> " + item["name"], style=GREY)
             basemap[os.path.join(basedir, item["name"])] = subtree
             yield filesize
 
@@ -248,7 +248,7 @@ tree.label = Text.assemble(
         (
             f"[{total_lines} L] "
             if total_lines != 0
-            else f"x [{size_to_readable_string(total_size)}] "
+            else f"x <{size_to_readable_string(total_size)}> "
         )
         + tree.label,
         "magenta",
@@ -270,7 +270,7 @@ for k, v in mymap.items():
             v.label = f"[{line_map[k]} L] " + name
             # v.label = f"[{estimate_time_from_lines(line_map[k])}] "+ name
         else:
-            v.label = f"x [{size_to_readable_string(size_map[k])}] " + name
+            v.label = f"x <{size_to_readable_string(size_map[k])}> " + name
 
 console = Console()
 console.print(tree)

@@ -11,6 +11,8 @@ from beartype import beartype
 from datetime import datetime
 # import os
 
+INTERVAL = 5
+
 import asyncio
 
 async def run_command(command:str):
@@ -85,6 +87,7 @@ class VisualIgnoreApp(App):
             )
             # cont = diff_content.decode()
             has_error = False
+            # TODO: you may outsource this part to external process as well, emit as last line.
             for it in cont.split("\n"):
                 if it.startswith("{"):
                     if "processing_time" in it and "selected_lines" in it:
@@ -102,6 +105,8 @@ class VisualIgnoreApp(App):
             #         f.write(content)
             #     diff_content = subprocess.check_output(['bash', script_path])
 
+            # self.treeview.call_later
+
             self.treeview.clear()
             self.treeview.write(cont)  # newline by default.
             processingLock.release()
@@ -114,7 +119,7 @@ class VisualIgnoreApp(App):
         return [self.header, self.treeview, self.label, self.footer]
 
     def on_mount(self) -> None:
-        self.timer = self.set_interval(3, self.progress)
+        self.timer = self.set_interval(INTERVAL, self.progress)
 
     def action_toggle_dark(self) -> None:
         """An action to toggle dark mode."""
