@@ -1,5 +1,13 @@
 # this version is for pyjom, our ultimate challenge.
 # TODO: type "R" to refresh the tree
+# TODO: filter empty files using fd
+# TODO: visualize unselected files by calling fd -u
+
+# to find empty files:
+# fd -S "-1b"
+
+# filter out empty files:
+# fd -S "+1b"
 from textual.app import App, ComposeResult
 from textual.widgets import Header, Footer, Tree, Label
 from rich.text import Text
@@ -54,7 +62,8 @@ async def read_file_and_get_line_count(filepath: str):
     try:
         lc = 0
         async with aiofiles.open(filepath, mode='r') as file:
-            async for line in file:
+            async for _ in file:
+            # async for line in file:
                 lc += 1
         return lc
     except:
@@ -121,7 +130,7 @@ class VisualIgnoreApp(App):
         self.footer = Footer()
         self.mymap = {"./":self.treeview.root}
         # self.counter = 0
-        default_label = f"Lines: -/- Errors: -/- Last finished at: - Current Running: -"
+        default_label = f"Lines: -/- Errors: -/- Last finished at: - Selection: -/- Scanning: -/-"
         self.label = Label(Text.assemble((default_label, "bold")), expand=True)
         self.label.styles.background = "red"
         # self.label.styles.border = ('solid','red')
@@ -136,6 +145,7 @@ class VisualIgnoreApp(App):
         self.previous_error_count = "-"
         self.previous_time = datetime.now()
         self.previous_time_formatted = "-"
+        self.previous_selection = "-"
 
     async def progress(self):
         locked = processingLock.acquire(blocking=False)
@@ -144,7 +154,8 @@ class VisualIgnoreApp(App):
             self.line_count_map = defaultdict(int)
             self.error_count_map = defaultdict(int)
             self.error_count = 0
-            command = ["bash", "-c", f"cd '{self.diffpath}' && fd"]
+            command = ["bash", "-c", f"cd '{self.diffpath}' && fd -S '+1b'"]
+            # command = ["bash", "-c", f"cd '{self.diffpath}' && fd"]
             process = await asyncio.create_subprocess_exec(
                 *command,
                 stdout=asyncio.subprocess.PIPE,
@@ -196,10 +207,11 @@ class VisualIgnoreApp(App):
                 # if banner_refresh_counter > 10000:
                     banner_refresh_counter = 0
                     running = format_timedelta(datetime.now() - self.previous_time)
-                    self.label.renderable = Text.assemble((f"Lines: {self.line_count}/{self.previous_line_count} Errors: {self.error_count}/{self.previous_line_count} Last finished at: {self.previous_time_formatted} Current Running: {running}", "bold"))
+                    self.label.renderable = Text.assemble((f"Lines: {self.line_count}/{self.previous_line_count} Errors: {self.error_count}/{self.previous_line_count} Last finished at: {self.previous_time_formatted} Selection: {running}/{self.previous_selection} Scanning: -/-", "bold"))
                     self.label.refresh()
             self.previous_line_count = self.line_count
             self.previous_error_count = self.error_count
+            self.previous_selection = format_timedelta(datetime.now() - self.previous_time)
             self.previous_time = datetime.now()
             self.previous_time_formatted = self.previous_time.strftime("%Y-%m-%d %H:%M:%S")
             processingLock.release()
