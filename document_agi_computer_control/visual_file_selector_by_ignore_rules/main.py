@@ -8,7 +8,19 @@ import subprocess
 from jinja2 import Template
 from argparse import ArgumentParser
 from beartype import beartype
+import datetime
 # import os
+
+import asyncio
+
+async def run_command(command:str):
+    process = await asyncio.create_subprocess_shell(
+        command,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE
+    )
+    stdout, stderr = await process.communicate()
+    return stdout.decode().strip(), stderr.decode().strip()
 
 script_template_str = """
 cd "{{diffpath}}"
@@ -63,17 +75,19 @@ class VisualIgnoreApp(App):
         self.label.styles.height = 1
         # self.label.styles.dock = 'bottom'
 
-    def progress(self):
+    async def progress(self):
         locked = processingLock.acquire(blocking=False)
         if locked: # taking forever. bad.
-            diff_content = subprocess.check_output(
-                ["python3", "run_simple.py", "-d", self.diffpath]
+            cont, _= await run_command(
+            # diff_content = subprocess.check_output(
+                f'python3 run_simple.py -d "{self.diffpath}"'
+                # ["python3", "run_simple.py", "-d", self.diffpath]
             )
-            cont = diff_content.decode()
+            # cont = diff_content.decode()
             for it in cont.split("\n"):
                 if it.startswith("{"):
                     if "processing_time" in it and "selected_lines" in it:
-                        self.label.renderable = "ETA: "+it
+                        self.label.renderable = "ETA: "+it + " "+ datetime.now().strftime("%Y-%m-%d %H:%M:%S")
                         self.label.refresh()
             # with TemporaryDirectory() as tempdir:
             #     content = render_script_template(self.diffpath, tempdir)
