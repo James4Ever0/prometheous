@@ -1,0 +1,1 @@
+python3 run_simple.py -d "/media/root/Toshiba XG3/works/agi_computer_control"

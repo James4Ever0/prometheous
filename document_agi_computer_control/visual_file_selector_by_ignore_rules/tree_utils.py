@@ -54,15 +54,15 @@ basepath = os.path.abspath(basepath)
 tree_data = json.load(open(full_json))
 selected_json = json.load(open(selected_json))  # could be different.
 
-# cached_paths = [
-#     "/media/root/Toshiba XG3/works/prometheous/document_agi_computer_control/recursive_document_writer.py",
-#     "/media/root/Toshiba XG3/works/prometheous/document_agi_computer_control/code_view_with_path_argument_and_anchor/code_view_demo.py",
-# ]
-cached_paths = []
+cached_paths = [
+    "/media/root/Toshiba XG3/works/prometheous/document_agi_computer_control/recursive_document_writer.py",
+    "/media/root/Toshiba XG3/works/prometheous/document_agi_computer_control/code_view_with_path_argument_and_anchor/code_view_demo.py",
+]
 
 for p in cached_paths:
     assert os.path.isabs(p)
 cached_paths = [os.path.abspath(p) for p in cached_paths]
+
 for p in cached_paths:
     assert os.path.commonprefix([p, basepath]) == basepath
 
@@ -103,7 +103,6 @@ def add_tree_contents(parent, contents, basedir=".", basemap={}):
             size_map[os.path.join(basedir, item["name"] + "/")] = dirfs
         else:  # file
             # subtree = parent.add(item['name'])
-            # if item['name'] == "devcontainer.json": breakpoint()
             existing_keys.append(os.path.join(basedir, item["name"]))
             filesize = os.path.getsize(
                 os.path.join(basepath, os.path.join(basedir, item["name"]))
@@ -111,7 +110,7 @@ def add_tree_contents(parent, contents, basedir=".", basemap={}):
             size_map[os.path.join(basedir, item["name"])] = filesize
             filesize_human = size_to_readable_string(filesize)
             # subtree = patch_missing_files(os.path.join(basedir, item["name"]),basemap, GREY, lambda x: f"[{filesize_human}] " + x)
-            subtree = parent.add(f"x [{filesize_human}] " + item["name"], style=GREY)
+            subtree = parent.add(f"[{filesize_human}] " + item["name"], style=GREY)
             basemap[os.path.join(basedir, item["name"])] = subtree
             yield filesize
 
@@ -189,7 +188,7 @@ def iterate_all_keys(contents, basemap, basedir="."):
                 label = f"{linecount} L"
                 error = False
             if error:
-                error_map[label].append(os.path.join(basedir, item["name"]))
+                error_map[os.path.join(basedir, item["name"])].append(label)
             else:
                 yield linecount
             subtree.label = f"[{label}] " + item["name"]
@@ -248,7 +247,7 @@ tree.label = Text.assemble(
         (
             f"[{total_lines} L] "
             if total_lines != 0
-            else f"x [{size_to_readable_string(total_size)}] "
+            else f"[{size_to_readable_string(total_size)}] "
         )
         + tree.label,
         "magenta",
@@ -270,20 +269,13 @@ for k, v in mymap.items():
             v.label = f"[{line_map[k]} L] " + name
             # v.label = f"[{estimate_time_from_lines(line_map[k])}] "+ name
         else:
-            v.label = f"x [{size_to_readable_string(size_map[k])}] " + name
+            v.label = f"[{size_to_readable_string(size_map[k])}] " + name
 
 console = Console()
 console.print(tree)
 
 # total_size = sum(size_map.values())
-selected_size  = 0
-for k in selected_keys:
-    # try:
-    s =  size_map[k] 
-    selected_size +=s
-    # except KeyError:
-    #     print("key", k ,"not found")
-    #     breakpoint()
+selected_size = sum(size_map[k] for k in selected_keys)
 
 # make mapping between displayed tree and actual tree
 print(
@@ -294,8 +286,9 @@ print(
 )
 
 # total_lines = sum(line_map.values())
+print(dict(selected_lines=humanize.intword(total_lines) + " lines"))
 processing_time = estimate_time_from_lines(total_lines)
-print(dict(selected_lines=humanize.intword(total_lines) + " lines", processing_time=processing_time))
+print(dict(processing_time=processing_time))
 
 total_size_by_suffix = defaultdict(int)
 filecount_by_suffix = defaultdict(int)
@@ -325,5 +318,4 @@ print(
 )
 print(dict(total=filecount_by_suffix, selected=selected_filecount_by_suffix))
 print("error:", {k: len(v) for k, v in error_map.items()})
-print("error map:", error_map)
 # print(mymap)
