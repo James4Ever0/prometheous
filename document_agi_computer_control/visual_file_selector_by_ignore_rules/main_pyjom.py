@@ -24,18 +24,29 @@ from threading import Lock
 from jinja2 import Template
 from argparse import ArgumentParser
 from beartype import beartype
-from datetime import datetime
-
+from datetime import datetime, timedelta
 import os
 cached_paths = []
 INTERVAL = 0.1
 SLEEP=7
 
 import asyncio
+
 def format_timedelta(td):
     hours, remainder = divmod(td.seconds, 3600)
     minutes, seconds = divmod(remainder, 60)
     return f"{hours}:{minutes}:{seconds}"
+
+def estimate_time_from_lines(line_count: int):
+    seconds = (line_count / 35) * 60
+    return seconds
+
+def naturaltime(seconds):
+    return humanize.naturaltime(timedelta(seconds=seconds)).split(" ago")[0]
+
+def estimate_time_from_filesize(filesize: int):
+    seconds = (filesize / 1000) * 60
+    return seconds
 
 script_template_str = """
 cd "{{diffpath}}"
@@ -164,13 +175,17 @@ class VisualIgnoreApp(App):
         self.footer = Footer()
         self.mymap = {"./":self.treeview.root}
         # self.counter = 0
-        default_label = "Lines: -/- Size: -/- Count: -/- Errors: -/-\nLast selection: - Selection: -/-\nTotal size: -/- Total count: -/- Errors: -/-\nLast scanning: - Scanning: -/-"
+        default_label = "Processing time: -/- (lines) -/- (size)\nLines: -/- Size: -/- Count: -/- Errors: -/-\nLast selection: - Selection: -/-\nTotal size: -/- Total count: -/- Errors: -/-\nLast scanning: - Scanning: -/-"
         self.label = Label(Text.assemble((default_label, "bold")), expand=True)
         self.label.styles.background = "red"
         # self.label.styles.border = ('solid','red')
         # self.label.styles.height = 3
-        self.label.styles.height = 4
+        self.label.styles.height = 5
         # self.label.styles.dock = 'bottom'
+        self.processing_time_by_line = 0
+        self.processing_time_by_size = 0
+        self.previous_processing_time_by_line = "-"
+        self.previous_processing_time_by_size = "-"
         self.line_count_map = defaultdict(int)
         self.size_map = defaultdict(int)
         self.error_size_map = defaultdict(int)
@@ -205,14 +220,16 @@ class VisualIgnoreApp(App):
     async def progress(self):
         locked = processingLock.acquire(blocking=False)
         if locked: # taking forever. bad.
+            self.processing_time_by_line = 0
+            self.processing_time_by_size = 0
             self.selected_count = 0
-            self.previous_selected_count = "-"
+            # self.previous_selected_count = "-"
             self.total_count = 0
-            self.previous_total_count = "-"
+            # self.previous_total_count = "-"
 
             self.line_count = 0
             self.selected_size = 0
-            self.previous_selected_size = "-"
+            # self.previous_selected_size = "-"
             self.filesize = 0
             self.loop_break = False
             self.selected_paths = {"./"}
@@ -301,7 +318,9 @@ class VisualIgnoreApp(App):
                 # if banner_refresh_counter > 10000:
                     banner_refresh_counter = 0
                     running = format_timedelta(datetime.now() - self.previous_time)
-                    self.label.renderable = Text.assemble((f"Lines: {self.line_count}/{self.previous_line_count} Size: {humanize.naturalsize(self.selected_size)}/{self.previous_selected_size} Count: {self.selected_count}/{self.previous_selected_count} Errors: {self.error_count}/{self.previous_error_count}\nLast selection: {self.previous_selection_formatted} Selection: {running}/{self.previous_selection}\nTotal size: -/{self.previous_filesize} Total count: -/{self.previous_total_count} Errors: -/{self.previous_error_size_count}\nLast scanning: {self.previous_scanning_formatted} Scanning: -/{self.previous_scanning}", "bold"))
+                    self.processing_time_by_line = naturaltime(estimate_time_from_lines(self.line_count))
+                    self.processing_time_by_size = naturaltime(estimate_time_from_filesize(self.selected_size))
+                    self.label.renderable = Text.assemble((f"Processing time: {self.processing_time_by_line}/{self.previous_processing_time_by_line} (lines) {self.processing_time_by_size}/{self.previous_processing_time_by_size} (size)\nLines: {self.line_count}/{self.previous_line_count} Size: {humanize.naturalsize(self.selected_size)}/{self.previous_selected_size} Count: {self.selected_count}/{self.previous_selected_count} Errors: {self.error_count}/{self.previous_error_count}\nLast selection: {self.previous_selection_formatted} Selection: {running}/{self.previous_selection}\nTotal size: -/{self.previous_filesize} Total count: -/{self.previous_total_count} Errors: -/{self.previous_error_size_count}\nLast scanning: {self.previous_scanning_formatted} Scanning: -/{self.previous_scanning}", "bold"))
                     self.label.refresh()
             # not_selected = 0
             if self.loop_break:
@@ -322,6 +341,8 @@ class VisualIgnoreApp(App):
                     self.mymap[k].set_label(Text.assemble((fname, "bright_black")))
                 # breakpoint()
                 self.previous_selected_paths = self.selected_paths
+                self.previous_processing_time_by_line = self.processing_time_by_line
+                self.previous_processing_time_by_size = self.processing_time_by_size
                 self.previous_line_count = self.line_count
                 self.previous_selected_count = self.selected_count
                 self.previous_selected_size = humanize.naturalsize(self.selected_size)
@@ -391,7 +412,7 @@ class VisualIgnoreApp(App):
                     # if banner_refresh_counter > 10000:
                         banner_refresh_counter = 0
                         running = format_timedelta(datetime.now() - self.previous_time)
-                        self.label.renderable = Text.assemble((f"Lines: -/{self.previous_line_count} Size: -/{self.previous_selected_size} Count: -/{self.previous_selected_count} Errors: -/{self.previous_error_count}\nLast selection: {self.previous_selection_formatted} Selection: -/{self.previous_selection}\nTotal size: {humanize.naturalsize(self.filesize)}/{self.previous_filesize} Total count: {self.total_count}/{self.previous_total_count} Errors: {self.error_size_count}/{self.previous_error_size_count}\nLast scanning: {self.previous_scanning_formatted} Scanning: {running}/{self.previous_scanning}", "bold"))
+                        self.label.renderable = Text.assemble((f"Processing time: -/{self.previous_processing_time_by_line} (lines) -/{self.previous_processing_time_by_size} (size)\nLines: -/{self.previous_line_count} Size: -/{self.previous_selected_size} Count: -/{self.previous_selected_count} Errors: -/{self.previous_error_count}\nLast selection: {self.previous_selection_formatted} Selection: -/{self.previous_selection}\nTotal size: {humanize.naturalsize(self.filesize)}/{self.previous_filesize} Total count: {self.total_count}/{self.previous_total_count} Errors: {self.error_size_count}/{self.previous_error_size_count}\nLast scanning: {self.previous_scanning_formatted} Scanning: {running}/{self.previous_scanning}", "bold"))
                         self.label.refresh()
                 if self.loop_break:
                     try:
