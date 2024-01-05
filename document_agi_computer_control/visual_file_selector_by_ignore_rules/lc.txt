@@ -1,0 +1,1 @@
+36 /media/root/Toshiba XG3/works/agi_computer_control/basic_interactive_program_emulation_and_image_with_docker_support/vocabulary.py

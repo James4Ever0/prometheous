@@ -3,8 +3,11 @@
 # TODO: filter empty files using fd
 # TODO: visualize unselected files by calling fd -u
 
+# TODO: add visualization of tree files.
+
 # to find empty files:
 # fd -S "-1b"
+import sys
 
 # filter out empty files:
 # fd -S "+1b"
@@ -63,12 +66,25 @@ async def read_file_and_get_line_count(filepath: str):
     if filepath in cached_paths:
         return -3
     try:
-        lc = 0
-        async with aiofiles.open(filepath, mode='r') as file:
-            async for _ in file:
-            # async for line in file:
-                lc += 1
-        return lc
+        readable = False
+        async with aiofiles.open(filepath, mode='r', encoding='utf-8') as f:
+            _ = await f.readline()
+            readable = True
+        if readable:
+            lc = 0
+            # use 'cat' & 'wc -l'
+            cmd = ['wc', '-l', filepath]
+            p = await asyncio.create_subprocess_exec(*cmd, stdout=asyncio.subprocess.PIPE)
+            line = await p.stdout.read()
+            decline = line.decode().strip()
+            # with open("lc.txt", 'w+') as f:
+            #     f.write(decline)
+            #     exit()
+            #     # sys.exit()
+            lc = decline.split(' ')[0]
+            lc = int(lc)
+            await p.wait()
+            return lc
     except:
         return -2
 
