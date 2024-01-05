@@ -4,10 +4,11 @@
 # TODO: visualize unselected files by calling fd -u
 
 # TODO: add visualization of tree files.
+# TODO: add action to restart the processing thread
 
 # to find empty files:
 # fd -S "-1b"
-import sys
+# import sys
 
 # filter out empty files:
 # fd -S "+1b"
@@ -27,7 +28,7 @@ from datetime import datetime
 import os
 cached_paths = []
 INTERVAL = 0.1
-SLEEP=3
+SLEEP=7
 
 import asyncio
 def format_timedelta(td):
@@ -143,8 +144,14 @@ processingLock = Lock()
 class VisualIgnoreApp(App):
     """A Textual app to visualize ignore files."""
 
-    BINDINGS = [("d", "toggle_dark", "Toggle dark mode"), ("e", "exit", "Exit")]
+    BINDINGS = [("d", "toggle_dark", "Toggle dark mode"), 
+    ("e", "exit", "Exit"),
+    ("r", "restart", "Restart")
+    ]
     timer: Timer
+
+    def action_restart(self):
+        self.loop_break = True
 
     def __init__(self, diffpath, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -185,6 +192,7 @@ class VisualIgnoreApp(App):
         self.error_count_type_map = defaultdict(int)
         self.filesize = 0
         self.previous_filesize = "-"
+        self.loop_break = False
 
 
     async def progress(self):
@@ -192,6 +200,7 @@ class VisualIgnoreApp(App):
         if locked: # taking forever. bad.
             self.line_count = 0
             self.filesize = 0
+            self.loop_break = False
             self.selected_paths = {"./"}
             self.existing_paths = {"./"}
             self.line_count_map = defaultdict(int)
@@ -201,6 +210,7 @@ class VisualIgnoreApp(App):
             self.error_size_map = defaultdict(int)
             self.error_count = 0
             self.error_size_count = 0
+            self.previous_time = datetime.now()
             command = ["bash", "-c", f"cd '{self.diffpath}' && fd -S '+1b'"]
             # command = ["bash", "-c", f"cd '{self.diffpath}' && fd"]
             process = await asyncio.create_subprocess_exec(
@@ -209,7 +219,7 @@ class VisualIgnoreApp(App):
                 # stderr=asyncio.subprocess.PIPE
             )
             banner_refresh_counter = 0
-            while True:
+            while not self.loop_break:
                 line = await process.stdout.readline() # type:ignore
                 if not line: break
                 decline = line.decode("utf-8").strip()
@@ -270,105 +280,110 @@ class VisualIgnoreApp(App):
                     self.label.renderable = Text.assemble((f"Lines: {self.line_count}/{self.previous_line_count} Errors: {self.error_count}/{self.previous_error_count} Last selection: {self.previous_selection_formatted} Selection: {running}/{self.previous_selection}\nFilesize: -/{self.previous_filesize} Errors: -/{self.previous_error_size_count} Last scanning: {self.previous_scanning_formatted}  Scanning: -/{self.previous_scanning}", "bold"))
                     self.label.refresh()
             # not_selected = 0
-            map_keys = numpy.array(list(self.mymap.keys()))
-            # map_keys = set(self.mymap.keys())
-            not_selected_paths =numpy.setdiff1d(map_keys,numpy.array(list(self.selected_paths)))
-            not_selected_paths_real = numpy.setdiff1d(not_selected_paths,numpy.array(list(self.previous_selected_paths)))
-            # with open("not_selected.txt", "w+") as f:
-            #     f.write(str(not_selected_paths_real))
-            #     self.exit()
-            for k in not_selected_paths_real:
-                _, fname = dirsplit(k)
-                self.mymap[k].set_label(Text.assemble((fname, "bright_black")))
-            # breakpoint()
-            self.previous_selected_paths = self.selected_paths
-            self.previous_line_count = self.line_count
-            self.previous_error_count = self.error_count
-            self.previous_selection = format_timedelta(datetime.now() - self.previous_time)
-            self.previous_time = datetime.now()
-            self.previous_selection_formatted = self.previous_time.strftime("%Y-%m-%d %H:%M:%S")
-            await process.wait()
-            # clear those nonselected paths, mark as grey
-            # now for another step
-            command2 = ['bash','-c',f"cd '{self.diffpath}' && fd -u -S '+1b'"]
-            process2 = await asyncio.create_subprocess_exec(*command2, stdout = asyncio.subprocess.PIPE)
-            banner_refresh_counter = 0
-            while True:
-                line = await process2.stdout.readline() # type:ignore
-                if not line: break
-                decline = line.decode('utf-8').strip()
-                if decline == "": break
-                banner_refresh_counter += 1
-                relpath = "./"+decline
-                self.existing_paths.add(relpath)
-                # subtree, fname = patch_missing_files(relpath, self.mymap)
-                subtree, fname, _ = patch_missing_files(relpath, self.mymap, processor = lambda x: Text.assemble((x, "bright_black")))
-                if not relpath.endswith("/"):
-                    for parent_path, parent_name in iterate_parent_dirs(relpath): # ends with "/"
-                        self.existing_paths.add(parent_path)
-                    if relpath not in self.selected_paths:
-                        filesize = await get_file_size(os.path.join(self.diffpath, relpath))
-                        if filesize != -1:
-                            self.filesize +=filesize
-                            filesize_str = humanize.naturalsize(filesize)
-                            subtree.set_label(Text.assemble((f"({filesize_str}) {fname}", 'bright_black')))
-                            for parent_path, parent_name in reversed(list(iterate_parent_dirs(relpath))):
-                                # self.existing_paths.add(parent_path)
-                                # if "0.json" in relpath:
-                                #     with open('debug.txt', 'w+') as f:
-                                #         f.write(str(self.selected_paths)+"\n")
-                                #         f.write(parent_path+" "+parent_name+"\n")
-                                #         f.write(str(relpath)+"\n")
-                                #         self.exit()
-                                if parent_path not in self.selected_paths:
-                                    self.size_map[parent_path] += filesize
-                                    if parent_path not in self.error_size_map.keys():
-                                        self.mymap[parent_path].set_label(Text.assemble((f"({humanize.naturalsize(self.size_map[parent_path])}) {parent_name}", 'bright_black')))
-                                else:
-                                    break
-                        else: # propagate error?
-                            subtree.set_label(Text.assemble(("(error)", "bold red"),(f"{fname}", 'bright_black')))
-                            self.error_size_count +=1
+            if self.loop_break:
+                process.terminate()
+            else:
+                map_keys = numpy.array(list(self.mymap.keys()))
+                # map_keys = set(self.mymap.keys())
+                not_selected_paths =numpy.setdiff1d(map_keys,numpy.array(list(self.selected_paths)))
+                not_selected_paths_real = numpy.setdiff1d(not_selected_paths,numpy.array(list(self.previous_selected_paths)))
+                # with open("not_selected.txt", "w+") as f:
+                #     f.write(str(not_selected_paths_real))
+                #     self.exit()
+                for k in not_selected_paths_real:
+                    _, fname = dirsplit(k)
+                    self.mymap[k].set_label(Text.assemble((fname, "bright_black")))
+                # breakpoint()
+                self.previous_selected_paths = self.selected_paths
+                self.previous_line_count = self.line_count
+                self.previous_error_count = self.error_count
+                self.previous_selection = format_timedelta(datetime.now() - self.previous_time)
+                self.previous_time = datetime.now()
+                self.previous_selection_formatted = self.previous_time.strftime("%Y-%m-%d %H:%M:%S")
+                await process.wait()
+                # clear those nonselected paths, mark as grey
+                # now for another step
+                command2 = ['bash','-c',f"cd '{self.diffpath}' && fd -u -S '+1b'"]
+                process2 = await asyncio.create_subprocess_exec(*command2, stdout = asyncio.subprocess.PIPE)
+                banner_refresh_counter = 0
+                while not self.loop_break:
+                    line = await process2.stdout.readline() # type:ignore
+                    if not line: break
+                    decline = line.decode('utf-8').strip()
+                    if decline == "": break
+                    banner_refresh_counter += 1
+                    relpath = "./"+decline
+                    self.existing_paths.add(relpath)
+                    # subtree, fname = patch_missing_files(relpath, self.mymap)
+                    subtree, fname, _ = patch_missing_files(relpath, self.mymap, processor = lambda x: Text.assemble((x, "bright_black")))
+                    if not relpath.endswith("/"):
+                        for parent_path, parent_name in iterate_parent_dirs(relpath): # ends with "/"
+                            self.existing_paths.add(parent_path)
+                        if relpath not in self.selected_paths:
+                            filesize = await get_file_size(os.path.join(self.diffpath, relpath))
+                            if filesize != -1:
+                                self.filesize +=filesize
+                                filesize_str = humanize.naturalsize(filesize)
+                                subtree.set_label(Text.assemble((f"({filesize_str}) {fname}", 'bright_black')))
+                                for parent_path, parent_name in reversed(list(iterate_parent_dirs(relpath))):
+                                    # self.existing_paths.add(parent_path)
+                                    # if "0.json" in relpath:
+                                    #     with open('debug.txt', 'w+') as f:
+                                    #         f.write(str(self.selected_paths)+"\n")
+                                    #         f.write(parent_path+" "+parent_name+"\n")
+                                    #         f.write(str(relpath)+"\n")
+                                    #         self.exit()
+                                    if parent_path not in self.selected_paths:
+                                        self.size_map[parent_path] += filesize
+                                        if parent_path not in self.error_size_map.keys():
+                                            self.mymap[parent_path].set_label(Text.assemble((f"({humanize.naturalsize(self.size_map[parent_path])}) {parent_name}", 'bright_black')))
+                                    else:
+                                        break
+                            else: # propagate error?
+                                subtree.set_label(Text.assemble(("(error)", "bold red"),(f"{fname}", 'bright_black')))
+                                self.error_size_count +=1
 
-                            for parent_path, parent_name in reversed(list(iterate_parent_dirs(relpath))): # ends with "/"
-                                # self.existing_paths.add(parent_path)
-                                if parent_path not in self.selected_paths:
-                                    self.error_size_map[parent_path] += 1
-                                    self.mymap[parent_path].set_label(Text.assemble((f"({self.error_size_map[parent_path]} errors) ", "bold red"),(parent_name,'bright_black')))
-                                else:
-                                    break
-                
-                banner_refresh_counter += 1
-                if banner_refresh_counter > 1:
-                # if banner_refresh_counter > 10000:
-                    banner_refresh_counter = 0
-                    running = format_timedelta(datetime.now() - self.previous_time)
-                    self.label.renderable = Text.assemble((f"Lines: {self.line_count}/{self.previous_line_count} Errors: {self.error_count}/{self.previous_error_count} Last selection: {self.previous_selection_formatted} Selection: -/{self.previous_selection}\nFilesize: {humanize.naturalsize(self.filesize)}/{self.previous_filesize} Errors: {self.error_size_count}/{self.previous_error_size_count} Last scanning: {self.previous_scanning_formatted}  Scanning: {running}/{self.previous_scanning}", "bold"))
-                    self.label.refresh()
-            map_keys = numpy.array(list(self.mymap.keys()))
-            remove_keys = numpy.setdiff1d(map_keys, numpy.array(list(self.existing_paths)))
-            # breakpoint()
-            # with open('remove_keys.txt', 'w+') as f:
-            #     f.write(str(remove_keys))
-            #     self.exit()
-                        
-            for k in remove_keys:
-                try:
-                    self.mymap[k].remove()
-                except:
-                    pass
-                finally:
-                    del self.mymap[k]
-            self.previous_existing_paths = self.existing_paths
-            self.previous_filesize = humanize.naturalsize(self.filesize)
-            self.previous_error_size_count = self.error_size_count
-            self.previous_scanning = format_timedelta(datetime.now() - self.previous_time)
-            self.previous_scanning_formatted = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-            self.previous_time = datetime.now()
-            await process2.wait()
+                                for parent_path, parent_name in reversed(list(iterate_parent_dirs(relpath))): # ends with "/"
+                                    # self.existing_paths.add(parent_path)
+                                    if parent_path not in self.selected_paths:
+                                        self.error_size_map[parent_path] += 1
+                                        self.mymap[parent_path].set_label(Text.assemble((f"({self.error_size_map[parent_path]} errors) ", "bold red"),(parent_name,'bright_black')))
+                                    else:
+                                        break
                     
-            # clear nonexisting paths
-            await asyncio.sleep(SLEEP)
+                    banner_refresh_counter += 1
+                    if banner_refresh_counter > 1:
+                    # if banner_refresh_counter > 10000:
+                        banner_refresh_counter = 0
+                        running = format_timedelta(datetime.now() - self.previous_time)
+                        self.label.renderable = Text.assemble((f"Lines: {self.line_count}/{self.previous_line_count} Errors: {self.error_count}/{self.previous_error_count} Last selection: {self.previous_selection_formatted} Selection: -/{self.previous_selection}\nFilesize: {humanize.naturalsize(self.filesize)}/{self.previous_filesize} Errors: {self.error_size_count}/{self.previous_error_size_count} Last scanning: {self.previous_scanning_formatted}  Scanning: {running}/{self.previous_scanning}", "bold"))
+                        self.label.refresh()
+                if self.loop_break:
+                    process2.terminate()
+                else:
+                    map_keys = numpy.array(list(self.mymap.keys()))
+                    remove_keys = numpy.setdiff1d(map_keys, numpy.array(list(self.existing_paths)))
+                    # breakpoint()
+                    # with open('remove_keys.txt', 'w+') as f:
+                    #     f.write(str(remove_keys))
+                    #     self.exit()
+                                
+                    for k in remove_keys:
+                        try:
+                            self.mymap[k].remove()
+                        except:
+                            pass
+                        finally:
+                            del self.mymap[k]
+                    self.previous_existing_paths = self.existing_paths
+                    self.previous_filesize = humanize.naturalsize(self.filesize)
+                    self.previous_error_size_count = self.error_size_count
+                    self.previous_scanning = format_timedelta(datetime.now() - self.previous_time)
+                    self.previous_scanning_formatted = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                    self.previous_time = datetime.now()
+                await process2.wait()
+                # clear nonexisting paths
+                await asyncio.sleep(SLEEP)
 
             processingLock.release()
 
