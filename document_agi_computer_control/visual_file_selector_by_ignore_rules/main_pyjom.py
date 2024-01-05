@@ -12,6 +12,7 @@
 
 # filter out empty files:
 # fd -S "+1b"
+
 import humanize
 import numpy
 from textual.app import App, ComposeResult
@@ -85,7 +86,7 @@ async def read_file_and_get_line_count(filepath: str):
             lc = decline.split(' ')[0]
             lc = int(lc)
             await p.wait()
-            return lc
+            return lc if lc else 1
     except:
         return -2
 
@@ -163,12 +164,12 @@ class VisualIgnoreApp(App):
         self.footer = Footer()
         self.mymap = {"./":self.treeview.root}
         # self.counter = 0
-        default_label = "Lines: -/- Errors: -/- Last selection: - Selection: -/-\nFilesize: -/- Errors: -/- Last scanning: - Scanning: -/-"
+        default_label = "Lines: -/- Size: -/- Count: -/- Errors: -/-\nLast selection: - Selection: -/-\nTotal size: -/- Total count: -/- Errors: -/-\nLast scanning: - Scanning: -/-"
         self.label = Label(Text.assemble((default_label, "bold")), expand=True)
         self.label.styles.background = "red"
         # self.label.styles.border = ('solid','red')
         # self.label.styles.height = 3
-        self.label.styles.height = 2
+        self.label.styles.height = 4
         # self.label.styles.dock = 'bottom'
         self.line_count_map = defaultdict(int)
         self.size_map = defaultdict(int)
@@ -193,12 +194,25 @@ class VisualIgnoreApp(App):
         self.filesize = 0
         self.previous_filesize = "-"
         self.loop_break = False
+        self.selected_size = 0
+        self.previous_selected_size = "-"
+        self.selected_count = 0
+        self.previous_selected_count = "-"
+        self.total_count = 0
+        self.previous_total_count = "-"
 
 
     async def progress(self):
         locked = processingLock.acquire(blocking=False)
         if locked: # taking forever. bad.
+            self.selected_count = 0
+            self.previous_selected_count = "-"
+            self.total_count = 0
+            self.previous_total_count = "-"
+
             self.line_count = 0
+            self.selected_size = 0
+            self.previous_selected_size = "-"
             self.filesize = 0
             self.loop_break = False
             self.selected_paths = {"./"}
@@ -228,9 +242,19 @@ class VisualIgnoreApp(App):
                 self.selected_paths.add(relpath)
                 subtree, fname, _ = patch_missing_files(relpath, self.mymap)
                 if not relpath.endswith("/"):
+                    self.selected_count +=1
+                    linecount = await read_file_and_get_line_count(os.path.join(self.diffpath, relpath))
+                    fs_str = "error"
+                    fs = await get_file_size(os.path.join(self.diffpath, relpath))
+                    if fs != -1:
+                        fs_str = humanize.naturalsize(fs)
+                        self.filesize += fs
+                        self.selected_size += fs
+                    
                     for parent_path, parent_name in iterate_parent_dirs(relpath): # ends with "/"
                         self.selected_paths.add(parent_path)
-                    linecount = await read_file_and_get_line_count(os.path.join(self.diffpath, relpath))
+                        if fs != -1:
+                            self.size_map[parent_path] += fs
                     error =True
                     if linecount == 0:
                         label = "Empty"
@@ -249,7 +273,7 @@ class VisualIgnoreApp(App):
                             self.line_count_map[parent_path] += linecount
                             # self.selected_paths.add(parent_path)
                             if parent_path not in self.error_count_map.keys():
-                                lb =f"[{self.line_count_map[parent_path]} L] "+parent_name
+                                lb =f"[{self.line_count_map[parent_path]} L, {humanize.naturalsize(self.size_map[parent_path])}] " + parent_name
                                 pn = self.mymap.get(parent_path, None)
                                 # if pn is None:
                                     # breakpoint()
@@ -271,17 +295,20 @@ class VisualIgnoreApp(App):
                             # self.selected_paths.add(parent_path)
                             self.mymap[parent_path].set_label(Text.assemble((f"<{self.error_count_map[parent_path]} E> "+parent_name, "bold red")))
                     
-                    subtree.set_label(Text.assemble(((f"[{label}]" if not error else f"<{label}>") +f" {fname}", color)))
+                    subtree.set_label(Text.assemble(((f"[{label}, {fs_str}]" if not error else f"<{label}>") +f" {fname}", color)))
                 banner_refresh_counter += 1
                 if banner_refresh_counter > 1:
                 # if banner_refresh_counter > 10000:
                     banner_refresh_counter = 0
                     running = format_timedelta(datetime.now() - self.previous_time)
-                    self.label.renderable = Text.assemble((f"Lines: {self.line_count}/{self.previous_line_count} Errors: {self.error_count}/{self.previous_error_count} Last selection: {self.previous_selection_formatted} Selection: {running}/{self.previous_selection}\nFilesize: -/{self.previous_filesize} Errors: -/{self.previous_error_size_count} Last scanning: {self.previous_scanning_formatted}  Scanning: -/{self.previous_scanning}", "bold"))
+                    self.label.renderable = Text.assemble((f"Lines: {self.line_count}/{self.previous_line_count} Size: {humanize.naturalsize(self.selected_size)}/{self.previous_selected_size} Count: {self.selected_count}/{self.previous_selected_count} Errors: {self.error_count}/{self.previous_error_count}\nLast selection: {self.previous_selection_formatted} Selection: {running}/{self.previous_selection}\nTotal size: -/{self.previous_filesize} Total count: -/{self.previous_total_count} Errors: -/{self.previous_error_size_count}\nLast scanning: {self.previous_scanning_formatted} Scanning: -/{self.previous_scanning}", "bold"))
                     self.label.refresh()
             # not_selected = 0
             if self.loop_break:
-                process.terminate()
+                try:
+                    process.terminate()
+                except:
+                    pass
             else:
                 map_keys = numpy.array(list(self.mymap.keys()))
                 # map_keys = set(self.mymap.keys())
@@ -296,6 +323,8 @@ class VisualIgnoreApp(App):
                 # breakpoint()
                 self.previous_selected_paths = self.selected_paths
                 self.previous_line_count = self.line_count
+                self.previous_selected_count = self.selected_count
+                self.previous_selected_size = humanize.naturalsize(self.selected_size)
                 self.previous_error_count = self.error_count
                 self.previous_selection = format_timedelta(datetime.now() - self.previous_time)
                 self.previous_time = datetime.now()
@@ -317,12 +346,18 @@ class VisualIgnoreApp(App):
                     # subtree, fname = patch_missing_files(relpath, self.mymap)
                     subtree, fname, _ = patch_missing_files(relpath, self.mymap, processor = lambda x: Text.assemble((x, "bright_black")))
                     if not relpath.endswith("/"):
+                        self.total_count +=1
                         for parent_path, parent_name in iterate_parent_dirs(relpath): # ends with "/"
                             self.existing_paths.add(parent_path)
                         if relpath not in self.selected_paths:
-                            filesize = await get_file_size(os.path.join(self.diffpath, relpath))
+                            if os.path.join(self.diffpath, relpath) not in self.size_map.keys():
+                                filesize = await get_file_size(os.path.join(self.diffpath, relpath))
+                                if filesize != -1:
+                                    self.filesize +=filesize
+
+                            else:
+                                filesize = self.size_map[os.path.join(self.diffpath, relpath)]
                             if filesize != -1:
-                                self.filesize +=filesize
                                 filesize_str = humanize.naturalsize(filesize)
                                 subtree.set_label(Text.assemble((f"({filesize_str}) {fname}", 'bright_black')))
                                 for parent_path, parent_name in reversed(list(iterate_parent_dirs(relpath))):
@@ -356,10 +391,13 @@ class VisualIgnoreApp(App):
                     # if banner_refresh_counter > 10000:
                         banner_refresh_counter = 0
                         running = format_timedelta(datetime.now() - self.previous_time)
-                        self.label.renderable = Text.assemble((f"Lines: {self.line_count}/{self.previous_line_count} Errors: {self.error_count}/{self.previous_error_count} Last selection: {self.previous_selection_formatted} Selection: -/{self.previous_selection}\nFilesize: {humanize.naturalsize(self.filesize)}/{self.previous_filesize} Errors: {self.error_size_count}/{self.previous_error_size_count} Last scanning: {self.previous_scanning_formatted}  Scanning: {running}/{self.previous_scanning}", "bold"))
+                        self.label.renderable = Text.assemble((f"Lines: -/{self.previous_line_count} Size: -/{self.previous_selected_size} Count: -/{self.previous_selected_count} Errors: -/{self.previous_error_count}\nLast selection: {self.previous_selection_formatted} Selection: -/{self.previous_selection}\nTotal size: {humanize.naturalsize(self.filesize)}/{self.previous_filesize} Total count: {self.total_count}/{self.previous_total_count} Errors: {self.error_size_count}/{self.previous_error_size_count}\nLast scanning: {self.previous_scanning_formatted} Scanning: {running}/{self.previous_scanning}", "bold"))
                         self.label.refresh()
                 if self.loop_break:
-                    process2.terminate()
+                    try:
+                        process2.terminate()
+                    except:
+                        pass
                 else:
                     map_keys = numpy.array(list(self.mymap.keys()))
                     remove_keys = numpy.setdiff1d(map_keys, numpy.array(list(self.existing_paths)))
@@ -376,6 +414,7 @@ class VisualIgnoreApp(App):
                         finally:
                             del self.mymap[k]
                     self.previous_existing_paths = self.existing_paths
+                    self.previous_total_count = self.total_count
                     self.previous_filesize = humanize.naturalsize(self.filesize)
                     self.previous_error_size_count = self.error_size_count
                     self.previous_scanning = format_timedelta(datetime.now() - self.previous_time)
