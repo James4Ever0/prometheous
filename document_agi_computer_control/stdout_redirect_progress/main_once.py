@@ -27,8 +27,8 @@ import textwrap
 def wrap_text(text):
     # Get the terminal width
     terminal_width, _ = shutil.get_terminal_size()
-    tw = terminal_width - 4
-    if tw < 2:
+    tw = terminal_width - 8
+    if tw < 8:
         tw = terminal_width
 
     wrapped_text = textwrap.fill(text, width=tw)
