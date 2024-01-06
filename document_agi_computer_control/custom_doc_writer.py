@@ -20,6 +20,8 @@ from typing import TypedDict
 
 UTF8 = "utf-8"
 
+DEFAULT_LINE_LIMIT = 50
+DEFAULT_CHAR_LIMIT = 1000
 
 NonEmptyString = Annotated[str, Is[lambda str_obj: len(str_obj.strip()) > 0]]
 
@@ -68,8 +70,8 @@ class DocProcessQueue:
         self,
         process_method: Callable[[str, str, str], tuple[bool, str]],
         filepath: str,
-        char_limit: int = 1000,
-        line_limit: int = 15,
+        char_limit: int = DEFAULT_CHAR_LIMIT,
+        line_limit: int = DEFAULT_LINE_LIMIT,
         sample_size: Optional[int] = None,
         use_previous_comment:bool = True
     ):
@@ -325,8 +327,8 @@ def process_content_and_return_result(
     prompt_generator: Callable[[str, str, str], str],
     code_file_path: str,
     content: str,
-    char_limit: int = 1000,
-    line_limit: int = 15,
+    char_limit: int = DEFAULT_CHAR_LIMIT,
+    line_limit: int = DEFAULT_LINE_LIMIT,
     sample_size: Optional[int] = None,
     use_previous_comment:bool = True,
 ) -> DocProcessingResult:
@@ -365,8 +367,8 @@ def process_code_and_write_result(
     prompt_generator: Callable[[str, str, str], str],
     code_file_path: str,
     output_path: str,
-    char_limit: int = 1000,
-    line_limit: int = 15,
+    char_limit: int = DEFAULT_CHAR_LIMIT,
+    line_limit: int = DEFAULT_LINE_LIMIT,
     sample_size: Optional[int] = None,
     use_previous_comment = True,
 ) -> DocProcessingResult:
@@ -390,6 +392,7 @@ def filter_empty_elements(mlist: list):
     return [elem for elem in mlist if elem]
 
 
+# TODO: check if is relative path only
 @beartype
 def generate_location_component(location: str):
     return f"""Storage location: {location}"""

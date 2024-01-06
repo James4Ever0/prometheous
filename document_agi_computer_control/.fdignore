@@ -14,3 +14,7 @@
 
 !*.py
 # *.{min.js}
+
+demo_document_repository
+code_view_with_path_argument_and_anchor
+serverless_document_template

@@ -1,6 +1,9 @@
 *
 !*/
 
+.*
+*/.*
+
 # # you may sort and show file size & processing time in tree structure
 # you may compare the selected files and the unselected files, using diff
 # full | whitelist | blacklist
@@ -9,5 +12,31 @@
 # cache a version of recently confirmed-to-be-generated files
 
 # list possible file extensions, mark their distribution across directories and estimated processing time
-!*.{py,cmd,html,j2,js}
+!*.{py,cmd,html,j2,js,sh}
 *.{min.js}
+
+localGPT
+privateGPT
+logs
+
+argparse_utils.py
+atomic_commit.py
+config_utils.py
+error_utils.py
+exceptional_print.py
+exception_utils.py
+log_utils.py
+
+*/argparse_utils.py
+*/atomic_commit.py
+*/config_utils.py
+*/error_utils.py
+*/exceptional_print.py
+*/exception_utils.py
+*/log_utils.py
+
+commit.sh
+commit.cmd
+
+*/commit.sh
+*/commit.cmd

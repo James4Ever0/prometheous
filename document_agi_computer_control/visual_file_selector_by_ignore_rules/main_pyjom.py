@@ -6,6 +6,8 @@
 # TODO: add visualization of tree files.
 # TODO: add action to restart the processing thread
 
+# TODO: mark if file is not utf-8 encoded (as binary?) even if not selected
+
 # to find empty files:
 # fd -S "-1b"
 # import sys
@@ -26,6 +28,7 @@ from argparse import ArgumentParser
 from beartype import beartype
 from datetime import datetime, timedelta
 import os
+
 cached_paths = []
 INTERVAL = 0.1
 SLEEP=7
