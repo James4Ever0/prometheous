@@ -304,12 +304,13 @@ def iterate_source_dir_and_generate_to_target_dir(
             # to make this accountable, we need to convert it into list.
             items = list(source_walker(param.source_dir_path))
             items_count = len(items)
+            print(f">>>> PROCESSING PROGRESS: 0/{items_count}")
             for i, (_, fpath) in enumerate(items):
-                print(f">>>> PROCESSING PROGRESS: {i+1}/{items_count}")
                 print("processing:", fpath)
                 process_file_and_append_to_cache_paths(
                     manager, fpath, processed_cache_paths
                 )
+                print(f">>>> PROCESSING PROGRESS: {i+1}/{items_count}")
         return processed_cache_paths
 
     return get_processed_cache_paths()

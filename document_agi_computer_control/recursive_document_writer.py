@@ -8,6 +8,7 @@ import json
 from slice_utils import split_dict_into_chunks
 import parse
 import shutil
+import custom_doc_writer
 
 CODE_LOCATION_FORMAT = '"{code_path}":{line_start:d}-{line_end:d}'
 DATA_SLICE_LENGTH = 100
@@ -261,10 +262,15 @@ def render_document_webpage(
         for fname in os.listdir(static_pages_dir):
             shutil.copy(os.path.join(static_pages_dir,fname),document_dir_path)
 
+    def write_gitignore():
+        with open(os.path.join(document_dir_path,".gitignore"),"w+") as f:
+            f.write("cache_db.json\n!.gitignore\n")
+
     def render_to_output_path():
         template = load_template()
         render_template(template)
         copy_static_pages()
+        write_gitignore()
         # content = render_template(template)
         # write_to_output_path(content)
 
@@ -273,6 +279,7 @@ def render_document_webpage(
 
 def main():
     (document_dir_path, repository_url) = parse_arguments()
+    custom_doc_writer.CUSTOM_DOC_WRITER_PARAMS["location_prefix"] = document_dir_path
     param = scan_code_dir_and_write_to_comment_dir(document_dir_path)
     # not done yet. we have to create the webpage.
     render_document_webpage(document_dir_path, param, repository_url)

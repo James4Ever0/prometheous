@@ -21,6 +21,9 @@ from typing import TypedDict
 UTF8 = "utf-8"
 
 DEFAULT_LINE_LIMIT = 50
+class CustomDocumentWriterParams(TypedDict):
+    location_prefix:Optional[str]
+CUSTOM_DOC_WRITER_PARAMS = CustomDocumentWriterParams(location_prefix=None)
 DEFAULT_CHAR_LIMIT = 1000
 
 NonEmptyString = Annotated[str, Is[lambda str_obj: len(str_obj.strip()) > 0]]
@@ -395,6 +398,11 @@ def filter_empty_elements(mlist: list):
 # TODO: check if is relative path only
 @beartype
 def generate_location_component(location: str):
+    location_prefix = CUSTOM_DOC_WRITER_PARAMS.get("location_prefix", None)
+    if isinstance(location_prefix, str):
+        lp = '"'+location_prefix+"/src/"
+        assert location.startswith(lp)
+        location = '"'+location[len(lp):]
     return f"""Storage location: {location}"""
 
 

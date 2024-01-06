@@ -20,12 +20,27 @@ lock = Lock()
 INTERVAL = 0.1
 
 
+import shutil
+import textwrap
+
+
+def wrap_text(text):
+    # Get the terminal width
+    terminal_width, _ = shutil.get_terminal_size()
+    tw = terminal_width - 4
+    if tw < 2:
+        tw = terminal_width
+
+    wrapped_text = textwrap.fill(text, width=tw)
+    return wrapped_text.rstrip()
+
+
 class VisualIgnoreApp(App):
     """A Textual app to visualize"""
 
     def __init__(self, error_container: list, program_args: list[str], *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.mylog = Log()
+        self.mylog = Log(max_lines=10000)
         self.prog = ProgressBar()
         self.program_args = program_args
         self.error_container = error_container
@@ -97,7 +112,7 @@ async def read_stdout(proc, mylog, prog):
         else:
             line_content = mbyte.decode("utf-8").rstrip()
             # print(content)
-            mylog.write_line(line_content)
+            mylog.write_line(wrap_text(line_content))
             # mylog.refresh()
             # continue
             # if mbyte == b"\n":
