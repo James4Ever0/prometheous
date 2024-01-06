@@ -51,7 +51,7 @@ class LLM:
             str: The generated text.
         """
         llm = OpenAI(
-            temperature=self.temperature, max_tokens=-1, model_name=self.model_name
+            temperature=self.temperature, max_tokens=-1, model_name=self.model_name, disallowed_special=() # to suppress error when special tokens within the input text (encode special tokens as normal text)
         )
         # chain = LLMChain(llm=llm, prompt=self.prompt)
         chunk_list = []
