@@ -101,7 +101,9 @@ async def main(mylog):
     proc = await asyncio.create_subprocess_shell(
     # proc = await asyncio.create_subprocess_exec(
         # *cmd, stdout=asyncio.subprocess.PIPE
-        "python3 test.py", stdout=asyncio.subprocess.PIPE
+        # UNBUFFERED FLAG: -u
+        "python3 -u test_no_patch.py", stdout=asyncio.subprocess.PIPE
+        # "python3 test.py", stdout=asyncio.subprocess.PIPE
     )  # how to handle the stderr now? we may merge the altogether.
     await read_stdout(proc, mylog)
     # task1 = asyncio.create_task(read_stdout(proc, mylog))
