@@ -7,6 +7,7 @@ import uuid
 import json
 from slice_utils import split_dict_into_chunks
 import parse
+import shutil
 
 CODE_LOCATION_FORMAT = '"{code_path}":{line_start:d}-{line_end:d}'
 DATA_SLICE_LENGTH = 100
@@ -252,13 +253,20 @@ def render_document_webpage(
         render_params = get_template_render_params()
         write_render_params(render_params)
         # do something else, like writing to files.
-        ret = template.render(**render_params)
-        return ret
+        # ret = template.render(**render_params)
+        # return ret
+    def copy_static_pages():
+        script_base_dir = os.path.split(__file__)[0]
+        static_pages_dir = os.path.join(script_base_dir,"static_pages")
+        for fname in os.listdir(static_pages_dir):
+            shutil.copy(os.path.join(static_pages_dir,fname),document_dir_path)
 
     def render_to_output_path():
         template = load_template()
-        content = render_template(template)
-        write_to_output_path(content)
+        render_template(template)
+        copy_static_pages()
+        # content = render_template(template)
+        # write_to_output_path(content)
 
     render_to_output_path()
 

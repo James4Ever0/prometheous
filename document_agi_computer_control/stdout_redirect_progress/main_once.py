@@ -23,28 +23,31 @@ INTERVAL = 0.1
 class VisualIgnoreApp(App):
     """A Textual app to visualize"""
 
-    def __init__(self, error_container: list, *args, **kwargs):
+    def __init__(self, error_container: list, program_args: list[str], *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.mylog = Log()
         self.prog = ProgressBar()
+        self.program_args = program_args
         self.error_container = error_container
         # self.prog.styles.width="100%"
         self.prog.styles.align_horizontal = "center"
-        self.prog.update(total=100, progress=0)
+        # self.prog.update(total=100, progress=0)
 
     async def progress(self):
         locked = lock.acquire(blocking=False)
         if locked:
             self.mylog.clear()
-            await main(self.mylog, self.prog, self.error_container)
-            await asyncio.sleep(2)
-            lock.release()
+            await main(self.mylog, self.prog, self.error_container, self.program_args)
+            self.exit()
+            # lock.release()
 
     def compose(self) -> ComposeResult:
         """Create child widgets for the app."""
         return [self.mylog, self.prog]
 
     def on_mount(self) -> None:
+        # await self.progress()
+        # self.exit()
         self.timer = self.set_interval(INTERVAL, self.progress)
 
 
@@ -61,13 +64,13 @@ class VisualIgnoreApp(App):
 cmd = ["stdbuf", "-o0", "-e0", "python3", "test.py"]
 # cmd = ["bash", "-c", "python3 test.py 2>&1"]
 
-line_format = "PROCESSING PROGRESS: {progress:d}%"
+line_format = "PROCESSING PROGRESS: {progress:d}/{total:d}"
 
 
 def parse_line(line: str):
     parsed = parse.parse(line_format, line)
     if parsed:
-        return parsed["progress"]
+        return parsed["progress"], parsed["total"]
     return None
 
 
@@ -84,6 +87,7 @@ async def read_stdout(proc, mylog, prog):
     # line_position = 0
     # line_content = ""
     # mtime = []
+    init = False
     while True:
         mbyte = await proc.stdout.readline()  # type:ignore
         # mbyte = await proc.stdout.read(20)  # type:ignore
@@ -106,18 +110,21 @@ async def read_stdout(proc, mylog, prog):
                 mline = line_content[5:]
                 ret = parse_line(mline)
                 if ret is not None:
-                    steps = ret - prog.progress
+                    if not init:
+                        prog.update(total=ret[1], progress=0)
+                        init = True
+                    steps = ret[0] - prog.progress
                     if steps > 0:
                         prog.advance(steps)
                 mylog.write_line("parsed progress? " + str(ret))
 
 
-async def main(mylog, prog, error_container):
-    proc = await asyncio.create_subprocess_shell(
-        # proc = await asyncio.create_subprocess_exec(
-        # *cmd, stdout=asyncio.subprocess.PIPE
+async def main(mylog, prog, error_container, program_args):
+    # proc = await asyncio.create_subprocess_shell(
+    proc = await asyncio.create_subprocess_exec(
+        *program_args,  # stdout=asyncio.subprocess.PIPE
         # UNBUFFERED FLAG: -u
-        "bash -c 'python3 -u test_no_patch.py 2>&1'",
+        # "bash -c 'python3 -u test_no_patch.py 2>&1'",
         stdout=asyncio.subprocess.PIPE,
         stderr=asyncio.subprocess.PIPE
         # "python3 -u test_no_patch.py", stdout=asyncio.subprocess.PIPE
@@ -138,15 +145,31 @@ async def main(mylog, prog, error_container):
         print(f"Success: subprocess returned {retcode}")
 
 
+import sys
+import time
+import humanize
+
 if __name__ == "__main__":
+    split_ind = sys.argv.index("--")
+    args = sys.argv[split_ind + 1 :]
+    if "python" in args or "python3" in args:
+        assert "-u" in args, "Python script must be run with -u flag (unbuffered)"
     error_container = []
-    app = VisualIgnoreApp(error_container)
+    app = VisualIgnoreApp(error_container, args)
+    start_time = time.time()
     app.run()
+    end_time = time.time()
+    total_time = end_time - start_time
     # breakpoint()
     retcode = error_container[0]
     if retcode != 0:
         raise Exception(
             "\n".join(
-                ["Error: subprocess returned", str(retcode)] + error_container[1:]
+                ["Error: subprocess returned", str(retcode)]
+                + error_container[1:]
+                + ["total time:", humanize.naturaltime(total_time).split(" ago")[0]]
             )
         )
+    else:
+        print("exit successfully")
+        print("total time:", humanize.naturaltime(total_time).split(" ago")[0])

@@ -31,6 +31,7 @@ class CacheManager:
     class subkey:
         path = "path"
         hash = "hash"
+
     class key:
         source = "source"
         target = "target"
@@ -82,9 +83,9 @@ class CacheManager:
         return record, source_hash
 
     @classmethod
-    def get_record_file_path_and_hash(cls, record: dict, key: str)->tuple[str,str]:
-        filepath= record[key][cls.subkey.path]
-        filehash= record[key][cls.subkey.hash]
+    def get_record_file_path_and_hash(cls, record: dict, key: str) -> tuple[str, str]:
+        filepath = record[key][cls.subkey.path]
+        filehash = record[key][cls.subkey.hash]
         return filepath, filehash
 
     @classmethod
@@ -116,8 +117,14 @@ class CacheManager:
         cls, source_path: str, source_hash: str, target_path: str, target_hash: str
     ):
         data = {
-            cls.key.source: {cls.subkey.path: source_path, cls.subkey.hash: source_hash},
-            cls.key.target: {cls.subkey.path: target_path, cls.subkey.hash: target_hash},
+            cls.key.source: {
+                cls.subkey.path: source_path,
+                cls.subkey.hash: source_hash,
+            },
+            cls.key.target: {
+                cls.subkey.path: target_path,
+                cls.subkey.hash: target_hash,
+            },
         }
         return data
 
@@ -228,6 +235,7 @@ def check_if_source_exists_in_record(
         )
     return has_record, source_hash, record_target_path
 
+
 class SourceIteratorAndTargetGeneratorParam(pydantic.BaseModel):
     source_dir_path: str
     target_dir_path: str
@@ -293,7 +301,11 @@ def iterate_source_dir_and_generate_to_target_dir(
     def get_processed_cache_paths():
         processed_cache_paths: list[str] = []
         with CacheContextManager(param.db_path) as manager:
-            for _, fpath in source_walker(param.source_dir_path):
+            # to make this accountable, we need to convert it into list.
+            items = list(source_walker(param.source_dir_path))
+            items_count = len(items)
+            for i, (_, fpath) in enumerate(items):
+                print(f">>>> PROCESSING PROGRESS: {i+1}/{items_count}")
                 print("processing:", fpath)
                 process_file_and_append_to_cache_paths(
                     manager, fpath, processed_cache_paths
@@ -389,11 +401,9 @@ def test_main():
             yield
         finally:
             assert_file_content_as_test_content(test_target_path)
-    
-    def test_and_assert(param:SourceIteratorAndTargetGeneratorParam):
-        with prepare_test_file_context(
-            param.source_dir_path, param.target_dir_path
-        ):
+
+    def test_and_assert(param: SourceIteratorAndTargetGeneratorParam):
+        with prepare_test_file_context(param.source_dir_path, param.target_dir_path):
             test_source_walker = generate_test_source_walker(param.source_dir_path)
             iterate_source_dir_and_generate_to_target_dir(
                 param,
