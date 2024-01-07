@@ -4,11 +4,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    
-<link rel="icon"
-    href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='currentColor' class='bi bi-search' viewBox='0 0 16 16'%3E%3Cpath d='M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0'/%3E%3C/svg%3E"
-    type="image/svg+xml">
-<title>Search Code By Comment</title>
+
+    <link rel="icon"
+        href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='currentColor' class='bi bi-search' viewBox='0 0 16 16'%3E%3Cpath d='M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0'/%3E%3C/svg%3E"
+        type="image/svg+xml">
+    <title>Search Code By Comment</title>
 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
     <script type="text/javascript">
@@ -90,207 +90,209 @@
         }(this));
 
     </script>
-    
-<script src="https://cdn.jsdelivr.net/npm/mark.js"></script>
 
-    
-<style>
-    /* CSS for highlighted text */
-    mark {
-        background-color: yellow;
-        color: black;
-        font-weight: bold;
-    }
-</style>
-<link href="https://cdn.jsdelivr.net/npm/prismjs@v1.x/themes/prism.css" rel="stylesheet" />
-<style>
-    #progress-overlay {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background-color: rgba(0, 0, 0, 0.1);
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        z-index: 9999;
-    }
+    <script src="https://cdn.jsdelivr.net/npm/mark.js"></script>
 
-    #progress-bar {
-        height: 20px;
-        background-color: #f2f2f2;
-        border: 1px solid #ccc;
-        overflow: hidden;
-    }
 
-    #progress-bar .progress {
-        width: 0;
-        height: 100%;
-        background-color: #4caf50 !important;
-    }
-</style>
-<style>
-    /* html, body{
+    <style>
+        /* CSS for highlighted text */
+        mark {
+            background-color: yellow;
+            color: black;
+            font-weight: bold;
+        }
+    </style>
+    <link href="https://cdn.jsdelivr.net/npm/prismjs@v1.x/themes/prism.css" rel="stylesheet" />
+    <style>
+        #progress-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.1);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+        }
+
+        #progress-bar {
+            height: 20px;
+            background-color: #f2f2f2;
+            border: 1px solid #ccc;
+            overflow: hidden;
+        }
+
+        #progress-bar .progress {
+            width: 0;
+            height: 100%;
+            background-color: #4caf50 !important;
+        }
+    </style>
+    <style>
+        /* html, body{
         background-color: transparent;
     }
     input {
         background-color: transparent;
     } */
 
-    .search-container {
-        margin-bottom: 10px;
-    }
-
-    p {
-        line-height: 1.5;
-    }
-
-    h2 {
-        overflow-x: auto;
-    }
-
-    /* Styles for mobile devices */
-    @media (max-width: 767px) {
-        #progress-bar {
-
-            width: 60%;
-        }
-
-        /*(h2{
-            font-size: 27px;
-        }*/
-        html,
-        body {
-
-            margin-left: 3%;
-            margin-right: 3%;
-        }
-
-        .repository-url {
-            display: none;
-        }
-
         .search-container {
-            border: 1px solid #ccc;
+            margin-bottom: 10px;
         }
 
-        .right-half {
-            /*padding-left: 10px;*/
-            padding-right: 10px;
+        p {
+            line-height: 1.5;
         }
 
-        .left-half {
-            padding-left: 15px;
-            padding-right: 10px;
-
-            padding-top: 5px;
-            padding-bottom: 5px;
-        }
-
-        #searchResults,
-        #searchInput {
-            font-size: 14px;
-        }
-
-        #searchInput {
-            text-indent: 15px;
-        }
-
-        .searchItemInfo {
-            padding-left: 15px;
-        }
-    }
-
-    /* Styles for desktop devices */
-    @media (min-width: 768px) {
-
-        #progress-bar {
-
-            width: 50%;
-        }
-
-        #searchInput {
-            text-indent: 20px;
-        }
-
-        html,
-        body {
-
-            margin-left: 5%;
-            margin-right: 5%;
-        }
-
-        #searchResults,
-        #searchInput {
-            font-size: 17px;
-        }
-
-        .searchItemInfo {
-            padding-left: 20px;
-        }
-
-        .search-container {
-            display: flex;
-            border: 1px solid #ccc;
-        }
-
-        .left-half,
-        .right-half {
-            flex: 1;
+        h2 {
             overflow-x: auto;
         }
 
-        .right-half {
+        /* Styles for mobile devices */
+        @media (max-width: 767px) {
+            #progress-bar {
 
-            padding-right: 20px;
+                width: 60%;
+            }
+
+            /*(h2{
+            font-size: 27px;
+        }*/
+            html,
+            body {
+
+                margin-left: 3%;
+                margin-right: 3%;
+            }
+
+            .repository-url {
+                display: none;
+            }
+
+            .search-container {
+                border: 1px solid #ccc;
+            }
+
+            .right-half {
+                /*padding-left: 10px;*/
+                padding-right: 10px;
+            }
+
+            .left-half {
+                padding-left: 15px;
+                padding-right: 10px;
+
+                padding-top: 5px;
+                padding-bottom: 5px;
+            }
+
+            #searchResults,
+            #searchInput {
+                font-size: 14px;
+            }
+
+            #searchInput {
+                text-indent: 15px;
+            }
+
+            .searchItemInfo {
+                padding-left: 15px;
+            }
+        }
+
+        /* Styles for desktop devices */
+        @media (min-width: 768px) {
+
+            #progress-bar {
+
+                width: 50%;
+            }
+
+            #searchInput {
+                text-indent: 20px;
+            }
+
+            html,
+            body {
+
+                margin-left: 5%;
+                margin-right: 5%;
+            }
+
+            #searchResults,
+            #searchInput {
+                font-size: 17px;
+            }
+
+            .searchItemInfo {
+                padding-left: 20px;
+            }
+
+            .search-container {
+                display: flex;
+                border: 1px solid #ccc;
+            }
+
+            .left-half,
+            .right-half {
+                flex: 1;
+                overflow-x: auto;
+            }
+
+            .right-half {
+
+                padding-right: 20px;
+            }
+
+            .left-half {
+                padding-top: 5px;
+                padding-left: 20px;
+                padding-right: 20px;
+            }
         }
 
         .left-half {
-            padding-top: 5px;
-            padding-left: 20px;
-            padding-right: 20px;
+            background-color: #ccc;
+
         }
-    }
 
-    .left-half {
-        background-color: #ccc;
+        .right-half {
+            background-color: #f1f1f1;
+        }
 
-    }
+        .highlight {
+            background-color: yellow !important;
+            color: black !important;
+        }
 
-    .right-half {
-        background-color: #f1f1f1;
-    }
+        .monospace-text {
+            font-family: "Courier New", monospace;
+            color: #333;
+        }
 
-    .highlight {
-        background-color: yellow !important;
-        color: black !important;
-    }
+        /* useless now */
+        pre {
+            overflow-x: auto;
+            white-space: pre-wrap;
+            white-space: -moz-pre-wrap;
+            white-space: -pre-wrap;
+            white-space: -o-pre-wrap;
+            word-wrap: break-word;
+        }
 
-    .monospace-text {
-        font-family: "Courier New", monospace;
-        color: #333;
-    }
+        .codelink:hover {
+            cursor: pointer;
+        }
 
-    /* useless now */
-    pre {
-        overflow-x: auto;
-        white-space: pre-wrap;
-        white-space: -moz-pre-wrap;
-        white-space: -pre-wrap;
-        white-space: -o-pre-wrap;
-        word-wrap: break-word;
-    }
+        .codelink {
+            word-wrap: break-word;
+            /* Allow long words to be broken and wrap onto the next line */
+            overflow-wrap: break-word
+        }
 
-    .codelink:hover {
-        cursor: pointer;
-    }
-    .codelink{
-        word-wrap: break-word; /* Allow long words to be broken and wrap onto the next line */
-        overflow-wrap: break-word
-    }
-
-    /*
+        /*
     .searchItemInfo:hover {
          cursor: pointer;
     }
@@ -298,66 +300,66 @@
          cursor: pointer;
     }
     */
-    .searchItem {
-        padding: 10px;
-        padding-bottom: 0;
-        padding-top: 0;
-        border: 1px solid #ccc;
-    }
+        .searchItem {
+            padding: 10px;
+            padding-bottom: 0;
+            padding-top: 0;
+            border: 1px solid #ccc;
+        }
 
-    /*
+        /*
     .searchItemInfo {
         padding: 10px;
     }
 */
-</style>
-<style type="text/css">
-    html,
-    body {
-        /*max-width: 900px;*/
-        font-family: 'Roboto', sans-serif;
-        height: 100%;
-        /* margin: 0; */
-        padding: 0;
-        display: flex;
-        flex-direction: column;
-    }
+    </style>
+    <style type="text/css">
+        html,
+        body {
+            /*max-width: 900px;*/
+            font-family: 'Roboto', sans-serif;
+            height: 100%;
+            /* margin: 0; */
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+        }
 
-    .container {
-        display: flex;
-        flex-direction: column;
-        align-items: left;
-        justify-content: center;
-        text-align: left;
-        /* margin: 5%; */
-        margin-bottom: 10px;
-        margin-top: 1.5%;
-    }
+        .container {
+            display: flex;
+            flex-direction: column;
+            align-items: left;
+            justify-content: center;
+            text-align: left;
+            /* margin: 5%; */
+            margin-bottom: 10px;
+            margin-top: 1.5%;
+        }
 
-    input[type="text"] {
-        padding: 10px;
-        /*border-radius: 10px;*/
-        border: 1px solid #ccc;
-    }
+        input[type="text"] {
+            padding: 10px;
+            /*border-radius: 10px;*/
+            border: 1px solid #ccc;
+        }
 
-    ul {
-        flex: 1;
-        /* Fill the remaining space */
-        overflow-y: auto;
-        /* Enable vertical scrolling */
-        list-style: none;
-        padding: 0;
-        /* margin: 5%; */
-        margin-top: 0;
-    }
+        ul {
+            flex: 1;
+            /* Fill the remaining space */
+            overflow-y: auto;
+            /* Enable vertical scrolling */
+            list-style: none;
+            padding: 0;
+            /* margin: 5%; */
+            margin-top: 0;
+        }
 
-    ul li {
-        background-color: #f2f2f2;
-        margin-bottom: 10px;
-        /*border-radius: 10px;*/
-        box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1);
-    }
-</style>
+        ul li {
+            background-color: #f2f2f2;
+            margin-bottom: 10px;
+            /*border-radius: 10px;*/
+            box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1);
+        }
+    </style>
 
 </head>
 
@@ -375,7 +377,17 @@
         <h2><a id="github-link" class="github-icon"><i class="fab fa-github"></i></a> Document Index<span
                 class="repository-url"> of:
                 <span id="partial-repository-url"></span></span></h2>
+        <!-- <div class="search-input-container"> -->
         <input type="text" id="searchInput" placeholder="Search...">
+        <!-- deprecate button. use enter instead. -->
+        <!-- <button id="searchButton" type="button"> -->
+        <!-- <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-search"
+                    viewBox="0 0 16 16">
+                    <path
+                        d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0" />
+                </svg>
+            </button>
+        </div> -->
     </header>
     <ul id="searchResults"></ul>
     <script type="text/javascript" defer>
@@ -470,6 +482,10 @@
                 }
                 return m_str.split(" ");
             }
+
+            const searchInputElem = document.getElementById('searchInput');
+            var isSearchRunning = false;
+            var hasInputEvent = false;
             function searchInputEventListener() {
 
                 function capitalizeFirstLetter(text) {
@@ -482,7 +498,7 @@
                     return [text, lowerText, upperText, lowerCapitalized]
                 }
 
-                const searchTerm = this.value;
+                const searchTerm = searchInputElem.value;
                 const searchSubTerms = getSubTerms(searchTerm);
                 function getHighlightTerms(msubterms) {
                     var ret = []
@@ -637,14 +653,40 @@
                 document.getElementById("partial-repository-url").innerText = github_partial_url;
                 document.getElementById("github-link").setAttribute("href", github_url);
                 // get query parameters.
-                const searchInputElem = document.getElementById('searchInput');
-                searchInputElem.addEventListener('input',
-                    searchInputEventListener
-                );
+                // function keyPressListener(event) {
+                //     if (event.key === 'Enter') {
+                //         searchInputEventListener();
+                //     }
+                // }
+                // searchInputElem.addEventListener('keypress',
+                //     // searchInputElem.addEventListener('input',
+                //     // searchInputEventListener
+                //     keyPressListener
+                // );
+                setInterval(()=>{
+                    if(hasInputEvent){
+                        hasInputEvent = false;
+                        if (!isSearchRunning){
+                            isSearchRunning=true;
+                            searchInputEventListener();
+                            isSearchRunning=false;
+                        }
+                    }
+                }, 300)
+
+                searchInputElem.addEventListener('input',() => {
+                    hasInputEvent = true;
+                })
+
 
                 function setTextAndTriggerInputEvent(queryString) {
                     searchInputElem.value = queryString; // Set text into the input box
-                    searchInputElem.dispatchEvent(new Event('input')); // Fire an input event
+                    // searchInputElem.dispatchEvent(new Event('keypress')); // Fire an input event
+                    // var enterKeyEvent = new KeyboardEvent('keypress', {
+                    //     key: 'Enter'
+                    // });
+                    // searchInputElem.dispatchEvent(enterKeyEvent);
+                    hasInputEvent=true;
                 }
                 function displayFile(file_path) {
                     // TODO: handle file query string
