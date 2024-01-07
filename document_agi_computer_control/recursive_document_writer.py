@@ -264,7 +264,7 @@ def render_document_webpage(
 
     def write_gitignore():
         with open(os.path.join(document_dir_path,".gitignore"),"w+") as f:
-            f.write("cache_db.json\n!.gitignore\n")
+            f.write("!.gitignore\n!*\n!*/*\ncache_db.json\n")
 
     def render_to_output_path():
         template = load_template()
@@ -279,7 +279,9 @@ def render_document_webpage(
 
 def main():
     (document_dir_path, repository_url) = parse_arguments()
+    project_name = repository_url.split("/")[-1]
     custom_doc_writer.CUSTOM_DOC_WRITER_PARAMS["location_prefix"] = document_dir_path
+    custom_doc_writer.CUSTOM_DOC_WRITER_PARAMS["project_name"] = project_name
     param = scan_code_dir_and_write_to_comment_dir(document_dir_path)
     # not done yet. we have to create the webpage.
     render_document_webpage(document_dir_path, param, repository_url)

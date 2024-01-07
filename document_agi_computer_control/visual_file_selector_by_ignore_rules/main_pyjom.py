@@ -8,6 +8,8 @@
 
 # TODO: mark if file is not utf-8 encoded (as binary?) even if not selected
 
+# TODO: exit with error if previous error counters are not zeros.
+
 # to find empty files:
 # fd -S "-1b"
 # import sys
@@ -30,6 +32,8 @@ from datetime import datetime, timedelta
 import os
 
 cached_paths = []
+IGNORE_RULE_FILES = (".gitignore", ".fdignore", ".ignore") # TODO: set fd to respect .gitignore even if without .git folders
+DOCS_FOLDER_NAME = "docs"
 INTERVAL = 0.1
 SLEEP=7
 
@@ -265,7 +269,10 @@ class VisualIgnoreApp(App):
                     self.selected_count +=1
                     linecount = await read_file_and_get_line_count(os.path.join(self.diffpath, relpath))
                     fs_str = "error"
-                    fs = await get_file_size(os.path.join(self.diffpath, relpath))
+                    if fname in IGNORE_RULE_FILES:
+                        fs = -2
+                    else:
+                        fs = await get_file_size(os.path.join(self.diffpath, relpath))
                     if fs != -1:
                         fs_str = humanize.naturalsize(fs)
                         self.filesize += fs
@@ -293,7 +300,7 @@ class VisualIgnoreApp(App):
                             self.line_count_map[parent_path] += linecount
                             # self.selected_paths.add(parent_path)
                             if parent_path not in self.error_count_map.keys():
-                                lb =f"[{self.line_count_map[parent_path]} L, {humanize.naturalsize(self.size_map[parent_path])}] " + parent_name
+                                lb = Text.assemble((f"[{self.line_count_map[parent_path]} L, {humanize.naturalsize(self.size_map[parent_path])}] ", ""), (parent_name,"" if parent_name != DOCS_FOLDER_NAME else "bold magenta"))
                                 pn = self.mymap.get(parent_path, None)
                                 # if pn is None:
                                     # breakpoint()
@@ -313,9 +320,9 @@ class VisualIgnoreApp(App):
                         for parent_path, parent_name in iterate_parent_dirs(relpath): # ends with "/"
                             self.error_count_map[parent_path] += 1
                             # self.selected_paths.add(parent_path)
-                            self.mymap[parent_path].set_label(Text.assemble((f"<{self.error_count_map[parent_path]} E> "+parent_name, "bold red")))
+                            self.mymap[parent_path].set_label(Text.assemble((f"<{self.error_count_map[parent_path]} E> ", "bold red"), (parent_name, "bold red" if parent_name!= DOCS_FOLDER_NAME else "bold magenta")))
                     
-                    subtree.set_label(Text.assemble(((f"[{label}, {fs_str}]" if not error else f"<{label}>") +f" {fname}", color)))
+                    subtree.set_label(Text.assemble(((f"[{label}, {fs_str}]" if not error else f"<{label}>") +" ", color), (fname, color)))
                 banner_refresh_counter += 1
                 if banner_refresh_counter > 1:
                 # if banner_refresh_counter > 10000:
@@ -383,7 +390,7 @@ class VisualIgnoreApp(App):
                                 filesize = self.size_map[os.path.join(self.diffpath, relpath)]
                             if filesize != -1:
                                 filesize_str = humanize.naturalsize(filesize)
-                                subtree.set_label(Text.assemble((f"({filesize_str}) {fname}", 'bright_black')))
+                                subtree.set_label(Text.assemble((f"({filesize_str}) ", 'bright_black'), (fname, "bright_black" if fname not in IGNORE_RULE_FILES else "green_yellow")))
                                 for parent_path, parent_name in reversed(list(iterate_parent_dirs(relpath))):
                                     # self.existing_paths.add(parent_path)
                                     # if "0.json" in relpath:
@@ -399,7 +406,7 @@ class VisualIgnoreApp(App):
                                     else:
                                         break
                             else: # propagate error?
-                                subtree.set_label(Text.assemble(("(error)", "bold red"),(f"{fname}", 'bright_black')))
+                                subtree.set_label(Text.assemble(("(error)", "bold red"),(f"{fname}", 'bright_black' if fname not in IGNORE_RULE_FILES else "green_yellow")))
                                 self.error_size_count +=1
 
                                 for parent_path, parent_name in reversed(list(iterate_parent_dirs(relpath))): # ends with "/"

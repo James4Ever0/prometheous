@@ -26,9 +26,12 @@ DEFAULT_GRACE_PERIOD_CHAR_LIMIT = 100  # TODO: grace period support in line spli
 
 class CustomDocumentWriterParams(TypedDict):
     location_prefix: Optional[str]
+    project_name: Optional[str]
 
 
-CUSTOM_DOC_WRITER_PARAMS = CustomDocumentWriterParams(location_prefix=None)
+CUSTOM_DOC_WRITER_PARAMS = CustomDocumentWriterParams(
+    location_prefix=None, project_name=None
+)
 DEFAULT_CHAR_LIMIT = 1000
 
 NonEmptyString = Annotated[str, Is[lambda str_obj: len(str_obj.strip()) > 0]]
@@ -204,7 +207,7 @@ class DocProcessQueue:
         content = ""
         location = ""
         if self.char_limit_exceeded():
-            content, location = self.process_by_char_limit() # here we use grace period
+            content, location = self.process_by_char_limit()  # here we use grace period
         elif self.line_limit_exceeded() or final:
             content, location = self.process_by_line_limit(final=final)
         else:
@@ -424,7 +427,10 @@ def generate_location_component(location: str):
     if isinstance(location_prefix, str):
         lp = '"' + location_prefix + "/src/"
         assert location.startswith(lp)
-        location = '"' + location[len(lp) :]
+        project_name = CUSTOM_DOC_WRITER_PARAMS["project_name"]
+        location = (
+            '"' + (project_name + "/" if project_name else "") + location[len(lp) :]
+        )
     return f"""Storage location: {location}"""
 
 

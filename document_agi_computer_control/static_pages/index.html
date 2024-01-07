@@ -391,7 +391,9 @@
     </header>
     <ul id="searchResults"></ul>
     <script type="text/javascript" defer>
-        const RESULT_LIMIT = 50;
+        // TODO: paging
+        const RESULT_LIMIT = 15;
+        // const RESULT_LIMIT = 50;
         const progressOverlay = document.getElementById('progress-overlay');
         const progressBar = document.querySelector('.progress');
         function navigateToPage(base_filepath, language_id, project_id, detail_filepath = "") {
@@ -486,6 +488,7 @@
             const searchInputElem = document.getElementById('searchInput');
             var isSearchRunning = false;
             var hasInputEvent = false;
+            var lastInputEventTime = new Date().getTime();
             function searchInputEventListener() {
 
                 function capitalizeFirstLetter(text) {
@@ -663,19 +666,24 @@
                 //     // searchInputEventListener
                 //     keyPressListener
                 // );
-                setInterval(()=>{
-                    if(hasInputEvent){
-                        hasInputEvent = false;
-                        if (!isSearchRunning){
-                            isSearchRunning=true;
-                            searchInputEventListener();
-                            isSearchRunning=false;
+                setInterval(() => {
+                    if (hasInputEvent) {
+                        let currentTime = new Date().getTime();
+                        if ((currentTime - lastInputEventTime) > 500) // .5 sec
+                        {
+                            hasInputEvent = false;
+                            if (!isSearchRunning) {
+                                isSearchRunning = true;
+                                searchInputEventListener();
+                                isSearchRunning = false;
+                            }
                         }
                     }
-                }, 300)
+                }, 100)
 
-                searchInputElem.addEventListener('input',() => {
+                searchInputElem.addEventListener('input', () => {
                     hasInputEvent = true;
+                    lastInputEventTime = new Date().getTime();
                 })
 
 
@@ -686,7 +694,7 @@
                     //     key: 'Enter'
                     // });
                     // searchInputElem.dispatchEvent(enterKeyEvent);
-                    hasInputEvent=true;
+                    hasInputEvent = true;
                 }
                 function displayFile(file_path) {
                     // TODO: handle file query string
