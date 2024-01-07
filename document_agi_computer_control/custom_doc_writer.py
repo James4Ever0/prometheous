@@ -21,8 +21,13 @@ from typing import TypedDict
 UTF8 = "utf-8"
 
 DEFAULT_LINE_LIMIT = 50
+DEFAULT_GRACE_PERIOD_CHAR_LIMIT = 100  # TODO: grace period support in line spliting
+
+
 class CustomDocumentWriterParams(TypedDict):
-    location_prefix:Optional[str]
+    location_prefix: Optional[str]
+
+
 CUSTOM_DOC_WRITER_PARAMS = CustomDocumentWriterParams(location_prefix=None)
 DEFAULT_CHAR_LIMIT = 1000
 
@@ -75,10 +80,11 @@ class DocProcessQueue:
         filepath: str,
         char_limit: int = DEFAULT_CHAR_LIMIT,
         line_limit: int = DEFAULT_LINE_LIMIT,
+        grace_period_char_limit: int = DEFAULT_GRACE_PERIOD_CHAR_LIMIT,
         sample_size: Optional[int] = None,
-        use_previous_comment:bool = True
+        use_previous_comment: bool = True,
     ):
-        self.init_limits_and_counters(char_limit, line_limit)
+        self.init_limits_and_counters(char_limit, line_limit, grace_period_char_limit)
         self.init_storage()
         self.init_sample(sample_size)
         self.process_method = process_method
@@ -95,12 +101,16 @@ class DocProcessQueue:
         self.result_all: list[DocProcessingItem] = []
         self.previous_comment = ""
 
-    def init_limits_and_counters(self, char_limit: int, line_limit: int):
+    def init_limits_and_counters(
+        self, char_limit: int, line_limit: int, grace_period_char_limit: int
+    ):
         self.char_limit = char_limit
         self.line_limit = line_limit
+        self.grace_period_char_limit = grace_period_char_limit
 
         self.char_count = 0
         self.line_count = 0
+        # self.grace_period = False
 
     def char_limit_exceeded(self):
         return self.char_count > self.char_limit
@@ -133,12 +143,18 @@ class DocProcessQueue:
         for index, line in enumerate(self.queue):
             char_count += len(line)
             if char_count > self.char_limit:
-                reverse_cut_point = char_count - self.char_limit
-                cut_point = len(line) - reverse_cut_point
-                cut_content = line[:cut_point]
-                remained_content = line[cut_point:]
-                remained_location = self.locations[index]
-                cut_index = index + 1
+                if char_count < self.char_limit + self.grace_period_char_limit:
+                    cut_content = line
+                    remained_content = ""
+                    remained_location = self.locations[index]
+                    cut_index = index + 1
+                else:
+                    reverse_cut_point = char_count - self.char_limit
+                    cut_point = len(line) - reverse_cut_point
+                    cut_content = line[:cut_point]
+                    remained_content = line[cut_point:]
+                    remained_location = self.locations[index]
+                    cut_index = index + 1
                 break
         return cut_index, cut_content, remained_content, remained_location
 
@@ -188,7 +204,7 @@ class DocProcessQueue:
         content = ""
         location = ""
         if self.char_limit_exceeded():
-            content, location = self.process_by_char_limit()
+            content, location = self.process_by_char_limit() # here we use grace period
         elif self.line_limit_exceeded() or final:
             content, location = self.process_by_line_limit(final=final)
         else:
@@ -211,7 +227,13 @@ class DocProcessQueue:
 
     def process_content_and_location_pair(self, content: str, location: str):
         success, result = self.process_method(
-            content, location, **({} if not self.use_previous_comment else dict(previous_comment=self.previous_comment)) # type:ignore
+            content,
+            location,
+            **(
+                {}
+                if not self.use_previous_comment
+                else dict(previous_comment=self.previous_comment)
+            ),  # type:ignore
         )
         if not success:
             raise DocumentProcessingException("Failed to process code at:", location)
@@ -309,7 +331,7 @@ def parse_arguments():
     join_and_assert_exists_as_absolute_directory(document_dir, "src")
     join_and_assert_exists_as_absolute_directory(document_dir, "doc")
 
-    return document_dir,repository_url
+    return document_dir, repository_url
 
 
 @beartype
@@ -333,7 +355,7 @@ def process_content_and_return_result(
     char_limit: int = DEFAULT_CHAR_LIMIT,
     line_limit: int = DEFAULT_LINE_LIMIT,
     sample_size: Optional[int] = None,
-    use_previous_comment:bool = True,
+    use_previous_comment: bool = True,
 ) -> DocProcessingResult:
     commentProcessMethod = commentProcessMethodFactory(model, prompt_generator)
     process_queue = DocProcessQueue(
@@ -342,7 +364,7 @@ def process_content_and_return_result(
         char_limit=char_limit,
         line_limit=line_limit,
         sample_size=sample_size,
-        use_previous_comment=use_previous_comment
+        use_previous_comment=use_previous_comment,
     )
     result_all = process_content_and_get_result(process_queue, content)
     summary = summary_code_comment_return_value(result_all)
@@ -373,7 +395,7 @@ def process_code_and_write_result(
     char_limit: int = DEFAULT_CHAR_LIMIT,
     line_limit: int = DEFAULT_LINE_LIMIT,
     sample_size: Optional[int] = None,
-    use_previous_comment = True,
+    use_previous_comment=True,
 ) -> DocProcessingResult:
     content = read_file(code_file_path)
     data = process_content_and_return_result(
@@ -400,9 +422,9 @@ def filter_empty_elements(mlist: list):
 def generate_location_component(location: str):
     location_prefix = CUSTOM_DOC_WRITER_PARAMS.get("location_prefix", None)
     if isinstance(location_prefix, str):
-        lp = '"'+location_prefix+"/src/"
+        lp = '"' + location_prefix + "/src/"
         assert location.startswith(lp)
-        location = '"'+location[len(lp):]
+        location = '"' + location[len(lp) :]
     return f"""Storage location: {location}"""
 
 
@@ -477,7 +499,7 @@ def construct_llm_and_write_code_comment(
     output_path: str,
     programming_language: str = "",
     word_limit: int = 15,
-    use_previous_comment:bool = False # different from our blog summarizer.
+    use_previous_comment: bool = False,  # different from our blog summarizer.
 ):
     prompt_base = generate_prompt_base(word_limit)
 
@@ -485,13 +507,17 @@ def construct_llm_and_write_code_comment(
 
     with llm_context(prompt_base) as model:
         ret = process_code_and_write_result(
-            model, prompt_generator, code_file_path, output_path, use_previous_comment=use_previous_comment
+            model,
+            prompt_generator,
+            code_file_path,
+            output_path,
+            use_previous_comment=use_previous_comment,
         )
     return ret
 
 
 def main():
-    document_dir,repository_url = parse_arguments()
+    document_dir, repository_url = parse_arguments()
     # programming_language, code_file_path, output_path = parse_arguments()
     programming_language = ""
     code_file_path = os.path.join(document_dir, "src")

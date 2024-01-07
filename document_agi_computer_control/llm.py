@@ -51,7 +51,10 @@ class LLM:
             str: The generated text.
         """
         llm = OpenAI(
-            temperature=self.temperature, max_tokens=-1, model_name=self.model_name, disallowed_special=() # to suppress error when special tokens within the input text (encode special tokens as normal text)
+            temperature=self.temperature,
+            max_tokens=-1,
+            model_name=self.model_name,
+            disallowed_special=(),  # to suppress error when special tokens within the input text (encode special tokens as normal text)
         )
         # chain = LLMChain(llm=llm, prompt=self.prompt)
         chunk_list = []
@@ -76,7 +79,7 @@ class LLM:
             int: The number of tokens in the text.
         """
         encoding = tiktoken.encoding_for_model("gpt-4")
-        return len(encoding.encode(text))
+        return len(encoding.encode(text, disallowed_special=()))
 
 
 @contextmanager

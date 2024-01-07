@@ -413,16 +413,18 @@
         }());
     </script>
     <style>
-
+/* 
         html, body{
-            background-color: transparent !important;
-        }
+            background-color: transparent;
+        } */
         #code-path {
             /* overflow-x:scroll; */
+            /* opt1 */
+            /* word-wrap: break-word; 
+            overflow-wrap: break-word */
+            /* opt2 */
             white-space: nowrap;
-            /* Prevent the text from wrapping */
             overflow: hidden;
-            /* Hide the overflowing text */
             text-overflow: ellipsis;
             direction: rtl;
         }

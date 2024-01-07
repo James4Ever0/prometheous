@@ -110,7 +110,7 @@
         left: 0;
         width: 100%;
         height: 100%;
-        background-color: rgba(0, 0, 0, 0.7);
+        background-color: rgba(0, 0, 0, 0.1);
         display: flex;
         justify-content: center;
         align-items: center;
@@ -131,12 +131,12 @@
     }
 </style>
 <style>
-    html, body{
-        background-color: transparent !important;
+    /* html, body{
+        background-color: transparent;
     }
     input {
-        background-color: transparent !important;
-    }
+        background-color: transparent;
+    } */
 
     .search-container {
         margin-bottom: 10px;
@@ -285,6 +285,10 @@
     .codelink:hover {
         cursor: pointer;
     }
+    .codelink{
+        word-wrap: break-word; /* Allow long words to be broken and wrap onto the next line */
+        overflow-wrap: break-word
+    }
 
     /*
     .searchItemInfo:hover {
@@ -432,7 +436,7 @@
 
                 //data_var = { ...data_part, ...data_var }
                 data_var = Object.assign(data_var, data_part)
-                const progressPercentage = (i + 1 / split_count) * 100;
+                const progressPercentage = ((i + 1) / split_count) * 100;
                 progressBar.style.width = `${progressPercentage}%`;
             }
             progressOverlay.style.display = 'none';
