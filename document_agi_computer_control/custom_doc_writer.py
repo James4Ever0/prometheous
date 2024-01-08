@@ -453,7 +453,10 @@ def generate_code_component(programming_language: str, code: str):
 
 
 def generate_comment_coponent():
-    return """Comment for code:
+    # return """Comment for code:
+    # to reduce verbosity
+    return """
+Comment for code in 30 words (do not repeat or rephrase the content, be concise and relevant):
 """
 
 

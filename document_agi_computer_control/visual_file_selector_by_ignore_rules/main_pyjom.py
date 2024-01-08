@@ -1,4 +1,8 @@
 # this version is for pyjom, our ultimate challenge.
+
+# TODO: show file extension counts 
+# TODO: click extension name or error count for iteratively jumping to the next file with extension or error
+
 # TODO: type "R" to refresh the tree
 # TODO: filter empty files using fd
 # TODO: visualize unselected files by calling fd -u

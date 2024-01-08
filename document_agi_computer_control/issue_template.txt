@@ -1,0 +1,9 @@
+Title:
+
+Create a search based document for ...
+
+Content:
+
+This document is generated using: https://github.com/james4ever0/prometheous
+
+You can view the website at: https://james4ever0.github.io/.../

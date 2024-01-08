@@ -3,9 +3,10 @@ export OPENAI_API_BASE=http://0.0.0.0:8000
 export BETTER_EXCEPTIONS=1
 
 PROJECT_NAME="my_blog_source"
+AUTHOR="james4ever0"
 
 PROJECT_ROOT="/media/root/Prima/hexo_blog_demo/blog_template"
-PROJECT_URL="https://github.com/james4ever0/$PROJECT_NAME"
+PROJECT_URL="https://github.com/$AUTHOR/$PROJECT_NAME"
 DOC_ROOT="$PROJECT_ROOT/docs"
 
 python3 visual_file_selector_by_ignore_rules/main_pyjom.py -d "$PROJECT_ROOT"
