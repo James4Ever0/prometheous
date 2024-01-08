@@ -223,6 +223,8 @@ def render_document_webpage(
 
     @beartype
     def write_render_params(render_params: dict):
+        # TODO: mapping source file path to documentation json
+        # TODO: add mode of index to hide search bar and render single file left-right comparison only
         datadict = render_params["datadict"]
         metadata = dict()
         metadata["url"] = dict(
