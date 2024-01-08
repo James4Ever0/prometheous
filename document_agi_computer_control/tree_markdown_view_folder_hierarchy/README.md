@@ -14,4 +14,4 @@ Display "Loading" while loading tree.json
 
 For index.html, add another parameter called "match" to filter the results by certain fields
 
-Currently, when clicking on the link of tree.html will jump to index.html?file=filepath or index.html?q=filepath&match=filepath
+Currently, when clicking on the link of tree.html will jump to index.html?file=filepath or index.html?q=filepath&search=off
