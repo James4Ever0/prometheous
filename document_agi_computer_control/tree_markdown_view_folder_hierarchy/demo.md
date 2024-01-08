@@ -1,0 +1,7 @@
+- **agi_computer_control** *cybergod project*
+    - **folder 1** *utilities*
+        - [file 1]() *utility script*
+        - [file 2]() *utility script*
+    - **folder 2** *project root*
+        - [file 1]() *log utils*
+        - [file 2]() *documentation script*
