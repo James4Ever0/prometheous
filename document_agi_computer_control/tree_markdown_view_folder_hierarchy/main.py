@@ -1,6 +1,8 @@
 # demo logic to generate filesystem hierarchy in markdown
 
 # TODO: generate sitemap
+# TODO: modify all titles in all pages to contain full project name and project description (more informative titles)
+# TODO: print progress info during directory brief generation process
 
 # TODO: provide a brief view to file chunks.
 # TODO: provide an AST view (language specific) to file chunks.
