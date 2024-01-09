@@ -1,2 +1,5 @@
-cache_db.json
 !.gitignore
+!*
+!*/*
+cache_db.json
+cache_tree.json

@@ -13,6 +13,16 @@
             "filepath": "/identify_utils.py",
             "entry_id": 4,
             "language_id": "python"
+        },
+        "2": {
+            "filepath": "/folder1/file.py",
+            "entry_id": 8,
+            "language_id": "python"
+        },
+        "3": {
+            "filepath": "/folder1/folder2/file2.py",
+            "entry_id": 12,
+            "language_id": "python"
         }
     },
     "project_name": "agi_computer_control",

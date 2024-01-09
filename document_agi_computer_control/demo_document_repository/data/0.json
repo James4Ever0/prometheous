@@ -40,5 +40,47 @@
         "file_id": 1,
         "content": "This code imports the \"identify\" module and uses it to determine the language of a filename by checking if it contains text. If it does, it selects a random language from the candidates. The function get_language_id_from_filename is decorated with beartype for type hinting and testing purposes. The test function tests the code on a list of filenames.",
         "type": "comment"
+    },
+    "8": {
+        "file_id": 2,
+        "content": "/folder1/file.py",
+        "type": "filepath"
+    },
+    "9": {
+        "file_id": 2,
+        "content": "This code prints the word \"hello\" to the console. It serves as a simple example or starting point for more complex operations within this file.",
+        "type": "summary"
+    },
+    "10": {
+        "file_id": 2,
+        "content": "print(\"hello\")",
+        "type": "code",
+        "location": "/folder1/file.py:1-1"
+    },
+    "11": {
+        "file_id": 2,
+        "content": "This code prints the word \"hello\" to the console. It serves as a simple example or starting point for more complex operations within this file.",
+        "type": "comment"
+    },
+    "12": {
+        "file_id": 3,
+        "content": "/folder1/folder2/file2.py",
+        "type": "filepath"
+    },
+    "13": {
+        "file_id": 3,
+        "content": "This code prints \"world\" when executed.",
+        "type": "summary"
+    },
+    "14": {
+        "file_id": 3,
+        "content": "print(\"world\")",
+        "type": "code",
+        "location": "/folder1/folder2/file2.py:1-1"
+    },
+    "15": {
+        "file_id": 3,
+        "content": "This code prints \"world\" when executed.",
+        "type": "comment"
     }
 }

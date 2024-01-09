@@ -102,7 +102,7 @@ async def read_stdout(proc, mylog, prog):
     # line_position = 0
     # line_content = ""
     # mtime = []
-    init = False
+    mtotal_count  =-1
     while True:
         mbyte = await proc.stdout.readline()  # type:ignore
         # mbyte = await proc.stdout.read(20)  # type:ignore
@@ -125,12 +125,16 @@ async def read_stdout(proc, mylog, prog):
                 mline = line_content[5:]
                 ret = parse_line(mline)
                 if ret is not None:
-                    if not init:
-                        prog.update(total=ret[1], progress=0)
-                        init = True
-                    steps = ret[0] - prog.progress
+                    ret_total, ret_prog = ret[1], ret[0]
+                    if ret_total != mtotal_count:
+                        mtotal_count = ret_total
+                        prog.update(total=ret_total, progress=ret_prog)
+                        continue
+                    steps = ret_prog - prog.progress
                     if steps > 0:
                         prog.advance(steps)
+                    else:
+                        prog.update(total=ret_total, progress=ret_prog)
                 mylog.write_line("parsed progress? " + str(ret))
 
 

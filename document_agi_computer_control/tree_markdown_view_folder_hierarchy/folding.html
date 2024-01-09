@@ -1,0 +1,67 @@
+<html>
+
+<head>
+    <style type="text/css">
+        ul.tree {
+            list-style: none;
+            padding-left: 20px;
+        }
+
+        ul.tree input {
+            position: absolute;
+            opacity: 0;
+        }
+
+        ul.tree input+i {
+            cursor: pointer;
+            display: inline-block;
+            width: 16px;
+            text-align: center;
+            color: #000;
+        }
+
+        ul.tree input+i:before {
+            content: '\25B6';
+        }
+
+        ul.tree input:checked+i:before {
+            content: '\25BC';
+        }
+
+        ul.tree input+i+label {
+            cursor: pointer;
+        }
+    </style>
+</head>
+
+<body>
+    <ul class="tree">
+        <li>
+            <input type="checkbox" checked>
+            <i></i>
+            <label>Parent Node 1</label>
+            <ul>
+                <li>
+                    <input type="checkbox" checked>
+                    <i></i>
+                    <label>Child Node 1</label>
+                </li>
+                <li>
+                    <input type="checkbox" checked>
+                    <i></i>
+                    <label>Child Node 2</label>
+                    <!-- Add more child nodes as needed -->
+                </li>
+            </ul>
+        </li>
+        <li>
+            <input type="checkbox" checked>
+            <i></i>
+            <label>Parent Node 2</label>
+            <!-- Add more parent nodes as needed -->
+        </li>
+    </ul>
+
+</body>
+
+</html>

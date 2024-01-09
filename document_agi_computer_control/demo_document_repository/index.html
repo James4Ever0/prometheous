@@ -11,6 +11,8 @@
     <title>Search Code By Comment</title>
 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
+
     <script type="text/javascript">
         /**
          * FlexSearch.js v0.7.31 (Bundle)
@@ -374,24 +376,19 @@
     <script src="https://cdn.jsdelivr.net/npm/prismjs@v1.x/components/prism-core.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/prismjs@v1.x/plugins/autoloader/prism-autoloader.min.js"></script>
     <header class="container">
-        <h2><a id="github-link" class="github-icon"><i class="fab fa-github"></i></a> Document Index<span
-                class="repository-url"> of:
-                <span id="partial-repository-url"></span></span></h2>
+        <h2>Document Index<span class="repository-url"> of:
+                <span id="partial-repository-url"></span></span>
+            <a id="github-link" class="github-icon"><i class="fab fa-github"></i></a>
+            <a id="brief-link" href="tree.html"><i class="bi bi-text-right"></i></a>
+        </h2>
         <!-- <div class="search-input-container"> -->
         <input type="text" id="searchInput" placeholder="Search...">
-        <!-- deprecate button. use enter instead. -->
-        <!-- <button id="searchButton" type="button"> -->
-        <!-- <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-search"
-                    viewBox="0 0 16 16">
-                    <path
-                        d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0" />
-                </svg>
-            </button>
-        </div> -->
     </header>
     <ul id="searchResults"></ul>
     <script type="text/javascript" defer>
-        const RESULT_LIMIT = 50;
+        // TODO: paging
+        const RESULT_LIMIT = 15;
+        // const RESULT_LIMIT = 50;
         const progressOverlay = document.getElementById('progress-overlay');
         const progressBar = document.querySelector('.progress');
         function navigateToPage(base_filepath, language_id, project_id, detail_filepath = "") {
@@ -486,6 +483,7 @@
             const searchInputElem = document.getElementById('searchInput');
             var isSearchRunning = false;
             var hasInputEvent = false;
+            var lastInputEventTime = new Date().getTime();
             function searchInputEventListener() {
 
                 function capitalizeFirstLetter(text) {
@@ -663,19 +661,24 @@
                 //     // searchInputEventListener
                 //     keyPressListener
                 // );
-                setInterval(()=>{
-                    if(hasInputEvent){
-                        hasInputEvent = false;
-                        if (!isSearchRunning){
-                            isSearchRunning=true;
-                            searchInputEventListener();
-                            isSearchRunning=false;
+                setInterval(() => {
+                    if (hasInputEvent) {
+                        let currentTime = new Date().getTime();
+                        if ((currentTime - lastInputEventTime) > 500) // .5 sec
+                        {
+                            hasInputEvent = false;
+                            if (!isSearchRunning) {
+                                isSearchRunning = true;
+                                searchInputEventListener();
+                                isSearchRunning = false;
+                            }
                         }
                     }
-                }, 300)
+                }, 100)
 
-                searchInputElem.addEventListener('input',() => {
+                searchInputElem.addEventListener('input', () => {
                     hasInputEvent = true;
+                    lastInputEventTime = new Date().getTime();
                 })
 
 
@@ -686,7 +689,7 @@
                     //     key: 'Enter'
                     // });
                     // searchInputElem.dispatchEvent(enterKeyEvent);
-                    hasInputEvent=true;
+                    hasInputEvent = true;
                 }
                 function displayFile(file_path) {
                     // TODO: handle file query string

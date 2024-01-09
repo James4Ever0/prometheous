@@ -1,5 +1,7 @@
 # Prometheous
 
+Generative search, active search, hierarchical search, selective search, all for better information retrieval.
+
 As before, our past is complete chaos because of inadequate knowledge and time for us to learn and develop.
 
 Find tools for searching our code, build a semantic chatbot to serve us, for hacking, earning and creating.

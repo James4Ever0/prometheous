@@ -266,7 +266,8 @@ def render_document_webpage(
 
     def write_gitignore():
         with open(os.path.join(document_dir_path,".gitignore"),"w+") as f:
-            f.write("!.gitignore\n!*\n!*/*\ncache_db.json\n")
+            f.write("!.gitignore\n!*\n!*/*\ncache_db.json\ncache_tree.json\n")
+            # f.write("!.gitignore\n!*\n!*/*\ncache_db.json\n")
 
     def render_to_output_path():
         template = load_template()
@@ -278,7 +279,7 @@ def render_document_webpage(
 
     render_to_output_path()
 
-
+import subprocess
 def main():
     (document_dir_path, repository_url) = parse_arguments()
     project_name = repository_url.split("/")[-1]
@@ -287,6 +288,12 @@ def main():
     param = scan_code_dir_and_write_to_comment_dir(document_dir_path)
     # not done yet. we have to create the webpage.
     render_document_webpage(document_dir_path, param, repository_url)
+    cli = f"python3 -u tree_markdown_view_folder_hierarchy/main.py -s '{document_dir_path}'"
+    # import time
+    print(cli)
+    excode = subprocess.check_call(cli, shell=True)
+    # time.sleep(10)
+    exit(excode)
 
 
 if __name__ == "__main__":
