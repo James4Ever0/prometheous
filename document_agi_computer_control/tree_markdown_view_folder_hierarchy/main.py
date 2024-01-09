@@ -1,5 +1,7 @@
 # demo logic to generate filesystem hierarchy in markdown
 
+# TODO: generate sitemap
+
 # TODO: provide a brief view to file chunks.
 # TODO: provide an AST view (language specific) to file chunks.
 # TODO: make our prompt into json to formalize the input structure, and parse the output as json

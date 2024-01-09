@@ -221,6 +221,13 @@ def render_document_webpage(
 
         return iterate_source_dir_and_assemble_render_params()
 
+    def strip_quote(s: str):
+        s = s.strip()
+        if s[0] == s[-1]:
+            if s[0] in ['"', "'"]:
+                return s[1:-1].strip()
+        return s.strip()
+
     @beartype
     def write_render_params(render_params: dict):
         # TODO: mapping source file path to documentation json
@@ -232,11 +239,23 @@ def render_document_webpage(
             partial=render_params["partial_repository_url"],
         )
         metadata["file_mapping"] = render_params["file_mapping"]
-        metadata["project_name"] = render_params["partial_repository_url"].split("/")[-1]
+        metadata["project_name"] = render_params["partial_repository_url"].split("/")[
+            -1
+        ]
         split_count = 0
         # datadict_split = {}
+        datadict = {
+            k: v
+            if (v["type"] not in ["comment", "summary"])
+            else {
+                "file_id": v["file_id"],
+                "content": strip_quote(v["content"]),
+                "type": v["type"],
+            }
+            for k, v in datadict.items()
+        }
 
-        data_dir = os.path.join(document_dir_path,"data")
+        data_dir = os.path.join(document_dir_path, "data")
         if not os.path.exists(data_dir):
             os.mkdir(data_dir)
         for chunk in split_dict_into_chunks(datadict, DATA_SLICE_LENGTH):
@@ -258,14 +277,15 @@ def render_document_webpage(
         # do something else, like writing to files.
         # ret = template.render(**render_params)
         # return ret
+
     def copy_static_pages():
         script_base_dir = os.path.split(__file__)[0]
-        static_pages_dir = os.path.join(script_base_dir,"static_pages")
+        static_pages_dir = os.path.join(script_base_dir, "static_pages")
         for fname in os.listdir(static_pages_dir):
-            shutil.copy(os.path.join(static_pages_dir,fname),document_dir_path)
+            shutil.copy(os.path.join(static_pages_dir, fname), document_dir_path)
 
     def write_gitignore():
-        with open(os.path.join(document_dir_path,".gitignore"),"w+") as f:
+        with open(os.path.join(document_dir_path, ".gitignore"), "w+") as f:
             f.write("!.gitignore\n!*\n!*/*\ncache_db.json\ncache_tree.json\n")
             # f.write("!.gitignore\n!*\n!*/*\ncache_db.json\n")
 
@@ -279,7 +299,10 @@ def render_document_webpage(
 
     render_to_output_path()
 
+
 import subprocess
+
+
 def main():
     (document_dir_path, repository_url) = parse_arguments()
     project_name = repository_url.split("/")[-1]
