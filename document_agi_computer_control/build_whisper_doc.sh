@@ -6,7 +6,7 @@ PROJECT_ROOT="/media/root/Toshiba XG3/works/whisper"
 PROJECT_URL="https://github.com/james4ever0/whisper"
 DOC_ROOT="/media/root/Toshiba XG3/works/whisper/docs"
 
-python3 visual_file_selector_by_ignore_rules/main_pyjom.py -d "$PROJECT_ROOT"
+python3 visual_file_selector_by_ignore_rules/main_pyjom.py -d "$PROJECT_ROOT" $@
 
 echo "removing: $DOC_ROOT/src"
 
@@ -24,6 +24,15 @@ fi
 python3 visual_file_selector_by_ignore_rules/file_copy_by_fd.py -b "$PROJECT_ROOT" -t "$DOC_ROOT/src"
 
 ntfy_error python3 stdout_redirect_progress/main_once.py -- python3 -u recursive_document_writer.py -d "$DOC_ROOT" -u "$PROJECT_URL"
+cd "$PROJECT_ROOT"
 
+git add .
+git commit -m "update"
+git push origin master
+git push origin main
 cd "$DOC_ROOT"
-python3 -m http.server 8001
+if [ "$HEADLESS" = "true" ]; then
+    echo "Exiting"
+else
+    python3 -m http.server 8001
+fi

@@ -142,7 +142,11 @@ async def get_file_size(filename):
 def parse_args():
     parser = ArgumentParser()
     parser.add_argument("-d", "--diffpath", help="Path to visualize ignored files")
+    parser.add_argument("-s", "--skip", help="Skip visualization", action="store_true")
     args = parser.parse_args()
+    if args.skip: 
+        print("Skipping visualization")
+        exit(0)
     return args.diffpath
 
 
