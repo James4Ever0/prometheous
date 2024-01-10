@@ -40,7 +40,12 @@ python3 visual_file_selector_by_ignore_rules/file_copy_by_fd.py -b "$PROJECT_ROO
 
 # char by char is infeasible since utf-8 has two byte chars. anyway, skip it for now.
 ntfy_error python3 stdout_redirect_progress/main_once.py -- python3 -u recursive_document_writer.py -d "$DOC_ROOT" -u "$PROJECT_URL"
+cd "$PROJECT_ROOT"
 
+git add .
+git commit -m "update"
+git push origin master
+git push origin main
 cd "$DOC_ROOT"
 if [ "$HEADLESS" = "true" ]; then
     echo "Exiting"

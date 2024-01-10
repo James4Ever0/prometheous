@@ -10,8 +10,12 @@ python3 visual_file_selector_by_ignore_rules/main_pyjom.py -d "$PROJECT_ROOT" $@
 
 echo "removing: $DOC_ROOT/src"
 
-read -p "Are you sure you want to remove? (y/n): " answer
-
+echo "headless: $HEADLESS"
+if [ "$HEADLESS" = "true" ]; then
+    answer="y"
+else
+    read -p "Are you sure you want to remove and generate? (y/n): " answer
+fi
 if [ "$answer" = "y" ]; then
     echo "Removing..."
     # Place your program execution command here

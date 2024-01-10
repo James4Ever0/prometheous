@@ -61,6 +61,22 @@ def strip_quote(s: str):
 # produce tree.json
 # copy tree.html
 
+import html.entities
+html5_escapes = html.entities.html5
+html_escape_mapping = {}
+for k,v in html5_escapes.items():
+    if k.endswith(";"):  html_escape_mapping[v] = "&"+k
+
+def html_escape(s: str):
+    ret = ""
+    for elem in s:
+        if elem in html_escape_mapping.keys():
+            ret += html_escape_mapping[elem]
+        else:
+            ret += elem
+    return ret
+
+
 import hashlib
 
 
@@ -123,7 +139,7 @@ def generate_tree_repesentation(
     mbrief = strip_quote(mbrief)
     briefs.append(
         " " * indent * 4
-        + f'- <span hierarchy="{indent}" class="expanded" onclick="toggleVisibility(this)" ><strong class="directory" id="{directory_path}"><code>{name}</code></strong>'
+        + f'- <span hierarchy="{indent}" class="expanded" onclick="toggleVisibility(this)" ><strong class="directory" id="{directory_path}"><code>{html_escape(name)}</code></strong>'
         + ("" if not show else f" <em>{mbrief}</em>")
         + "</span>"
         # " " * indent * 4 + f"- **`{name}`**" + ("" if not show else f" <em>{mbrief}</em>")
@@ -149,7 +165,7 @@ def generate_tree_repesentation(
             child_link = f"index.html?q={urllib.parse.quote(child)}"
             briefs.append(
                 " " * (indent + 1) * 4
-                + f'- <a href="{child_link}" id="{child}"><code>{child_name}</code></a> <em>{strip_quote(file_briefs[child])}</em>'
+                + f'- <a href="{child_link}" id="{child}"><code>{html_escape(child_name)}</code></a> <em>{strip_quote(file_briefs[child])}</em>'
             )
 
     return briefs
