@@ -1,0 +1,10 @@
+{
+    "summary": "The code prints the string \"hello\" to the console, and then terminates.",
+    "details": [
+        {
+            "comment": "The code prints the string \"hello\" to the console, and then terminates.",
+            "location": "\"/media/root/Toshiba XG3/works/prometheous/document_agi_computer_control/demo_document_repository/src/folder1/file.py\":0-0",
+            "content": "print(\"hello\")"
+        }
+    ]
+}

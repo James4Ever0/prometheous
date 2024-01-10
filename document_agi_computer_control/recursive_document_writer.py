@@ -311,7 +311,8 @@ def main():
     param = scan_code_dir_and_write_to_comment_dir(document_dir_path)
     # not done yet. we have to create the webpage.
     render_document_webpage(document_dir_path, param, repository_url)
-    cli = f"python3 -u tree_markdown_view_folder_hierarchy/main.py -s '{document_dir_path}'"
+    cli = f"python3 -u tree_markdown_view_folder_hierarchy/main_recursive.py -s '{document_dir_path}'"
+    # cli = f"python3 -u tree_markdown_view_folder_hierarchy/main.py -s '{document_dir_path}'"
     # import time
     print(cli)
     excode = subprocess.check_call(cli, shell=True)

@@ -5,9 +5,9 @@ export BETTER_EXCEPTIONS=1
 PROJECT_NAME="pyjom"
 AUTHOR="James4Ever0"
 
-PROJECT_ROOT="/media/root/Toshiba XG3/works/pyjom_doc"
+PROJECT_ROOT="/media/root/Toshiba XG3/works/$PROJECT_NAME"
 PROJECT_URL="https://github.com/$AUTHOR/$PROJECT_NAME"
-DOC_ROOT="/media/root/Toshiba XG3/works/pyjom_doc/docs"
+DOC_ROOT="/media/root/Toshiba XG3/works/pyjom_doc"
 
 python3 visual_file_selector_by_ignore_rules/main_pyjom.py -d "$PROJECT_ROOT" $@
 
@@ -34,19 +34,17 @@ else
     exit 1
 fi
 
-python3 ensure_fdignore_with_doc.py -b "$PROJECT_ROOT"
-
 python3 visual_file_selector_by_ignore_rules/file_copy_by_fd.py -b "$PROJECT_ROOT" -t "$DOC_ROOT/src"
 
-# char by char is infeasible since utf-8 has two byte chars. anyway, skip it for now.
 ntfy_error python3 stdout_redirect_progress/main_once.py -- python3 -u recursive_document_writer.py -d "$DOC_ROOT" -u "$PROJECT_URL"
-cd "$PROJECT_ROOT"
+
+cd "$DOC_ROOT"
 
 git add .
 git commit -m "update"
 git push origin master
 git push origin main
-cd "$DOC_ROOT"
+
 if [ "$HEADLESS" = "true" ]; then
     echo "Exiting"
 else

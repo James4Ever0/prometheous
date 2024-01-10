@@ -6,7 +6,7 @@
     },
     "1": {
         "file_id": 0,
-        "content": "This code prints the string \"hello world\" to the console.",
+        "content": "The code prints \"hello world\" to the console as a basic test or starting point for a program.",
         "type": "summary"
     },
     "2": {
@@ -17,7 +17,7 @@
     },
     "3": {
         "file_id": 0,
-        "content": "This code prints the string \"hello world\" to the console.",
+        "content": "The code prints \"hello world\" to the console as a basic test or starting point for a program.",
         "type": "comment"
     },
     "4": {
@@ -27,7 +27,7 @@
     },
     "5": {
         "file_id": 1,
-        "content": "This code imports the \"identify\" module and uses it to determine the language of a filename by checking if it contains text. If it does, it selects a random language from the candidates. The function get_language_id_from_filename is decorated with beartype for type hinting and testing purposes. The test function tests the code on a list of filenames.",
+        "content": "The code imports the \"identify\" module and uses it to extract tags from file names. It then checks if the string \"TEXT\" is in the extracted tags. If so, it selects a random language ID (candidate) from the remaining tags and returns it as the language ID for the filename. The \"test()\" function tests the code by running it on a list of filenames and printing the filename and its associated language ID.",
         "type": "summary"
     },
     "6": {
@@ -38,7 +38,7 @@
     },
     "7": {
         "file_id": 1,
-        "content": "This code imports the \"identify\" module and uses it to determine the language of a filename by checking if it contains text. If it does, it selects a random language from the candidates. The function get_language_id_from_filename is decorated with beartype for type hinting and testing purposes. The test function tests the code on a list of filenames.",
+        "content": "The code imports the \"identify\" module and uses it to extract tags from file names. It then checks if the string \"TEXT\" is in the extracted tags. If so, it selects a random language ID (candidate) from the remaining tags and returns it as the language ID for the filename. The \"test()\" function tests the code by running it on a list of filenames and printing the filename and its associated language ID.",
         "type": "comment"
     },
     "8": {
@@ -48,7 +48,7 @@
     },
     "9": {
         "file_id": 2,
-        "content": "This code prints the word \"hello\" to the console. It serves as a simple example or starting point for more complex operations within this file.",
+        "content": "This code is a simple Python script that prints the word \"hello\" to the console. It is likely part of a larger program or script, used for testing or displaying output in a specific location.",
         "type": "summary"
     },
     "10": {
@@ -59,7 +59,7 @@
     },
     "11": {
         "file_id": 2,
-        "content": "This code prints the word \"hello\" to the console. It serves as a simple example or starting point for more complex operations within this file.",
+        "content": "This code is a simple Python script that prints the word \"hello\" to the console. It is likely part of a larger program or script, used for testing or displaying output in a specific location.",
         "type": "comment"
     },
     "12": {
@@ -69,7 +69,7 @@
     },
     "13": {
         "file_id": 3,
-        "content": "This code prints \"world\" when executed.",
+        "content": "This code snippet simply prints the string \"world\" to the console. It is a basic Python command that outputs the given text without any input or complex operations involved.",
         "type": "summary"
     },
     "14": {
@@ -80,7 +80,7 @@
     },
     "15": {
         "file_id": 3,
-        "content": "This code prints \"world\" when executed.",
+        "content": "This code snippet simply prints the string \"world\" to the console. It is a basic Python command that outputs the given text without any input or complex operations involved.",
         "type": "comment"
     }
 }

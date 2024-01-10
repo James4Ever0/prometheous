@@ -4,18 +4,18 @@ from llm import LLM
 
 @beartype
 def comment_summarizer(comments: list[str], word_limit: int = 30) -> str:
-    summary_prompt = """You are a professional summarizer. You will be given a pair of comments and produce a summary.
+    summary_prompt = """You are a professional summarizer. You will be given a pair of comments and produce a concise summary.
 """
     summary_model = LLM(summary_prompt)
 
     def combine_comments(comment1: str, comment2: str):
-        summary_query = f"""Comment A:
+        summary_query = f"""
+
 {comment1}
 
-Comment B:
 {comment2}
 
-Summary in {word_limit} words:
+Summary in {word_limit} words (do not be verbose, just summarize):
 """
         ret = summary_model.run(summary_query)
         return ret
