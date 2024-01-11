@@ -319,7 +319,7 @@ briefs = generate_tree_repesentation(
 # briefs.insert(0,"# Project Structure:")
 briefs.insert(
     0,
-    f'## Project Structure<span hierarchy="0" class="partial-repository-url"> of: {metadata["url"]["partial"]}</span><div style="float: right;"><a href="index.html"><i class="bi bi-search"></i></a></div>',
+    f'## Project Structure<span hierarchy="0" class="partial-repository-url"> of: {metadata["url"]["partial"]}</span><div style="float: right;"><a style="margin:3.5px;" href="index.html"><i class="bi bi-search"></i></a><a style="margin:3.5px;" href="tree.html?full=true"><i class="bi bi-arrow-down-square"></i></a></div>',
 )
 print("=" * 40)
 print("\n".join(briefs))
