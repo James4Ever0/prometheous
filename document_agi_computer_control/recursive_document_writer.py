@@ -2,7 +2,7 @@
 # os.environ["OPENAI_API_BASE"] = "http://0.0.0.0:8000"
 # os.environ["BETTER_EXCEPTIONS"] = "1"
 import os
-from typing import Literal, Optional, Union
+from typing import Literal, Optional, OrderedDict, Union
 import uuid
 import json
 from slice_utils import split_dict_into_chunks
@@ -207,9 +207,11 @@ def render_document_webpage(
         def iterate_source_dir_and_assemble_render_params():
             # if only have one file, we should return one
             with CacheContextManager(param.db_path) as manager:
-                for file_id, (_, source_path) in enumerate(
-                    dirpath_and_fpath_walker(param.source_dir_path)
-                ):
+                source_path_list = [
+                    sp for _, sp in dirpath_and_fpath_walker(param.source_dir_path)
+                ]
+                source_path_list.sort() # to reduce git folder size
+                for file_id, source_path in enumerate(source_path_list):
                     source_relative_path = strip_path_prefix(source_path)
                     record, _ = manager.get_record_by_computing_source_hash(source_path)
                     if record:
@@ -258,6 +260,7 @@ def render_document_webpage(
         data_dir = os.path.join(document_dir_path, "data")
         if not os.path.exists(data_dir):
             os.mkdir(data_dir)
+
         for chunk in split_dict_into_chunks(datadict, DATA_SLICE_LENGTH):
             write_file(
                 os.path.join(data_dir, f"{split_count}.json"),
@@ -302,6 +305,11 @@ def render_document_webpage(
 
 import subprocess
 
+def run_subprocess(cli:str):
+    print('running:',cli)
+    excode = subprocess.check_call(cli, shell=True)
+    if excode !=0:
+        exit(excode)
 
 def main():
     (document_dir_path, repository_url) = parse_arguments()
@@ -311,13 +319,9 @@ def main():
     param = scan_code_dir_and_write_to_comment_dir(document_dir_path)
     # not done yet. we have to create the webpage.
     render_document_webpage(document_dir_path, param, repository_url)
-    cli = f"python3 -u tree_markdown_view_folder_hierarchy/main_recursive.py -s '{document_dir_path}'"
-    # cli = f"python3 -u tree_markdown_view_folder_hierarchy/main.py -s '{document_dir_path}'"
-    # import time
-    print(cli)
-    excode = subprocess.check_call(cli, shell=True)
-    # time.sleep(10)
-    exit(excode)
+    run_subprocess( f"python3 -u tree_markdown_view_folder_hierarchy/main_recursive.py -s '{document_dir_path}'")
+    run_subprocess( f"python3 -u title_generator/main.py -s '{document_dir_path}'")
+
 
 
 if __name__ == "__main__":

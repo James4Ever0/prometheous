@@ -53,7 +53,7 @@ def strip_quote(s: str):
     if s[0] == s[-1]:
         if s[0] in ['"', "'"]:
             return s[1:-1].strip()
-    return s.strip()
+    return s.strip().strip('.')
 
 
 # read metadata.json & data/*.json
@@ -112,7 +112,7 @@ Brief in 7 words (do not quote your brief, just write it out):
         if rec:
             return rec["brief"]
         else:
-            init_prompt = """You are a professional brief writer. You can turn long summaries into a single short brief within 7 words. You will be given a filepath, a summary of the file and produce a concise brief that best describes the file."""
+            init_prompt = """You are a professional brief writer. You can turn long summaries into a single short, concise, conclusive and meaningful brief within 7 words. You will be given a filepath, a summary of the file and produce a concise brief that best describes the file."""
             with llm_context(init_prompt) as model:
                 mbrief = strip_quote(model.run(prompt).strip())
             mdoc = dict(path=filepath, hash=mhash, brief=mbrief)
@@ -226,7 +226,7 @@ Brief for directory '{directory_path}' in 7 words (do not quote your brief, just
         if rec:
             mbrief = rec["brief"]
         else:
-            init_prompt = """You are a professional brief writer. You can turn a list of briefs into a single short brief within 7 words. You will be given a list of briefs and relative paths of the directory children and produce a concise brief that best describes the directory."""
+            init_prompt = """You are a professional brief writer. You can turn a list of briefs into a single short, concise, conclusive and meaningful brief within 7 words. You will be given a list of briefs and relative paths of the directory children and produce a concise brief that best describes the directory."""
             with llm_context(init_prompt) as model:
                 mbrief = strip_quote(model.run(prompt).strip())
             mdoc = dict(path=directory_path, hash=mhash, brief=mbrief)

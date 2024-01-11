@@ -153,6 +153,9 @@
             margin-bottom: 10px;
         }
 
+        h3,h4 {
+            line-height: 0.5;
+        }
         p {
             line-height: 1.5;
         }
@@ -189,8 +192,8 @@
             .right-half {
                 /*padding-left: 10px;*/
                 padding-right: 10px;
-                overflow-y:auto;
-                overflow-x:auto;
+                overflow-y: auto;
+                overflow-x: auto;
             }
 
             .left-half {
@@ -248,7 +251,7 @@
                 border: 1px solid #ccc;
                 /* justify-content: space-between; */
                 /* flex-direction: row; */
-                height:min-content;
+                height: min-content;
                 /* align-items: flex-start; */
             }
 
@@ -266,8 +269,8 @@
                 /* height:100%; */
 
                 /* align-self: stretch; */
-                overflow-x:auto;
-                overflow-y:scroll;
+                overflow-x: auto;
+                overflow-y: scroll;
             }
 
             .right-half {
@@ -303,8 +306,8 @@
 
         /* useless now */
         pre {
-            overflow-x:visible!important;
-            overflow-y:visible!important;
+            overflow-x: visible !important;
+            overflow-y: visible !important;
             /* overflow-x: auto; */
             white-space: pre-wrap;
             white-space: -moz-pre-wrap;
@@ -468,6 +471,14 @@
                 const file_mapping = metadata.file_mapping
                 const split_count = metadata.split_count
 
+                var xhr = new XMLHttpRequest();
+                xhr.open('GET', "metadata_title.json", false); // The third parameter is set to false for synchronous request
+                xhr.send(null);
+                const metadata_title = JSON.parse(xhr.responseText);
+
+                const title_split_count = metadata_title.split_count;
+                const total_split_count = split_count + title_split_count;
+
                 var data_var = {}
                 for (let i = 0; i < split_count; i++) {
                     //let data_req = await fetch(`data/${i}.json`)// load from server
@@ -480,13 +491,30 @@
 
                     //data_var = { ...data_part, ...data_var }
                     data_var = Object.assign(data_var, data_part)
-                    const progressPercentage = ((i + 1) / split_count) * 100;
+                    const progressPercentage = ((i + 1) / total_split_count) * 100;
+                    progressBar.style.width = `${progressPercentage}%`;
+                }
+                var title_data_var = {}
+                for (let i = 0; i < title_split_count; i++) {
+
+                    var xhr = new XMLHttpRequest();
+                    xhr.open('GET', `data/titles/${i}.json`, false); // The third parameter is set to false for synchronous request
+                    xhr.send(null);
+                    let data_part = JSON.parse(xhr.responseText);
+
+                    //data_var = { ...data_part, ...data_var }
+                    title_data_var = Object.assign(title_data_var, data_part)
+                    const progressPercentage = ((split_count + i + 1) / total_split_count) * 100;
                     progressBar.style.width = `${progressPercentage}%`;
                 }
                 progressOverlay.style.display = 'none';
 
 
                 const data = data_var // obviously not constant.
+                const title_data = title_data_var
+
+                // console.log(title_data);
+                // debugger;
 
                 const data_total_length = Object.keys(data).length;
                 // debugger
@@ -650,12 +678,16 @@
                         item.className = "searchItem";
                         const search_header = document.createElement('div');
                         search_header.className = "searchItemInfo";
+                        const file_title_elem = document.createElement('h3');
                         const location_p = document.createElement('p');
                         location_p.className = "monospace-text codelink";
-                        location_p.innerHTML = (it.header.filepath.slice(1));
+                        const mylocation = it.header.filepath.slice(1)
+                        file_title_elem.textContent = title_data["/"+mylocation]
+                        location_p.innerHTML = (mylocation);
 
                         location_p.setAttribute('onclick', `navigateToPage(${JSON.stringify(it.header.filepath)}, ${JSON.stringify(it.language_id)}, ${JSON.stringify(project_id)})`)
                         search_header.appendChild(location_p);
+                        search_header.appendChild(file_title_elem);
 
                         var skip_summary = false;
 
@@ -674,19 +706,28 @@
 
                         item.appendChild(search_header);
 
+
                         for (var pair_id in it.pairs) {
                             const pair_container = document.createElement('div');
                             pair_container.className = "search-container";
                             const pair = it.pairs[pair_id];
                             const pair_item = document.createElement('div');
                             const pair_left = document.createElement('div');
+                            const pair_title = document.createElement('h4');
+                            const pair_location_text = pair.location.slice(1);
+                            const pair_title_text = title_data["/"+pair_location_text];
+                            if (pair_title_text != undefined) {
+                                pair_title.textContent = pair_title_text
+                            }
                             pair_left.className = "left-half";
                             const code_location_p = document.createElement('p');
                             code_location_p.className = "monospace-text codelink";
-                            code_location_p.innerHTML = (pair.location.slice(1));
+                            code_location_p.innerHTML = (pair_location_text);
                             code_location_p.setAttribute('onclick', `navigateToPage(${JSON.stringify(it.header.filepath)}, ${JSON.stringify(it.language_id)},  ${JSON.stringify(project_id)}, ${JSON.stringify(pair.location)})`)
-
                             pair_left.appendChild(code_location_p);
+                            if (pair_title_text != undefined) {
+                                pair_left.appendChild(pair_title);
+                            }
                             // const comment_p = document.createElement('pre');
                             const comment_p = document.createElement('p');
                             comment_p.setAttribute('style', 'white-space: pre-line;');
@@ -730,8 +771,8 @@
                     for (let i in leftElements) {
                         let leftHeight = leftElements[i].clientHeight;
                         let rightHeight = rightElements[i].clientHeight;
-                        if (leftHeight < rightHeight){
-                            rightElements[i].style.height = leftHeight+"px";
+                        if (leftHeight < rightHeight) {
+                            rightElements[i].style.height = leftHeight + "px";
                         }
                     }
                 }

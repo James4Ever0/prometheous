@@ -5,23 +5,28 @@
     },
     "file_mapping": {
         "0": {
-            "filepath": "/test.py",
+            "filepath": "/folder1/file.py",
             "entry_id": 0,
             "language_id": "python"
         },
         "1": {
-            "filepath": "/identify_utils.py",
+            "filepath": "/folder1/folder2/file2.py",
             "entry_id": 4,
             "language_id": "python"
         },
         "2": {
-            "filepath": "/folder1/file.py",
+            "filepath": "/identify_utils.py",
             "entry_id": 8,
             "language_id": "python"
         },
         "3": {
-            "filepath": "/folder1/folder2/file2.py",
+            "filepath": "/main.py",
             "entry_id": 12,
+            "language_id": "python"
+        },
+        "4": {
+            "filepath": "/test.py",
+            "entry_id": 24,
             "language_id": "python"
         }
     },
