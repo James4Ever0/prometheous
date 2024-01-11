@@ -1,4 +1,5 @@
 from itertools import islice
+from typing import OrderedDict
 from beartype import beartype
 
 @beartype
@@ -11,7 +12,12 @@ def split_dict_into_chunks(dictionary:dict, chunk_size:int):
     Returns:
     - A generator that yields dictionaries, each containing at most `chunk_size` items.
     """
-    it = iter(dictionary.items())
+    myord = OrderedDict()
+    dictkeys = list(dictionary.keys())
+    dictkeys.sort()
+    for k in dictkeys:
+        myord[k] = dictionary[k]
+    it = iter(myord.items())
     while True:
         chunk = dict(islice(it, chunk_size))
         if not chunk:
