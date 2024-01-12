@@ -125,7 +125,6 @@
         #drawer {
             /* to visualize the alignment of buttons and text */
             background-color: white;
-            border: -1px solid #ccc;
             margin: auto;
             /* margin: 1.5%; */
             /* margin-right: 10%; */
@@ -589,6 +588,8 @@
             if (pageWidth > 768) {
                 drawer.style.left = `${pageWidth / 2}px`;
                 drawer.style.width = "50%"
+                drawer.style.borderLeft = "1px solid #ccc";
+
 
             } else {
                 drawer.style.left = `0px`;

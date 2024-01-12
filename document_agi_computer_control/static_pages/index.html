@@ -125,7 +125,6 @@
         #drawer {
             /* to visualize the alignment of buttons and text */
             background-color: white;
-            border: -1px solid #ccc;
             margin: auto;
             /* margin: 1.5%; */
             /* margin-right: 10%; */
@@ -468,6 +467,7 @@
         <div id="drawer_content" style="line-height: 1.6; overflow-y:scroll; height:75%">
            <div><b>Basic Python Output: "world"</b></div>
            <!-- <div>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;world world world world world world world world world world world world world world</div> -->
+           <!-- subterms shall also be bold, but font size is smaller. -->
            <div>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;waitForDOMContentLoaded</div>
            <div>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;waitForDOMContentLoaded</div>
            <div><b>Basic Python Output: "world"</b></div>
@@ -589,6 +589,8 @@
             if (pageWidth > 768) {
                 drawer.style.left = `${pageWidth / 2}px`;
                 drawer.style.width = "50%"
+                drawer.style.borderLeft = "1px solid #ccc";
+
 
             } else {
                 drawer.style.left = `0px`;
