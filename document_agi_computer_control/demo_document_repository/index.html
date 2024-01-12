@@ -153,9 +153,12 @@
             margin-bottom: 10px;
         }
 
-        h3,h4 {
+        /* 
+        h3,
+        h4 {
             line-height: 0.5;
-        }
+        } */
+
         p {
             line-height: 1.5;
         }
@@ -210,6 +213,7 @@
             }
 
             #searchInput {
+                z-index: 10;
                 text-indent: 15px;
             }
 
@@ -227,6 +231,7 @@
             }
 
             #searchInput {
+                z-index: 10;
                 text-indent: 20px;
             }
 
@@ -378,10 +383,37 @@
             border: 1px solid #ccc;
         }
 
+        .input-group {
+            position: relative;
+            display: flex;
+            /* flex-wrap: wrap; */
+            /* align-items: stretch; */
+            width: 100%;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .input-group-button:hover {
+            cursor: pointer;
+        }
+
+        #sidebar-button:hover {
+            cursor: pointer;
+        }
+
+        .input-group-button {
+            border: 1px solid #ccc;
+            /* padding:auto; */
+            /* flex:1; */
+            z-index: 9;
+            padding: 10px;
+            margin: auto;
+        }
+
         ul {
             flex: 1;
             /* Fill the remaining space */
-            overflow-y: auto;
+            /* overflow-y: scroll; */
             /* Enable vertical scrolling */
             list-style: none;
             padding: 0;
@@ -411,15 +443,23 @@
         <script src="https://cdn.jsdelivr.net/npm/prismjs@v1.x/components/prism-core.min.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/prismjs@v1.x/plugins/autoloader/prism-autoloader.min.js"></script>
         <header class="container">
-            <h2>Document Index<span class="repository-url"> of:
-                    <span id="partial-repository-url"></span></span>
+            <h2 style="display: flex; justify-content: space-between; align-items: center;">
+                <div style="flex: 1; float: left; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                    Document index<span class="repository-url"> of:
+                        <span id="partial-repository-url"></span></span></div>
                 <div style="float: right;">
-                    <a id="github-link" class="github-icon"><i class="fab fa-github"></i></a>
-                    <a id="brief-link" href="tree.html"><i class="bi bi-text-right"></i></a>
+                    <a title="Github repository" id="github-link" class="github-icon"><i class="fab fa-github"></i></a>
+                    <a title="Project structure" id="brief-link" href="tree.html"><i class="bi bi-text-right"></i></a>
+                    <a title="Result overview" id="sidebar-button"><i class="bi bi-caret-left-square"></i></a>
                 </div>
             </h2>
-            <!-- <div class="search-input-container"> -->
-            <input type="text" id="searchInput" placeholder="Search...">
+            <div class="input-group">
+                <input type="text" id="searchInput" style="flex:1;" placeholder="Search...">
+                <button type="button" id="file_previous" class="input-group-button" title="Previous file"><i
+                        class="bi bi-caret-left"></i></button> <button type="button" id="file_next"
+                    class="input-group-button" title="Next file"><i class="bi bi-caret-right"></i></button>
+            </div>
+
         </header>
         <ul id="searchResults"></ul>
         <script type="text/javascript" defer>
@@ -586,7 +626,13 @@
                         return [text, lowerText, upperText, lowerCapitalized]
                     }
 
-                    const searchTerm = searchInputElem.value;
+                    const searchTerm = searchInputElem.value.trim();
+
+                    // Display the search results
+                    const searchResults = document.getElementById('searchResults');
+                    searchResults.innerHTML = '';
+                    if (searchTerm.length == 0) { return }
+
                     const searchSubTerms = getSubTerms(searchTerm);
                     function getHighlightTerms(msubterms) {
                         var ret = []
@@ -602,10 +648,6 @@
                         return ret;
                     }
 
-                    // Display the search results
-                    const searchResults = document.getElementById('searchResults');
-                    searchResults.innerHTML = '';
-                    if (searchTerm.length == 0) { return }
                     var isFileSearch = false;
 
                     if (searchTerm.startsWith("/")) {
@@ -679,14 +721,19 @@
                         const search_header = document.createElement('div');
                         search_header.className = "searchItemInfo";
                         const file_title_elem = document.createElement('h3');
-                        const location_p = document.createElement('p');
-                        location_p.className = "monospace-text codelink";
+                        // const location_p = document.createElement('p');
+                        // location_p.className = "monospace-text codelink";
+                        file_title_elem.className = "codelink";
                         const mylocation = it.header.filepath.slice(1)
-                        file_title_elem.textContent = title_data["/"+mylocation]
-                        location_p.innerHTML = (mylocation);
+                        const file_title_span = document.createElement("span")
+                        file_title_span.textContent = title_data["/" + mylocation]
+                        file_title_span.setAttribute("title", mylocation)
+                        file_title_elem.appendChild(file_title_span);
+                        // location_p.innerHTML = (mylocation);
 
-                        location_p.setAttribute('onclick', `navigateToPage(${JSON.stringify(it.header.filepath)}, ${JSON.stringify(it.language_id)}, ${JSON.stringify(project_id)})`)
-                        search_header.appendChild(location_p);
+                        file_title_span.setAttribute('onclick', `navigateToPage(${JSON.stringify(it.header.filepath)}, ${JSON.stringify(it.language_id)}, ${JSON.stringify(project_id)})`)
+                        // location_p.setAttribute('onclick', `navigateToPage(${JSON.stringify(it.header.filepath)}, ${JSON.stringify(it.language_id)}, ${JSON.stringify(project_id)})`)
+                        // search_header.appendChild(location_p);
                         search_header.appendChild(file_title_elem);
 
                         var skip_summary = false;
@@ -715,16 +762,21 @@
                             const pair_left = document.createElement('div');
                             const pair_title = document.createElement('h4');
                             const pair_location_text = pair.location.slice(1);
-                            const pair_title_text = title_data["/"+pair_location_text];
+                            const pair_title_text = title_data["/" + pair_location_text];
+                            const code_title_span = document.createElement('span')
                             if (pair_title_text != undefined) {
-                                pair_title.textContent = pair_title_text
+                                code_title_span.textContent = pair_title_text
                             }
+                            pair_title.appendChild(code_title_span);
                             pair_left.className = "left-half";
-                            const code_location_p = document.createElement('p');
-                            code_location_p.className = "monospace-text codelink";
-                            code_location_p.innerHTML = (pair_location_text);
-                            code_location_p.setAttribute('onclick', `navigateToPage(${JSON.stringify(it.header.filepath)}, ${JSON.stringify(it.language_id)},  ${JSON.stringify(project_id)}, ${JSON.stringify(pair.location)})`)
-                            pair_left.appendChild(code_location_p);
+                            // const code_location_p = document.createElement('p');
+                            pair_title.className = "codelink";
+                            // code_location_p.className = "monospace-text codelink";
+                            // code_location_p.innerHTML = (pair_location_text);
+                            code_title_span.setAttribute("title", pair_location_text)
+                            code_title_span.setAttribute('onclick', `navigateToPage(${JSON.stringify(it.header.filepath)}, ${JSON.stringify(it.language_id)},  ${JSON.stringify(project_id)}, ${JSON.stringify(pair.location)})`)
+                            // code_location_p.setAttribute('onclick', `navigateToPage(${JSON.stringify(it.header.filepath)}, ${JSON.stringify(it.language_id)},  ${JSON.stringify(project_id)}, ${JSON.stringify(pair.location)})`)
+                            // pair_left.appendChild(code_location_p);
                             if (pair_title_text != undefined) {
                                 pair_left.appendChild(pair_title);
                             }
@@ -810,6 +862,21 @@
                             let currentTime = new Date().getTime();
                             if ((currentTime - lastInputEventTime) > 500) // .5 sec
                             {
+                                const inputBoxText = document.getElementById('searchInput').value;
+                                inputBoxText.trim()
+                                var newURL;
+                                if (inputBoxText.trim() !== "") {
+                                    // Construct the new URL with the updated query string
+                                    newURL = `${window.location.protocol}//${window.location.host}${window.location.pathname}?q=${inputBoxText}`;
+                                }
+                                else {
+                                    newURL = `${window.location.protocol}//${window.location.host}${window.location.pathname}`;
+
+                                }
+
+                                // Use history.pushState() to update the URL without reloading the page
+                                history.pushState(null, null, newURL);
+
                                 hasInputEvent = false;
                                 if (!isSearchRunning) {
                                     isSearchRunning = true;

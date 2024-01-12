@@ -210,7 +210,7 @@ def render_document_webpage(
                 source_path_list = [
                     sp for _, sp in dirpath_and_fpath_walker(param.source_dir_path)
                 ]
-                source_path_list.sort() # to reduce git folder size
+                source_path_list.sort()  # to reduce git folder size
                 for file_id, source_path in enumerate(source_path_list):
                     source_relative_path = strip_path_prefix(source_path)
                     record, _ = manager.get_record_by_computing_source_hash(source_path)
@@ -284,7 +284,8 @@ def render_document_webpage(
     def copy_static_pages():
         script_base_dir = os.path.split(__file__)[0]
         static_pages_dir = os.path.join(script_base_dir, "static_pages")
-        for fname in os.listdir(static_pages_dir):
+        for fname in ["index.html", "codeview.html"]:
+            # for fname in os.listdir(static_pages_dir):
             shutil.copy(os.path.join(static_pages_dir, fname), document_dir_path)
 
     def write_gitignore():
@@ -305,11 +306,13 @@ def render_document_webpage(
 
 import subprocess
 
-def run_subprocess(cli:str):
-    print('running:',cli)
+
+def run_subprocess(cli: str):
+    print("running:", cli)
     excode = subprocess.check_call(cli, shell=True)
-    if excode !=0:
+    if excode != 0:
         exit(excode)
+
 
 def main():
     (document_dir_path, repository_url) = parse_arguments()
@@ -319,9 +322,10 @@ def main():
     param = scan_code_dir_and_write_to_comment_dir(document_dir_path)
     # not done yet. we have to create the webpage.
     render_document_webpage(document_dir_path, param, repository_url)
-    run_subprocess( f"python3 -u tree_markdown_view_folder_hierarchy/main_recursive.py -s '{document_dir_path}'")
-    run_subprocess( f"python3 -u title_generator/main.py -s '{document_dir_path}'")
-
+    run_subprocess(
+        f"python3 -u tree_markdown_view_folder_hierarchy/main_recursive.py -s '{document_dir_path}'"
+    )
+    run_subprocess(f"python3 -u title_generator/main.py -s '{document_dir_path}'")
 
 
 if __name__ == "__main__":

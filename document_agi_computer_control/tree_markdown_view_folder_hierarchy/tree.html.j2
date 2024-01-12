@@ -88,6 +88,13 @@
 
         const queryParams = getQueryParams(window.location.search);
         const show_full = queryParams.full == "true";
+        const is_random = queryParams.random == 'true';
+        function feelingLucky() {
+            var elements = document.getElementsByClassName("file_link");
+            var randomIndex = Math.floor(Math.random() * elements.length);
+            window.location = elements[randomIndex].href;
+        }
+        if (is_random) {feelingLucky();}
         if (!show_full) {
             const spans = document.querySelectorAll('span');
             for (let span of spans) {
@@ -95,7 +102,13 @@
 
                 toggleVisibility(span);
             }
+        } else {
+            const expand_elem = document.getElementById('expand-tree');
+            expand_elem.setAttribute("href", "tree.html");
+            expand_elem.setAttribute("title", "Undo expand");
+            expand_elem.innerHTML = '<i class="bi bi-caret-up-square"></i>'
         }
+
     </script>
 </body>
 

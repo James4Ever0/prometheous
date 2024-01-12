@@ -166,7 +166,7 @@ def generate_tree_repesentation(
             child_link = f"index.html?q={urllib.parse.quote(child)}"
             briefs.append(
                 " " * (indent + 1) * 4
-                + f'- <a href="{child_link}" id="{child}"><code>{html_escape(child_name)}</code></a> <em>{strip_quote(file_briefs[child])}</em>'
+                + f'- <a class="file_link" href="{child_link}" id="{child}"><code>{html_escape(child_name)}</code></a> <em>{strip_quote(file_briefs[child])}</em>'
             )
 
     return briefs
@@ -319,7 +319,7 @@ briefs = generate_tree_repesentation(
 # briefs.insert(0,"# Project Structure:")
 briefs.insert(
     0,
-    f'## Project Structure<span hierarchy="0" class="partial-repository-url"> of: {metadata["url"]["partial"]}</span><div style="float: right;"><a style="margin:3.5px;" href="index.html"><i class="bi bi-search"></i></a><a style="margin:3.5px;" href="tree.html?full=true"><i class="bi bi-arrow-down-square"></i></a></div>',
+    f'## Project structure<span hierarchy="0" class="partial-repository-url"> of: {metadata["url"]["partial"]}</span><div style="float: right;"><a title="Document index" style="margin:3.5px;" href="index.html"><i class="bi bi-search"></i></a><a title="Feeling lucky" style="margin:3.5px;" href="tree.html?random=true"><i class="bi bi-dice-3"></i></a><a title="Expand tree" style="margin:3.5px;" href="tree.html?full=true" id="expand-tree"><i class="bi bi-caret-down-square"></i></a></div>',
 )
 print("=" * 40)
 print("\n".join(briefs))
