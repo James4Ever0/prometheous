@@ -1,10 +1,11 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="stylesheet" href="tree.min.css">
-  <title>Folder Tree View</title>
+  <title>Drawer</title>
   <style>
     /* Add custom styles for the drawer button */
     #drawerButton {
@@ -13,51 +14,60 @@
       right: 10px;
       z-index: 1000;
     }
+
+    #drawer_mask {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.4);
+      /* background-color: rgba(0, 0, 0, 0.1); */
+    }
   </style>
 </head>
+
 <body>
   <header>
     <button id="drawerButton" onclick="showFolderTree()">Drawer</button>
   </header>
-
-  <script src="tree.min.js"></script>
   <script defer>
     function showFolderTree() {
-        var count = 1;
-
-		var root = new TreeNode("root");
-			var n1 = new TreeNode("1");
-				var n11 = new TreeNode("1.1");
-			var n2 = new TreeNode("2");
-			var n3 = new TreeNode("3");
-				var n31 = new TreeNode("3.1");
-				var n32 = new TreeNode("3.2");
-					var n321 = new TreeNode("3.2.1");
-				var n33 = new TreeNode("3.3");
-
-		root.addChild(n1);
-		root.addChild(n2);
-		root.addChild(n3);
-
-		n1.addChild(n11);
-
-		n3.addChild(n31);
-		n3.addChild(n32);
-		n3.addChild(n33);
-
-		n3.setEnabled(false);
-
-		n32.addChild(n321);
-
-		var view = new TreeView(root, "#container");
-
-      const drawer = document.createElement('div');
+      const drawer = document.getElementById('drawer');
+      const drawer_mask = document.getElementById('drawer_mask');
+      const drawer_button = document.getElementById('drawer_button');
+      const drawer_content = document.getElementById('drawer_content');
+      if (drawer.style.display != 'none') {
+        drawer.style.display = "none";
+        drawer_mask.style.display = "none";
+        return;
+      }
       drawer.style.position = 'absolute';
-      drawer.style.top = '50px'; // Adjust the position of the drawer as needed
-      drawer.style.left = '10px';
-      drawer.style.zIndex = '1000';
+      var pageHeight = window.innerHeight;
+      var pageWidth = window.innerWidth;
+      drawer.style.height = pageHeight + 'px';
+      drawer.style.width = pageWidth / 2 + 'px';
+
+      drawer.style.top = '0px';
+      drawer.style.left = `${pageWidth / 2}px`;
+      drawer.style.width = "50%"
+      drawer.style.height = "100%"
+      drawer.style.border = "1px solid #ccc";
+      drawer.style.backgroundColor = "#ccc !important";
+      drawer.style.zIndex = '999';
+      drawer.textContent = "Loading...";
+      drawer.style.display = '';
+
+      drawer_mask.style.zIndex = '998';
+      drawer_mask.style.display = "";
     }
   </script>
-  <div id="container"></div>
+  <div id="drawer_mask" style="display:none;"></div>
+  <div id="drawer" style="display:none;">
+    <div id="drawer_button"></div>
+    <div id="drawer_content"></div>
+  </div>
+  <h1>Sample Background Text</h1>
 </body>
+
 </html>
