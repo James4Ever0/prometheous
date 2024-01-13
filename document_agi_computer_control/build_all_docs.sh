@@ -23,4 +23,5 @@ bash build_weak_to_strong_doc.sh -s
 bash build_whisper_doc.sh -s 
 bash build_write_the_doc.sh -s 
 
+bash build_pyjom_doc.sh -s
 ### NEW

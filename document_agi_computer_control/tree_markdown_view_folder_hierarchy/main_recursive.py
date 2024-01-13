@@ -342,7 +342,7 @@ css_path = os.path.join(
 )
 template = Template(open(template_path, "r").read())
 # Render the template with the data
-rendered_template = template.render(content=html_content)
+rendered_template = template.render(content=html_content, project_name=metadata["url"]["partial"])
 
 print("Template rendered.")
 
