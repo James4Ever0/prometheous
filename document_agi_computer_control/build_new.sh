@@ -9,4 +9,4 @@
 # env PROJECT_NAME="vced" AUTHOR="datawhalechina" bash build_doc_at_prima_with_author_and_project_name.sh -s
 # env PROJECT_NAME="he4o" AUTHOR="jiaxiaogang" bash build_doc_at_prima_with_author_and_project_name.sh -s
 # env PROJECT_NAME="gato" AUTHOR="OrigamiDream" bash build_doc_at_prima_with_author_and_project_name.sh -s
-env PROJECT_NAME="Voyager" AUTHOR="MineDojo" bash build_doc_at_prima_with_author_and_project_name.sh
+# env PROJECT_NAME="Voyager" AUTHOR="MineDojo" bash build_doc_at_prima_with_author_and_project_name.sh -s
