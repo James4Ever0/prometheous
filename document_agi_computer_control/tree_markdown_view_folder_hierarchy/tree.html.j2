@@ -66,6 +66,9 @@
         ul {
             list-style: none;
         }
+        #feeling-lucky:hover{
+            cursor: pointer;
+        }
     </style>
 </head>
 
@@ -88,18 +91,18 @@
 
         const queryParams = getQueryParams(window.location.search);
         const show_full = queryParams.full == "true";
-        const is_random = queryParams.random == 'true';
+        //const is_random = queryParams.random == 'true';
         function feelingLucky() {
             var elements = document.getElementsByClassName("file_link");
             var randomIndex = Math.floor(Math.random() * elements.length);
             window.location = elements[randomIndex].href;
         }
-        if (is_random) {feelingLucky();}
+        //if (is_random) {feelingLucky();}
+        document.getElementsById("feeling-lucky").onclick = feelingLucky;
         if (!show_full) {
             const spans = document.querySelectorAll('span');
             for (let span of spans) {
                 if (span.getAttribute("hierarchy") == '0') { continue }
-
                 toggleVisibility(span);
             }
         } else {
