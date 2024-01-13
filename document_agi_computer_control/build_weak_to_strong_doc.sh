@@ -16,6 +16,7 @@ if [ "$HEADLESS" = "true" ]; then
 else
     read -p "Are you sure you want to remove and generate? (y/n): " answer
 fi
+
 if [ "$answer" = "y" ]; then
     echo "Removing..."
     # Place your program execution command here

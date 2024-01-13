@@ -128,7 +128,7 @@
             margin: auto;
             /* margin: 1.5%; */
             /* margin-right: 10%; */
-            text-wrap:wrap;
+            text-wrap: wrap;
             /* margin-bottom: 10px; */
         }
 
@@ -454,6 +454,10 @@
             /*border-radius: 10px;*/
             box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1);
         }
+        #drawer_content > div > b:hover {
+            cursor: pointer;
+            text-decoration: underline;
+        }
     </style>
 
 </head>
@@ -464,10 +468,10 @@
     <div id="drawer_mask" style="display:none;"></div>
     <div id="drawer" style="display:none;">
         <h2><span id="drawer_title"></span></h2>
-        <div id="drawer_content" style="line-height: 1.6; overflow-y:scroll; height:75%">
-           <div><b>Basic Python Output: "world"</b></div>
-           <!-- <div>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;world world world world world world world world world world world world world world</div> -->
-           <!-- subterms shall also be bold, but font size is smaller. -->
+        <div id="drawer_content" style="line-height: 1.8; overflow-y:scroll; height:75%">
+            <!-- <div>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;world world world world world world world world world world world world world world</div> -->
+            <!-- subterms shall also be bold, but font size is smaller. -->
+            <!-- <div><b>Basic Python Output: "world"</b></div>
            <div>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;waitForDOMContentLoaded</div>
            <div>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;waitForDOMContentLoaded</div>
            <div><b>Basic Python Output: "world"</b></div>
@@ -487,7 +491,7 @@
            <div><b>Basic Python Output: "world"</b></div>
            <div>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;waitForDOMContentLoaded</div>
            <div><b>Basic Python Output: "world"</b></div>
-           <div>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;waitForDOMContentLoaded</div>
+           <div>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;waitForDOMContentLoaded</div> -->
 
         </div>
     </div>
@@ -521,37 +525,14 @@
     </header>
     <ul class="search-results" id="searchResults"></ul>
     <script type="text/javascript" defer>
-        // TODO: paging
-        const RESULT_LIMIT = 15;
-        // const RESULT_LIMIT = 50;
-        const progressOverlay = document.getElementById('progress-overlay');
-        const progressBar = document.querySelector('.progress');
-        var isDebugMode = false;
-        function navigateToPage(base_filepath, language_id, project_id, detail_filepath = "") {
-            // Use a relative path to navigate to a specific page
-            let page_param = "codeview.html";
-            let file_param = 'src' + base_filepath;
-            file_param = encodeURIComponent(file_param);
-            let language_param = language_id
-            let jump_link = `${page_param}?file=${file_param}&language=${language_id}&project=${project_id}`;
-            if (detail_filepath !== "") {
-                let location_range = detail_filepath.slice(base_filepath.length + 1);
-                let location_param = `mycode.${location_range}`;
-                jump_link = `${jump_link}#${location_param}`;
-            }
-            window.location.href = jump_link;
-        }
-        /*async function waitForDOMContentLoaded() {
-            return new Promise(resolve => {
-                if (document.readyState === 'loading') {
-                    document.addEventListener('DOMContentLoaded', resolve);
-                } else {
-                    resolve();
-                }
+        function generateUUID() {
+            return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+                var r = (Math.random() * 16) | 0,
+                    v = c == 'x' ? r : (r & 0x3) | 0x8;
+                return v.toString(16);
             });
         }
-        */
-        function showFolderTree() {
+        function toggleDrawer() {
             const drawer = document.getElementById('drawer');
             const mybutton = document.getElementById('sidebar-open');
             const drawer_mask = document.getElementById('drawer_mask');
@@ -632,25 +613,69 @@
             var rect = referenceElement.getBoundingClientRect();
             var topPosition = rect.top;
             var leftPosition = rect.left;
-            
+
             drawer_content.style.position = "absolute";
             drawer_content.style.top = topPosition + "px";
             if (pageWidth > 768) {
                 drawer_content.style.left = pageWidth * 0.04 + "px";
                 drawer_content.style.width = "75%"
-                drawer_content.style.fontSize="large";
+                drawer_content.style.fontSize = "large";
                 // drawer_title.style.left = pageWidth * 0.03 + "px";
             } else {
                 drawer_content.style.width = "83%"
-                drawer_content.style.left = leftPosition*2 + "px";
-                drawer_content.style.fontSize="medium";
+                drawer_content.style.left = leftPosition * 2 + "px";
+                drawer_content.style.fontSize = "medium";
 
             }
 
             drawer_title.textContent = "Overview";
         }
-        document.getElementById("sidebar-open").onclick = showFolderTree;
-        // document.getElementById("sidebar-close").onclick = showFolderTree;
+
+
+        function jumpToElement(elementId) {
+            var element = document.getElementById(elementId);
+            if (element) {
+                element.scrollIntoView({ behavior: "smooth", block: "start" });
+            }
+        }
+        function toggleDrawerAndJumpToElement(elementId) {
+            toggleDrawer();
+            jumpToElement(elementId);
+        }
+        // TODO: paging
+        const RESULT_LIMIT = 15;
+        // const RESULT_LIMIT = 50;
+        const progressOverlay = document.getElementById('progress-overlay');
+        const progressBar = document.querySelector('.progress');
+        var isDebugMode = false;
+        function navigateToPage(base_filepath, language_id, project_id, detail_filepath = "") {
+            // Use a relative path to navigate to a specific page
+            let page_param = "codeview.html";
+            let file_param = 'src' + base_filepath;
+            file_param = encodeURIComponent(file_param);
+            let language_param = language_id
+            let jump_link = `${page_param}?file=${file_param}&language=${language_id}&project=${project_id}`;
+            if (detail_filepath !== "") {
+                let location_range = detail_filepath.slice(base_filepath.length + 1);
+                let location_param = `mycode.${location_range}`;
+                jump_link = `${jump_link}#${location_param}`;
+            }
+            window.location.href = jump_link;
+        }
+        /*async function waitForDOMContentLoaded() {
+            return new Promise(resolve => {
+                if (document.readyState === 'loading') {
+                    document.addEventListener('DOMContentLoaded', resolve);
+                } else {
+                    resolve();
+                }
+            });
+        }
+        */
+
+
+        document.getElementById("sidebar-open").onclick = toggleDrawer;
+        // document.getElementById("sidebar-close").onclick = toggleDrawer;
 
         // Sample data for demonstration
         // async function async_main() {
@@ -789,6 +814,8 @@
                 // Display the search results
                 const searchResults = document.getElementById('searchResults');
                 searchResults.innerHTML = '';
+                const drawer_content = document.getElementById('drawer_content');
+                drawer_content.innerHTML = "";
                 if (searchTerm.length == 0) { return }
 
                 const searchSubTerms = getSubTerms(searchTerm);
@@ -871,6 +898,7 @@
                         // searchResults.appendChild(listItem);
                     });
                 });
+                var isDesktopScreen = window.innerWidth > 768;
                 for (var file_id of searchResultItemIds) {
                     const it = searchResultItems[file_id];
                     const item = document.createElement('li');
@@ -879,10 +907,20 @@
                     const search_header = document.createElement('div');
                     search_header.className = "searchItemInfo";
                     const file_title_elem = document.createElement('h3');
+                    const overview_file_title_elem = document.createElement('div');
+                    const file_title_elem_id = generateUUID()
+                    file_title_elem.setAttribute('id', file_title_elem_id)
+                    const mylocation = it.header.filepath.slice(1)
+
+                    overview_file_title_elem.innerHTML = `<b>${title_data["/" + mylocation]}</b>`;
+                    overview_file_title_elem.onclick = () => {
+                        //  jumpToElement(file_title_elem_id); 
+                        toggleDrawerAndJumpToElement(file_title_elem_id); 
+                        };
+                    drawer_content.appendChild(overview_file_title_elem);
                     // const location_p = document.createElement('p');
                     // location_p.className = "monospace-text codelink";
                     file_title_elem.className = "codelink";
-                    const mylocation = it.header.filepath.slice(1)
                     const file_title_span = document.createElement("span")
                     file_title_span.textContent = title_data["/" + mylocation]
                     file_title_span.setAttribute("title", mylocation)
@@ -919,11 +957,24 @@
                         const pair_item = document.createElement('div');
                         const pair_left = document.createElement('div');
                         const pair_title = document.createElement('h4');
+                        const pair_title_id = generateUUID();
+                        pair_title.setAttribute('id', pair_title_id);
                         const pair_location_text = pair.location.slice(1);
                         const pair_title_text = title_data["/" + pair_location_text];
                         const code_title_span = document.createElement('span')
+                        const overview_pair_title = document.createElement('div');
+                        if (isDesktopScreen) {
+                            overview_pair_title.style.fontSize = "medium";
+                        } else {
+                            overview_pair_title.style.fontSize = "small";
+                        }
+                        overview_pair_title.onclick = () => { 
+                            // jumpToElement(pair_title_id);
+                            toggleDrawerAndJumpToElement(pair_title_id);
+                        }
                         if (pair_title_text != undefined) {
                             code_title_span.textContent = pair_title_text
+                            overview_pair_title.innerHTML = `&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b>${pair_title_text}</b>`
                         }
                         pair_title.appendChild(code_title_span);
                         pair_left.className = "left-half";
@@ -937,6 +988,7 @@
                         // pair_left.appendChild(code_location_p);
                         if (pair_title_text != undefined) {
                             pair_left.appendChild(pair_title);
+                            drawer_content.appendChild(overview_pair_title);
                         }
                         // const comment_p = document.createElement('pre');
                         const comment_p = document.createElement('p');
