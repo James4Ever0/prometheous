@@ -131,7 +131,7 @@ def generate_tree_repesentation(
     briefs=[],
 ):
     childrens = list(childrens_mapping[directory_path])
-    childrens.sort()
+    childrens.sort(key=lambda x: x.lower())
     if directory_path == "/":
         name = project_name
     else:
@@ -241,7 +241,7 @@ def generate_directory_summary_brief(
                 cbrief = file_briefs[child]
             children_briefs[child] = cbrief
         candidates = list(children_briefs.items())
-        candidates.sort(key=lambda x: x[0])
+        candidates.sort(key=lambda x: x[0].lower())
         for k, v in candidates:
             if not k.endswith("/"):
                 mark = "file"

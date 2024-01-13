@@ -122,6 +122,25 @@
             z-index: 1000;
         }
 
+        .grayed-out-button {
+            color: #ccc;
+            /* Set the text color to gray */
+            background-color: #f4f4f4;
+            /* Set a light gray background color */
+            border: 1px solid #ccc;
+            /* Add a gray border */
+            cursor: not-allowed;
+            /* Change the cursor to indicate the button is disabled */
+            pointer-events: none;
+            /* Disable pointer events to prevent interaction */
+        }
+
+        .grayed-out-button i {
+            color: #ccc;
+            /* Set the icon color to gray */
+        }
+
+
         #drawer {
             /* to visualize the alignment of buttons and text */
             background-color: white;
@@ -348,6 +367,10 @@
             word-wrap: break-word;
         }
 
+        button {
+            cursor: pointer;
+        }
+
         .codelink:hover {
             cursor: pointer;
             text-decoration: underline;
@@ -454,7 +477,8 @@
             /*border-radius: 10px;*/
             box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1);
         }
-        #drawer_content > div > b:hover {
+
+        #drawer_content>div>span:hover {
             cursor: pointer;
             text-decoration: underline;
         }
@@ -518,9 +542,10 @@
         </h2>
         <div class="input-group">
             <input type="text" id="searchInput" style="flex:1;" placeholder="Search...">
-            <button type="button" id="file_previous" class="input-group-button" title="Previous file"><i
-                    class="bi bi-caret-left"></i></button> <button type="button" id="file_next"
-                class="input-group-button" title="Next file"><i class="bi bi-caret-right"></i></button>
+            <button type="button" id="file_previous" class="input-group-button" title="Previous file"
+                style="display:none;"><i class="bi bi-caret-left"></i></button> <button type="button" id="file_next"
+                class="input-group-button" title="Next file" style="display:none;"><i
+                    class="bi bi-caret-right"></i></button>
         </div>
     </header>
     <ul class="search-results" id="searchResults"></ul>
@@ -764,7 +789,11 @@
                     right: entry_right
                 }
             }
+            sourceCodePaths_v.sort(function (a, b) {
+                return a.toLowerCase().localeCompare(b.toLowerCase());
+            });
             const sourceCodePaths = sourceCodePaths_v;
+            const sourceCodePathCount = sourceCodePaths.length;
             const sourceCodeIndexRanges = sourceCodeIndexRanges_v;
 
             // Create a new FlexSearch instance with the required configuration
@@ -811,11 +840,18 @@
 
                 const searchTerm = searchInputElem.value.trim();
 
+
+                const file_previous = document.getElementById("file_previous");
+                const file_next = document.getElementById("file_next");
                 // Display the search results
                 const searchResults = document.getElementById('searchResults');
                 searchResults.innerHTML = '';
                 const drawer_content = document.getElementById('drawer_content');
                 drawer_content.innerHTML = "";
+                // file_next.classList.add("grayed-out-button")
+                // file_previous.classList.add("grayed-out-button")
+                file_next.style.display = "none"
+                file_previous.style.display = "none"
                 if (searchTerm.length == 0) { return }
 
                 const searchSubTerms = getSubTerms(searchTerm);
@@ -836,7 +872,26 @@
                 var isFileSearch = false;
 
                 if (searchTerm.startsWith("/")) {
-                    if (sourceCodePaths.indexOf(searchTerm) != -1) { isFileSearch = true; }
+                    const searchTermFileIndex = sourceCodePaths.indexOf(searchTerm)
+                    // console.log('search term file index:', searchTermFileIndex)
+                    if (searchTermFileIndex != -1) {
+                        isFileSearch = true;
+                        // do something with the buttons
+                        // file_previous file_next
+                        if (searchTermFileIndex != 0) {
+                            // console.log('showing file previous button')
+                            file_previous.style.display = "";
+                            // file_previous.classList.remove("grayed-out-button")
+                            file_previous.onclick = () => { window.location.href = `?q=${encodeURIComponent(sourceCodePaths[searchTermFileIndex - 1])}` };
+                        }
+                        if (searchTermFileIndex != (sourceCodePathCount - 1)) {
+                            // console.log('showing file next button')
+                            // file_next.classList.remove("grayed-out-button")
+                            file_next.style.display = "";
+                            file_next.onclick = () => { window.location.href = `?q=${encodeURIComponent(sourceCodePaths[searchTermFileIndex + 1])}` };
+                        }
+
+                    }
                 }
                 var searchHighlightTerms;
                 var results;
@@ -912,11 +967,11 @@
                     file_title_elem.setAttribute('id', file_title_elem_id)
                     const mylocation = it.header.filepath.slice(1)
 
-                    overview_file_title_elem.innerHTML = `<b>${title_data["/" + mylocation]}</b>`;
+                    overview_file_title_elem.innerHTML = `<span>${title_data["/" + mylocation]}</span>`;
                     overview_file_title_elem.onclick = () => {
                         //  jumpToElement(file_title_elem_id); 
-                        toggleDrawerAndJumpToElement(file_title_elem_id); 
-                        };
+                        toggleDrawerAndJumpToElement(file_title_elem_id);
+                    };
                     drawer_content.appendChild(overview_file_title_elem);
                     // const location_p = document.createElement('p');
                     // location_p.className = "monospace-text codelink";
@@ -968,13 +1023,13 @@
                         } else {
                             overview_pair_title.style.fontSize = "small";
                         }
-                        overview_pair_title.onclick = () => { 
+                        overview_pair_title.onclick = () => {
                             // jumpToElement(pair_title_id);
                             toggleDrawerAndJumpToElement(pair_title_id);
                         }
                         if (pair_title_text != undefined) {
                             code_title_span.textContent = pair_title_text
-                            overview_pair_title.innerHTML = `&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b>${pair_title_text}</b>`
+                            overview_pair_title.innerHTML = `&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span>${pair_title_text}</span>`
                         }
                         pair_title.appendChild(code_title_span);
                         pair_left.className = "left-half";
