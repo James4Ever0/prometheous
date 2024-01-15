@@ -37,9 +37,10 @@ env PROJECT_NAME="open_x_embodiment" AUTHOR="google-deepmind" bash build_doc_at_
 # env PROJECT_NAME="mobile-aloha" AUTHOR="MarkFzp" bash build_doc_at_prima_with_author_and_project_name.sh -s
 env PROJECT_NAME="google-research" AUTHOR="google-research" bash build_doc_at_prima_with_author_and_project_name.sh -s
 # env PROJECT_NAME="NExT-Chat" AUTHOR="NExT-ChatV" bash build_doc_at_prima_with_author_and_project_name.sh -s
-env PROJECT_NAME="MultiModelMamba" AUTHOR="kyegomez" bash build_doc_at_prima_with_author_and_project_name.sh -s
+env PROJECT_NAME="MultiModalMamba" AUTHOR="kyegomez" bash build_doc_at_prima_with_author_and_project_name.sh -s
 env PROJECT_NAME="RT-2" AUTHOR="kyegomez" bash build_doc_at_prima_with_author_and_project_name.sh -s
 env PROJECT_NAME="AutoRT" AUTHOR="kyegomez" bash build_doc_at_prima_with_author_and_project_name.sh -s
+env PROJECT_NAME="autodoc" AUTHOR="context-labs" bash build_doc_at_prima_with_author_and_project_name.sh -s
 # env PROJECT_NAME="llama_index" AUTHOR="run-llama" bash build_doc_at_prima_with_author_and_project_name.sh -s
 
 # # do not do anything to gitee projects. ignore rules are not done yet.
