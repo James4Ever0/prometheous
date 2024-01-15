@@ -1,0 +1,1 @@
+python3 main.py -s "/media/root/Toshiba XG3/works/prometheous/document_agi_computer_control/demo_document_repository"

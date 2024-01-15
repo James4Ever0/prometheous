@@ -51,6 +51,7 @@ git add .
 git commit -m "update"
 git push origin master
 git push origin main
+git push origin develop
 cd "$DOC_ROOT"
 if [ "$HEADLESS" = "true" ]; then
     echo "Exiting"
