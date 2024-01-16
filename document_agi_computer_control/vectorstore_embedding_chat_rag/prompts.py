@@ -24,6 +24,8 @@ Do not just list the files and folders in this folder.
 """,
 )
 
+TARGET_AUDIENCE = "smart developer"
+
 
 def generateCodeSummaryContextQueriesPrompt(
     schema: str,
@@ -69,6 +71,7 @@ def generateFolderSummaryPrompt():
     prompt = """.gitignore"""
     return prompt
 
+
 def generateQAPrompt():
     prompt = """.gitignore"""
-    return prompt 
+    return prompt
