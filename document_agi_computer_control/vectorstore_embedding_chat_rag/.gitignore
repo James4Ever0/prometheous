@@ -1,3 +1,4 @@
 pipeline_storage
 *.bin
 docarray_cache
+storage
