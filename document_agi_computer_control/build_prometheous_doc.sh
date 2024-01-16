@@ -28,13 +28,12 @@ fi
 python3 visual_file_selector_by_ignore_rules/file_copy_by_fd.py -b "$PROJECT_ROOT" -t "$DOC_ROOT/src"
 
 ntfy_error python3 stdout_redirect_progress/main_once.py -- python3 -u recursive_document_writer.py -d "$DOC_ROOT" -u "$PROJECT_URL"
-cd "$PROJECT_ROOT"
 
+cd "$DOC_ROOT"
 git add .
 git commit -m "update"
 git push origin master
 git push origin main
-cd "$DOC_ROOT"
 if [ "$HEADLESS" = "true" ]; then
     echo "Exiting"
 else

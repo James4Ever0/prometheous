@@ -11,7 +11,7 @@ bash build_dalle_doc.sh -s
 bash build_git_atomic_commit_doc.sh -s 
 bash build_gpt_4v_act_doc.sh -s 
 bash build_gpt4v_browse_doc.sh -s 
-bash build_gpt_eecho -e "y\n"_doc.sh -s 
+bash build_gpt_eyes_doc.sh -s 
 bash build_lazero_doc.sh -s 
 bash build_open_qstar_doc.sh -s 
 bash build_prometheous_doc.sh -s 
