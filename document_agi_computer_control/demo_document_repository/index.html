@@ -107,9 +107,9 @@
     </style>
     <link href="https://cdn.jsdelivr.net/npm/prismjs@v1.x/themes/prism.css" rel="stylesheet" />
     <style>
-        /* code {
+        code {
             white-space: pre-wrap !important;
-        } */
+        }
 
         /* html, body{
             max-width: 980px;
@@ -567,9 +567,11 @@
                 drawer.style.display = "none";
                 drawer_mask.style.display = "none";
                 mybutton.innerHTML = `<i class="bi bi-caret-left-square"></i>`;
+                mybutton.setAttribute("title", "Result overview")
                 return;
             } else {
                 mybutton.innerHTML = `<i class="bi bi-caret-right-square"></i>`;
+                mybutton.setAttribute("title", "Hide overview")
 
             }
 
@@ -964,6 +966,7 @@
                     });
                 });
                 var isDesktopScreen = window.innerWidth > 768;
+                var isFirstDrawerEntry = true;
                 var title_topics = []
                 for (var file_id of searchResultItemIds) {
                     const it = searchResultItems[file_id];
@@ -979,7 +982,12 @@
                     const mylocation = it.header.filepath.slice(1)
                     title_topics.push(title_data["/" + mylocation])
 
-                    overview_file_title_elem.innerHTML = `<span>${title_data["/" + mylocation]}</span>`;
+                    overview_file_title_elem.innerHTML = `&bull;&nbsp;<span>${title_data["/" + mylocation]}</span>`;
+                    if (isFirstDrawerEntry) {
+                        isFirstDrawerEntry = false;
+                    }else{
+                        overview_file_title_elem.style.marginTop = '7px'
+                    }
                     overview_file_title_elem.onclick = () => {
                         //  jumpToElement(file_title_elem_id); 
                         toggleDrawerAndJumpToElement(file_title_elem_id);
@@ -994,7 +1002,12 @@
                     file_title_elem.appendChild(file_title_span);
                     // location_p.innerHTML = (mylocation);
 
-                    file_title_span.onclick = () => { navigateToPage(it.header.filepath, it.language_id, project_id, searchHighlightTerms) }
+                    if (isFileSearch) {
+                        file_title_span.onclick = () => { navigateToPage(it.header.filepath, it.language_id, project_id, searchHighlightTerms) }
+                    } else {
+                        file_title_span.onclick = () => { window.location.href = "?q=/" + encodeURIComponent(mylocation) }
+                    }
+
                     // file_title_span.setAttribute('onclick', `navigateToPage(${JSON.stringify(it.header.filepath)}, ${JSON.stringify(it.language_id)},${JSON.stringify(project_id)})`)
                     // location_p.setAttribute('onclick', `navigateToPage(${JSON.stringify(it.header.filepath)}, ${JSON.stringify(it.language_id)}, ${JSON.stringify(project_id)})`)
                     // search_header.appendChild(location_p);
@@ -1043,6 +1056,8 @@
                         if (pair_title_text != undefined) {
                             code_title_span.textContent = pair_title_text
                             overview_pair_title.innerHTML = `&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span>${pair_title_text}</span>`
+                            // overview_pair_title.innerHTML = `&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&#9702;&nbsp;<span>${pair_title_text}</span>`
+
                         }
                         pair_title.appendChild(code_title_span);
                         pair_left.className = "left-half";

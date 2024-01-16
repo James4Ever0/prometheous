@@ -9,7 +9,6 @@ ollama_emb = OllamaEmbeddings(
     # model="llama:7b",
 )
 
-
 def hash_doc(enc: str):
     hash_object = hashlib.md5(enc.encode())
     return hash_object.hexdigest()
