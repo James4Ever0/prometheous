@@ -195,7 +195,7 @@ for it in progressbar.progressbar(code_and_comment_list, prefix="code and commen
                 comment_index_ids.append(doc_id)
                 break
         if cached:
-            print("document cached:", str(it)[:50])
+            print("document cached:", str(it)[:50]+ '...}')
             continue
 
     code_and_comment = f"""Code:
