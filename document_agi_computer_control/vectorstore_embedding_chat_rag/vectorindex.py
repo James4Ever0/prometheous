@@ -16,13 +16,16 @@ from langchain.text_splitter import RecursiveCharacterTextSplitter
 from pydantic import BaseModel
 from tinydb import TinyDB
 
+
 class FileSummary(BaseModel):
     file_hash: str
     summary: str
 
-class FolderSummary(BaseModel): # this is not generated. do it now.
+
+class FolderSummary(BaseModel):  # this is not generated. do it now.
     folder_hash: str
     summary: str
+
 
 textSpliter = RecursiveCharacterTextSplitter(
     chunk_size=1000,
@@ -45,8 +48,13 @@ import sys
 
 sys.path.append(os.path.join(os.path.abspath(os.path.dirname(__file__)), "../"))
 
+cache_path_base = os.path.join(source_dir, "vector_cache")
+folder_summary_db = TinyDB(os.path.join(cache_path_base, "folder_summaries.json"))
+
 metadata = json.loads(open(os.path.join(source_dir, "metadata.json"), "r").read())
-title_metadata = json.loads(open(os.path.join(source_dir, "metadata_title.json"), "r").read())
+title_metadata = json.loads(
+    open(os.path.join(source_dir, "metadata_title.json"), "r").read()
+)
 
 file_mapping = metadata["file_mapping"]
 split_count = metadata["split_count"]
@@ -62,8 +70,11 @@ for i in range(split_count):
     data.update(new_data)
 
 for i in range(title_split_count):
-    new_data = json.loads(open(os.path.join(source_dir, f"data/titles/{i}.json"), "r").read())
+    new_data = json.loads(
+        open(os.path.join(source_dir, f"data/titles/{i}.json"), "r").read()
+    )
     title_data.update(new_data)
+
 
 def strip_quote(s: str):
     if s[0] == s[-1]:
@@ -86,13 +97,14 @@ ollama_emb = OllamaEmbeddings(
     # model="llama:7b",
 )
 
+
 def hash_doc(enc: str):
     hash_object = hashlib.md5(enc.encode())
     return hash_object.hexdigest()
 
 
 from docarray import BaseDoc
-from docarray.index import HnswDocumentIndex # type: ignore
+from docarray.index import HnswDocumentIndex  # type: ignore
 import numpy as np
 
 from docarray.typing import NdArray
@@ -104,24 +116,23 @@ class CodeCommentChunk(BaseDoc):
     title: str
     chunk_hash: str
     file_hash: str
-    embedding: NdArray[4096] # type:ignore
+    embedding: NdArray[4096]  # type:ignore
 
 
 class FileDocumentChunk(BaseDoc):
     file_hash: str
     chunk: str
-    embedding: NdArray[4096] # type:ignore
+    embedding: NdArray[4096]  # type:ignore
 
 
 class FolderDocumentChunk(BaseDoc):
     folder_hash: str
     chunk: str
-    embedding: NdArray[4096] # type:ignore
+    embedding: NdArray[4096]  # type:ignore
 
 
 # import rich
 
-cache_path_base = os.path.join(source_dir, "vector_cache")
 document_cache_path_bash = os.path.join(cache_path_base, "document")
 
 if not os.path.exists(cache_path_base):
