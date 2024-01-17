@@ -1,5 +1,5 @@
-import hashlib
 import os
+import hashlib
 
 os.environ["PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION"] = "python"
 from langchain.embeddings import OllamaEmbeddings

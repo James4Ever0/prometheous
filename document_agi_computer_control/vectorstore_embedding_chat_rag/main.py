@@ -2,6 +2,9 @@ import sys, os
 
 sys.path.append(os.path.dirname(__file__))
 import prompts as P
+import vectorindex as V
+
+from llm import llm_context
 from pydantic import BaseModel
 
 
@@ -28,7 +31,6 @@ prompt = P.generateFileSummaryPrompt(
 )
 
 documentSummary = ...  # file summary
-
 
 prompt = P.generateFileQuestionsPrompt(
     schema, contentType, projectName, filePath, summary

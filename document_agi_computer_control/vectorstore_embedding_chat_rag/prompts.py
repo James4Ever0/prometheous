@@ -240,6 +240,7 @@ Answer the document in Markdown:
 """
     return prompt
 
+
 def generateRecentChatHistorySummaryPrompt(query, answer):
     prompt = f"""You are a professional chat history summarizer. You will produce a chat history summary in 50 words, that both focus on the user prompt and the bot response. DO NOT include bloat words such as 'Both the prompt and the response include'. Capture key details and factors, be insightful. Make your response fluent and coherent, just like a comprehensive summary over the whole chat.
 
@@ -255,7 +256,8 @@ Respond a chat history summary in 50 words:
 """
     return prompt
 
-def generateChatHistorySummaryPrompt(last_chat_history:str,recent_chat_history:str):
+
+def generateChatHistorySummaryPrompt(last_chat_history: str, recent_chat_history: str):
     prompt = f"""You are a professional chat history summarizer. You will produce a chat history summary in 50 words, that both focus on the last chat history and the recent chat history. DO NOT include bloat words such as 'Both history include'. Capture key details and factors, be insightful. Make your response fluent and coherent, just like a comprehensive summary over the whole chat.
     
 Last chat history:
@@ -268,4 +270,8 @@ Recent chat history:
 
 Respond a chat history summary in 50 words:
 """
+    return prompt
+
+def generateFolderSummaryPrompt():
+    prompt = """"""
     return prompt

@@ -10,7 +10,6 @@
 
 import os
 import argparse
-from re import L
 
 parser = argparse.ArgumentParser()
 parser.add_argument("-s", "--source_dir", type=str, required=True)

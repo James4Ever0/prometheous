@@ -290,7 +290,7 @@ def render_document_webpage(
 
     def write_gitignore():
         with open(os.path.join(document_dir_path, ".gitignore"), "w+") as f:
-            f.write("!.gitignore\n!*\n!*/*\ncache_db.json\ncache_tree.json\n")
+            f.write("!.gitignore\n!*\n!*/*\ncache_db.json\ncache_tree.json\nvector_cache\n")
             # f.write("!.gitignore\n!*\n!*/*\ncache_db.json\n")
 
     def render_to_output_path():
