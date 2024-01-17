@@ -48,11 +48,11 @@ File summary:
 
 Generate 3 to 5 queries (NO MORE THAN FIVE) to help you retrieve relevant content to achieve your objective.
 
-Response schema:
+Response pydantic schema:
 
 {schema}
 
-Respond strictly to the schema, in JSON format:
+Respond the context queries strictly to the schema, in JSON format:
 """
     return prompt
 
@@ -79,7 +79,7 @@ File summary:
 
 {context}
 
-Response in Markdown:
+Response the document in Markdown:
 """
     return prompt
 
@@ -88,9 +88,9 @@ def generateFileQuestionsPrompt(
     schema: str,
     contentType: str,
     projectName: str,
-    targetAudience: str,
     filePath: str,
     summary: str,
+    targetAudience: str = TARGET_AUDIENCE,
 ):
     prompt = f"""You are acting as a {contentType} documentation expert for a project called {projectName}.
 Below is the {contentType} from a file located at `{filePath}`. 
@@ -100,11 +100,11 @@ File summary:
 
 {summary}
 
-Response schema:
+Response pydantic schema:
 
 {schema}
 
-Respond strictly to the schema, in JSON format:
+Respond the reader questions strictly to the schema, in JSON format:
 """
     return prompt
 
@@ -112,11 +112,11 @@ Respond strictly to the schema, in JSON format:
 def generateFileAnswerPrompt(
     contentType: str,
     projectName: str,
-    targetAudience: str,
     filePath: str,
     summary: str,
     question: str,
     context: str,
+    targetAudience: str = TARGET_AUDIENCE,
 ):
     prompt = f"""You are acting as a {contentType} documentation expert for a project called {projectName}.
 Below is the {contentType} from a file located at `{filePath}`.
@@ -135,7 +135,7 @@ Context about the question:
 
 Answer the question in 1-2 sentences. Output should be in markdown format.
 
-Respond in markdown format:
+Respond the answer to the question in markdown format:
 """
     return prompt
 
@@ -161,11 +161,11 @@ Folder summary:
 
 Generate 3 to 5 queries (NO MORE THAN FIVE) to help you retrieve relevant content to achieve your objective.
 
-Response schema:
+Response pydantic schema:
 
 {schema}
 
-Respond strictly to the schema, in JSON format:
+Respond the context queries strictly to the schema, in JSON format:
 """
     return prompt
 
@@ -192,23 +192,31 @@ Folder summary:
 
 {context}
 
-Response in Markdown:
+Response the document in Markdown:
 """
     return prompt
 
 
-def generateCondensePrompt(chat_history:str, question:str): # in order to query context for next question, we generate another query'
+def generateCondensePrompt(
+    chat_history: str, question: str
+):  # in order to query context for next question, we generate another query'
     prompt = f"""Given the following conversation and a follow up question, rephrase the follow up question to be a standalone question.
 
 Chat History:
 {chat_history}
 Follow Up Input: {question}
-Standalone question:
+Respond the standalone question:
 """
     return prompt
 
 
-def generateQAPrompt(contentType:str, projectName:str,targetAudience:str,question:str, context:str):
+def generateQAPrompt(
+    contentType: str,
+    projectName: str,
+    question: str,
+    context: str,
+    targetAudience: str = TARGET_AUDIENCE,
+):
     prompt = f"""You are an AI assistant for a software project called {projectName}. You are trained on all the {contentType} that makes up this project.
 You are given the following extracted parts of a technical summary of files in a {contentType} and a question. 
 Provide a conversational answer with hyperlinks back to GitHub.
@@ -228,6 +236,36 @@ Question: {question}
 Context:
 {context}
 
-Answer in Markdown:
+Answer the document in Markdown:
+"""
+    return prompt
+
+def generateRecentChatHistorySummaryPrompt(query, answer):
+    prompt = f"""You are a professional chat history summarizer. You will produce a chat history summary in 50 words, that both focus on the user prompt and the bot response. DO NOT include bloat words such as 'Both the prompt and the response include'. Capture key details and factors, be insightful. Make your response fluent and coherent, just like a comprehensive summary over the whole chat.
+
+User:
+
+{query}
+
+Bot:
+
+{answer}
+
+Respond a chat history summary in 50 words:
+"""
+    return prompt
+
+def generateChatHistorySummaryPrompt(last_chat_history:str,recent_chat_history:str):
+    prompt = f"""You are a professional chat history summarizer. You will produce a chat history summary in 50 words, that both focus on the last chat history and the recent chat history. DO NOT include bloat words such as 'Both history include'. Capture key details and factors, be insightful. Make your response fluent and coherent, just like a comprehensive summary over the whole chat.
+    
+Last chat history:
+
+{last_chat_history}
+
+Recent chat history:
+
+{recent_chat_history}
+
+Respond a chat history summary in 50 words:
 """
     return prompt
