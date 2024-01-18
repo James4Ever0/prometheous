@@ -55,6 +55,10 @@ def strip_quote(s: str):
             return s[1:-1].strip()
     return s.strip()
 
+def strip_quote_and_get_first_line(s:str):
+    s = strip_quote(s)
+    first_line = s.split("\n")[0]
+    return strip_quote(first_line)
 
 # read metadata.json & data/*.json
 # create and read some cache_tree.json, which you may want to include in .gitignore
@@ -137,7 +141,7 @@ def generate_tree_repesentation(
     else:
         name = directory_path.strip("/").split("/")[-1]
     mbrief, show = directory_briefs[directory_path]
-    mbrief = strip_quote(mbrief)
+    mbrief = strip_quote_and_get_first_line(mbrief)
     briefs.append(
         " " * indent * 4
         + f'- <span hierarchy="{indent}" class="expanded" onclick="toggleVisibility(this)" ><strong class="directory" id="{directory_path}"><code>{html_escape(name)}</code></strong>'
@@ -166,7 +170,7 @@ def generate_tree_repesentation(
             child_link = f"index.html?q={urllib.parse.quote(child)}"
             briefs.append(
                 " " * (indent + 1) * 4
-                + f'- <a class="file_link" href="{child_link}" id="{child}"><code>{html_escape(child_name)}</code></a> <em>{strip_quote(file_briefs[child])}</em>'
+                + f'- <a class="file_link" href="{child_link}" id="{child}"><code>{html_escape(child_name)}</code></a> <em>{strip_quote_and_get_first_line(file_briefs[child])}</em>'
             )
 
     return briefs
@@ -335,6 +339,8 @@ from jinja2 import Template
 markdown_content = "\n".join(briefs)
 # Convert Markdown to HTML
 html_content = markdown.markdown(markdown_content)
+# print(markdown_content)
+# breakpoint()
 
 template_path = os.path.join(os.path.abspath(os.path.dirname(__file__)), "tree.html.j2")
 css_path = os.path.join(
