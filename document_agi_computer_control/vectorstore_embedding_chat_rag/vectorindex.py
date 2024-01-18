@@ -178,7 +178,7 @@ folder_document_index = HnswDocumentIndex[FolderDocumentChunk](
 )
 
 comment_index_ids = []
-import progressbar
+import progressbar, random, time
 
 for it in progressbar.progressbar(code_and_comment_list, prefix="code and comments:"):
     chunk_hash = hash_doc(it["code"])
@@ -195,7 +195,7 @@ for it in progressbar.progressbar(code_and_comment_list, prefix="code and commen
                 comment_index_ids.append(doc_id)
                 break
         if cached:
-            print("document cached:", str(it)[:50]+ '...}')
+            print("document cached:", str(it)[:50] + "...}")
             continue
 
     code_and_comment = f"""Code:
@@ -206,8 +206,19 @@ Comment:
 
 {it['comment']}
 """
+    while True:
+        embed_list = ollama_emb.embed_query(code_and_comment)
+        if embed_list is not None:
+            break
+        else:
+            print("waiting for ollama service to be idle")
+            time.sleep(random.random())
 
-    embed = np.array(ollama_emb.embed_query(code_and_comment))
+    embed = np.array(embed_list)  # it returns None. how comes?
+    # during LLM completion api?
+    # print(code_and_comment)
+    # print(embed.shape)
+    # breakpoint()
     docObject = CodeCommentChunk(
         **it, chunk_hash=chunk_hash, embedding=embed
     )  # type:ignore
@@ -230,30 +241,6 @@ def print_and_return(content: str):
 
 if __name__ == "__main__":
     # query for code & embedding index
-    query = input("query for code & embedding index:\n")
-    ans = comment_index._search_and_filter(
-        np.array(ollama_emb.embed_query(query)).reshape(1, -1),
-        limit=3,
-        # limit=10,
-        search_field="embedding",
-        hashed_ids=set(comment_index_ids),
-    )
-    print("ans:", ans)
-
-    context = ""
-
-    for it in ans.documents[0]:
-        location = it.location
-        file_location = location.split(":")[0]
-        context += print_and_return("-" * 10)
-        context += print_and_return("Location:")
-        context += print_and_return(location)
-        # context += print_and_return("Title:")
-        # context += print_and_return(title_data.get(location, title_data[file_location]))
-        context += print_and_return("Comment:")
-        context += print_and_return(it.comment)
-        context += print_and_return("Code:")
-        context += print_and_return(it.code)
     init_prompt = """You are a helpful assistant who can answer questions based on relevant context about a specific code project. Please answer the user query according to the context.
 Assume the reader does not know anything about how the project is strucuted or which folders/files are provided in the context.
 Do not reference the context in your answer. Instead use the context to inform your answer.
@@ -261,7 +248,33 @@ If you don't know the answer, just say "Hmm, I'm not sure." Don't try to make up
 Your answer should be at least 100 words and no more than 300 words.
 Do not include information that is not directly relevant to the question, even if the context includes it.
 """
-    with llm_context(init_prompt, temperature=0.2) as model:
-        model.run(
-            f"Context:\n{context}\nUser query: {query}\nRespond in Markdown format:\n"
+    while True:
+        query = input("query for code & embedding index:\n")
+        ans = comment_index._search_and_filter(
+            np.array(ollama_emb.embed_query(query)).reshape(1, -1),
+            limit=3,
+            # limit=10,
+            search_field="embedding",
+            hashed_ids=set(comment_index_ids),
         )
+        print("ans:", ans)
+
+        context = ""
+
+        for it in ans.documents[0]:
+            location = it.location
+            file_location = location.split(":")[0]
+            context += print_and_return("-" * 10)
+            context += print_and_return("Location:")
+            context += print_and_return(location)
+            # context += print_and_return("Title:")
+            # context += print_and_return(title_data.get(location, title_data[file_location]))
+            context += print_and_return("Comment:")
+            context += print_and_return(it.comment)
+            context += print_and_return("Code:")
+            context += print_and_return(it.code)
+
+        with llm_context(init_prompt, temperature=0.2) as model:
+            model.run(
+                f"Context:\n{context}\nUser query: {query}\nRespond in Markdown format:\n"
+            )
