@@ -29,18 +29,31 @@ env PROJECT_NAME="PaddleVideo" AUTHOR="PaddlePaddle" bash build_doc_at_prima_wit
 # # note: for time we only do some documentation for some repo.
 
 env PROJECT_NAME="robo_transformers" AUTHOR="sebbyjp" bash build_doc_at_prima_with_author_and_project_name.sh -s
-# env PROJECT_NAME="DynamiCrafter" AUTHOR="Doubiiu" bash build_doc_at_prima_with_author_and_project_name.sh -s
+
+# new
+env PROJECT_NAME="DynamiCrafter" AUTHOR="Doubiiu" bash build_doc_at_prima_with_author_and_project_name.sh -s
+
 env PROJECT_NAME="local_rag" AUTHOR="erenirmak" bash build_doc_at_prima_with_author_and_project_name.sh -s
 # env PROJECT_NAME="RWKV-LM" AUTHOR="BlinkDL" bash build_doc_at_prima_with_author_and_project_name.sh -s
-# env PROJECT_NAME="act-plus-plus" AUTHOR="MarkFzp" bash build_doc_at_prima_with_author_and_project_name.sh -s
+
+# new
+env PROJECT_NAME="act-plus-plus" AUTHOR="MarkFzp" bash build_doc_at_prima_with_author_and_project_name.sh -s
+
 env PROJECT_NAME="open_x_embodiment" AUTHOR="google-deepmind" bash build_doc_at_prima_with_author_and_project_name.sh -s
-# env PROJECT_NAME="mobile-aloha" AUTHOR="MarkFzp" bash build_doc_at_prima_with_author_and_project_name.sh -s
+
+# new
+env PROJECT_NAME="mobile-aloha" AUTHOR="MarkFzp" bash build_doc_at_prima_with_author_and_project_name.sh -s
+
 env PROJECT_NAME="google-research" AUTHOR="google-research" bash build_doc_at_prima_with_author_and_project_name.sh -s
-# env PROJECT_NAME="NExT-Chat" AUTHOR="NExT-ChatV" bash build_doc_at_prima_with_author_and_project_name.sh -s
+
+# new
+env PROJECT_NAME="NExT-Chat" AUTHOR="NExT-ChatV" bash build_doc_at_prima_with_author_and_project_name.sh -s
+
 env PROJECT_NAME="MultiModalMamba" AUTHOR="kyegomez" bash build_doc_at_prima_with_author_and_project_name.sh -s
 env PROJECT_NAME="RT-2" AUTHOR="kyegomez" bash build_doc_at_prima_with_author_and_project_name.sh -s
 env PROJECT_NAME="AutoRT" AUTHOR="kyegomez" bash build_doc_at_prima_with_author_and_project_name.sh -s
 env PROJECT_NAME="autodoc" AUTHOR="context-labs" bash build_doc_at_prima_with_author_and_project_name.sh -s
+
 # env PROJECT_NAME="llama_index" AUTHOR="run-llama" bash build_doc_at_prima_with_author_and_project_name.sh -s
 
 # # do not do anything to gitee projects. ignore rules are not done yet.

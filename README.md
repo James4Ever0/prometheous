@@ -6,6 +6,10 @@ As before, our past is complete chaos because of inadequate knowledge and time f
 
 Find tools for searching our code, build a semantic chatbot to serve us, for hacking, earning and creating.
 
+---
+
+Planning: Run the code in sandbox environment, to let the agent make use of the code, write documents and save development time
+
 ## AI Based Client Side Documentation for All My Projects
 
 refuse to generate detailed documentation on huge project at once. only generate for limited number of code within limited areas. others might be summarized and hyperlinked.

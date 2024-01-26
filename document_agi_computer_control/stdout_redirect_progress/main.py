@@ -56,10 +56,10 @@ class VisualIgnoreApp(App):
 # TODO: parse the data received from the separate process, line by line.
 # TODO: if the data starts with something special, we would read and parse the whole line and update progress
 # this is sick.
-# cmd = ["python3", "test.py"]
-# cmd = ["stdbuf", "-o0", "-e0", "bash", "-c", "python3 test.py 2>&1"]
-cmd = ["stdbuf", "-o0", "-e0", "python3", "test.py"]
-# cmd = ["bash", "-c", "python3 test.py 2>&1"]
+# cmd = ["python3.9", "test.py"]
+# cmd = ["stdbuf", "-o0", "-e0", "bash", "-c", "python3.9 test.py 2>&1"]
+cmd = ["stdbuf", "-o0", "-e0", "python3.9", "test.py"]
+# cmd = ["bash", "-c", "python3.9 test.py 2>&1"]
 
 line_format = "PROCESSING PROGRESS: {progress:d}%"
 
@@ -117,11 +117,11 @@ async def main(mylog, prog, error_container):
         # proc = await asyncio.create_subprocess_exec(
         # *cmd, stdout=asyncio.subprocess.PIPE
         # UNBUFFERED FLAG: -u
-        "bash -c 'python3 -u test_no_patch.py 2>&1'",
+        "bash -c 'python3.9 -u test_no_patch.py 2>&1'",
         stdout=asyncio.subprocess.PIPE,
         stderr=asyncio.subprocess.PIPE
-        # "python3 -u test_no_patch.py", stdout=asyncio.subprocess.PIPE
-        # "python3 test.py", stdout=asyncio.subprocess.PIPE
+        # "python3.9 -u test_no_patch.py", stdout=asyncio.subprocess.PIPE
+        # "python3.9 test.py", stdout=asyncio.subprocess.PIPE
     )  # how to handle the stderr now? we may merge the altogether.
     t1 = asyncio.create_task(read_stdout(proc, mylog, prog))
     t2 = asyncio.create_task(read_stderr(proc, error_container))

@@ -7,12 +7,12 @@ export BETTER_EXCEPTIONS=1
 
 
 
-# python3 stdout_redirect_progress/main_once.py -- python3 -u recursive_document_writer.py -d "/media/root/Toshiba XG3/works/prometheous/document_agi_computer_control/demo_document_repository" -u "https://github.com/james4ever0/agi_computer_control"
-python3 recursive_document_writer.py -d "/media/root/Toshiba XG3/works/prometheous/document_agi_computer_control/demo_document_repository" -u "https://github.com/james4ever0/agi_computer_control"
+# python3.9 stdout_redirect_progress/main_once.py -- python3.9 -u recursive_document_writer.py -d "/media/root/Toshiba XG3/works/prometheous/document_agi_computer_control/demo_document_repository" -u "https://github.com/james4ever0/agi_computer_control"
+python3.9 recursive_document_writer.py -d "/media/root/Toshiba XG3/works/prometheous/document_agi_computer_control/demo_document_repository" -u "https://github.com/james4ever0/agi_computer_control"
 
 cd demo_document_repository
 if [ "$HEADLESS" = "true" ]; then
     echo "Exiting"
 else
-    python3 -m http.server 8001
+    python3.9 -m http.server 8001
 fi

@@ -82,8 +82,8 @@ class VisualIgnoreApp(App):
         if locked: # taking forever. bad.
             cont, _= await run_command(
             # diff_content = subprocess.check_output(
-                f'python3 run_simple.py -d "{self.diffpath}"'
-                # ["python3", "run_simple.py", "-d", self.diffpath]
+                f'python3.9 run_simple.py -d "{self.diffpath}"'
+                # ["python3.9", "run_simple.py", "-d", self.diffpath]
             )
             # cont = diff_content.decode()
             has_error = False

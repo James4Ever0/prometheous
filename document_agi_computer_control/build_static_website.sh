@@ -1,1 +1,1 @@
-python3 build_website.py -f "/media/root/Toshiba XG3/works/agi_computer_control_python_doc/src" -d "/media/root/Toshiba XG3/works/agi_computer_control_python_doc/doc" -o "/media/root/Toshiba XG3/works/agi_computer_control_python_doc"
+python3.9 build_website.py -f "/media/root/Toshiba XG3/works/agi_computer_control_python_doc/src" -d "/media/root/Toshiba XG3/works/agi_computer_control_python_doc/doc" -o "/media/root/Toshiba XG3/works/agi_computer_control_python_doc"

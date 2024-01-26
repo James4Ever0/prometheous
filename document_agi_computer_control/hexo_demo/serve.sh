@@ -6,4 +6,4 @@ npm install hexo-generator-search --save
 npm install
 hexo generate
 cd public
-python3 -m http.server 8021
+python3.9 -m http.server 8021

@@ -18,4 +18,4 @@ hexo new "New blog"
 hexo generate
 # where is template?
 cd public
-python3 -m http.server 8021
+python3.9 -m http.server 8021

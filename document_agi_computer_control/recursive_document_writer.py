@@ -323,10 +323,10 @@ def main():
     # not done yet. we have to create the webpage.
     render_document_webpage(document_dir_path, param, repository_url)
     run_subprocess(
-        f"python3 -u tree_markdown_view_folder_hierarchy/main_recursive.py -s '{document_dir_path}'"
+        f"python3.9 -u tree_markdown_view_folder_hierarchy/main_recursive.py -s '{document_dir_path}'"
     )
-    run_subprocess(f"python3 -u title_generator/main.py -s '{document_dir_path}'")
-    run_subprocess(f"python3 -u sitemap_generator/main.py -s '{document_dir_path}'")
+    run_subprocess(f"python3.9 -u title_generator/main.py -s '{document_dir_path}'")
+    run_subprocess(f"python3.9 -u sitemap_generator/main.py -s '{document_dir_path}'")
 
 
 if __name__ == "__main__":

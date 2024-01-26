@@ -44,7 +44,7 @@ with TemporaryDirectory() as tempdir:
     basepath = os.path.abspath(diffpath)
     subprocess.run(
         [
-            "python3",
+            "python3.9",
             "display_tree_structure.py",
             "--full",
             full,

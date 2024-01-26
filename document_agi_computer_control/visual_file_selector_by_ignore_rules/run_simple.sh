@@ -1,1 +1,1 @@
-python3 run_simple.py -d "/media/root/Toshiba XG3/works/agi_computer_control"
+python3.9 run_simple.py -d "/media/root/Toshiba XG3/works/agi_computer_control"
