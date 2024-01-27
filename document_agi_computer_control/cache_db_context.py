@@ -11,6 +11,7 @@ import tempfile
 UTF8 = "utf-8"
 
 
+
 @beartype
 def read_file_bytes(filename: str):
     with open(filename, "rb") as f:
@@ -307,6 +308,8 @@ def iterate_source_dir_and_generate_to_target_dir(
             print(f"\n>>>> PROCESSING PROGRESS: 0/{items_count}")
             for i, (_, fpath) in enumerate(items):
                 print("processing:", fpath)
+                # if file_empty(fpath):
+                #     continue
                 process_file_and_append_to_cache_paths(
                     manager, fpath, processed_cache_paths
                 )

@@ -122,15 +122,23 @@ for k, v in file_mapping.items():
     # end_id is exclusive.
     if str(int(k) + 1) in file_mapping.keys():
         end_id = int(file_mapping[str(int(k) + 1)]["entry_id"])
-    else:
+    elif (int(k) + 1) == len(file_mapping.items()):
         end_id = data_count
+    else:
+        raise Exception(
+            f"Missing next item for index {k}, file count {len(file_mapping.items())}"
+        )
     file_mapping_detail[k] = {
         "filepath": v["filepath"],
         "span": {"start": int(v["entry_id"]), "end": end_id},
     }
 file_count = len(file_mapping.keys())
 print(f"\n>>>> PROCESSING PROGRESS: 0/{file_count}")
-
+# print(file_mapping_detail)
+# with open("/tmp/file_mapping.txt", "w+") as f:
+#     f.write(str(file_mapping_detail))
+# raise Exception(file_mapping_detail)
+# breakpoint()
 for i in range(file_count):
     try:
         it = file_mapping_detail[str(i)]
@@ -141,6 +149,7 @@ for i in range(file_count):
         generate_title_and_update_to_result(
             data[str(start)]["content"], data[str(start + 1)]["content"], title_data
         )
+        # raise Exception(start,end,split_count)
         if split_count == 1:  # only generate for file summary
             continue
         else:

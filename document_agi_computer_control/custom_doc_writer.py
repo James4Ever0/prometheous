@@ -370,6 +370,8 @@ def process_content_and_return_result(
         use_previous_comment=use_previous_comment,
     )
     result_all = process_content_and_get_result(process_queue, content)
+    if result_all == []:
+        raise Exception("Empty processed result for file: %s" % code_file_path)
     summary = summary_code_comment_return_value(result_all)
     data = DocProcessingResult(summary=summary, details=result_all)
     del process_queue

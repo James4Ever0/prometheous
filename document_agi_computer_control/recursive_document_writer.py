@@ -31,11 +31,22 @@ from identify_utils import get_language_id_from_filename
 
 
 @beartype
+def file_empty(fpath: str):
+    assert os.path.exists(fpath), "File %s does not exist" % fpath
+    with open(fpath, "r") as f:
+        content = f.read().strip()
+        if content == "":
+            return True
+    return False
+
+
+@beartype
 def dirpath_and_fpath_walker(dir_path: str):
     for dirpath, _, filenames in os.walk(dir_path):
         for filename in filenames:
             fpath = os.path.join(dirpath, filename)
-            yield dirpath, fpath
+            if not file_empty(fpath):
+                yield dirpath, fpath
 
 
 @beartype
@@ -130,7 +141,8 @@ def render_document_webpage(
     template_dir: str = ".",
     template_filename: str = "website_template.html.j2",
     output_filename: str = "index.html",
-    url_prefix: str = "https://github.com/",
+    url_prefixs: list[str] = ["https://github.com/", "https://gitee.com/"],
+    # url_prefix: str = "https://github.com/",
 ):
     @beartype
     def load_template() -> Template:
@@ -195,7 +207,11 @@ def render_document_webpage(
             update_data_by_target_data(target_data, file_id, source_relative_path)
 
         def assemble_render_params():
-            partial_repository_url = repository_url.replace(url_prefix, "")
+            partial_repository_url = repository_url
+            for it in url_prefixs:
+                partial_repository_url = partial_repository_url.replace(it, "").strip(
+                    "/"
+                )
             render_params = dict(
                 datadict=data,
                 repository_url=repository_url,
@@ -211,6 +227,7 @@ def render_document_webpage(
                     sp for _, sp in dirpath_and_fpath_walker(param.source_dir_path)
                 ]
                 source_path_list.sort()  # to reduce git folder size
+                
                 for file_id, source_path in enumerate(source_path_list):
                     source_relative_path = strip_path_prefix(source_path)
                     record, _ = manager.get_record_by_computing_source_hash(source_path)
@@ -290,7 +307,9 @@ def render_document_webpage(
 
     def write_gitignore():
         with open(os.path.join(document_dir_path, ".gitignore"), "w+") as f:
-            f.write("!.gitignore\n!*\n!*/*\ncache_db.json\ncache_tree.json\nvector_cache\n")
+            f.write(
+                "!.gitignore\n!*\n!*/*\ncache_db.json\ncache_tree.json\nvector_cache\n"
+            )
             # f.write("!.gitignore\n!*\n!*/*\ncache_db.json\n")
 
     def render_to_output_path():
