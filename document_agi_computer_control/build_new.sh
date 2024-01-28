@@ -34,7 +34,9 @@ env PROJECT_NAME="robo_transformers" AUTHOR="sebbyjp" bash build_doc_at_prima_wi
 env PROJECT_NAME="DynamiCrafter" AUTHOR="Doubiiu" bash build_doc_at_prima_with_author_and_project_name.sh -s
 
 env PROJECT_NAME="local_rag" AUTHOR="erenirmak" bash build_doc_at_prima_with_author_and_project_name.sh -s
-# env PROJECT_NAME="RWKV-LM" AUTHOR="BlinkDL" bash build_doc_at_prima_with_author_and_project_name.sh -s
+
+# new 2
+env PROJECT_NAME="RWKV-LM" AUTHOR="BlinkDL" bash build_doc_at_prima_with_author_and_project_name.sh -s
 
 # new
 env PROJECT_NAME="act-plus-plus" AUTHOR="MarkFzp" bash build_doc_at_prima_with_author_and_project_name.sh -s
