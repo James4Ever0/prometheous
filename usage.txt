@@ -1,0 +1,15 @@
+two bash files are created for demostration purposes. need to change to the same working directory as the script and modify environment variables before use:
+    run_with_custom_binaries.sh
+        create documentation website for codebase, from validating ignore files to actual documentation generation, summarization, then serve the documentation to localhost
+    document_agi_computer_control/vectorstore_embedding_chat_rag/universal_vectorindex.sh
+        create vector index for codebase, will skip processed code chunks, then initialize an rag dialog prompt
+
+two requirement files have versions frozen for python 3.9 (linux, conda, x86_64):
+    frozen_versions/document_requirements_py39.txt
+        should be installed first
+    frozen_versions/vectorindex_requirements_py39.txt
+        install later if vectorindex or rag is needed
+
+two non-frozen requirement files: (valid at 7/23/25)
+    document_agi_computer_control/requirements.txt
+    document_agi_computer_control/vectorstore_embedding_chat_rag/requirements.txt

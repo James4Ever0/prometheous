@@ -30,13 +30,22 @@ chmod +x $TMP_BINARY_PATH/python3.9
 export PATH=$TMP_BINARY_PATH:$PATH
 
 export PROMETHEOUS_MAX_TOKENS=13468
-export PROMETHEOUS_MODEL_NAME=gemma3:27b
 export OPENAI_API_KEY=any
-export OPENAI_API_BASE=http://10.10.11.178:11434/v1
 
-export PROJECT_ROOT="/home/jamesbrown/Desktop/meilin_java/txt_files_source"
+export OPENAI_API_BASE=http://localhost:11434/v1
+export PROMETHEOUS_MODEL_NAME=gemma:2b-instruct
+
+#export OPENAI_API_BASE=http://10.10.11.178:11434/v1
+#export PROMETHEOUS_MODEL_NAME=gemma3:27b
+
+#export PROJECT_ROOT="/home/jamesbrown/Desktop/meilin_java/txt_files_source"
+#export DOC_ROOT="/home/jamesbrown/Desktop/meilin_java/txt_controller_java_doc"
+
+export PROJECT_ROOT=$(realpath ../test_doc/src)
+export DOC_ROOT=$(realpath ../test_doc/doc)
+
 export PROJECT_URL="https://dummy_project_url.local"
-export DOC_ROOT="/home/jamesbrown/Desktop/meilin_java/txt_controller_java_doc"
+
 export HEADLESS=false
 
 cd document_agi_computer_control

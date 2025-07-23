@@ -12,12 +12,23 @@
 import os
 import argparse
 
-os.environ["OPENAI_API_KEY"] = "any"
-os.environ["OPENAI_API_BASE"] = "http://0.0.0.0:8000"
+openai_api_key = os.environ.get("OPENAI_API_KEY")
+openai_api_base = os.environ.get("OPENAI_API_BASE")
 
 os.environ["BETTER_EXCEPTIONS"] = "1"
 
-ollama_embedding_model = "openhermes2.5-mistral:latest"
+ollama_embedding_model = os.environ.get("PROMETHEOUS_EMBEDDING_MODEL")
+ollama_base_url = os.environ.get("OLLAMA_BASE_URL")
+
+embedding_dimension = int(os.environ.get("EMBEDDING_DIMENSION"))
+
+print("PARAMS:")
+
+print("openai api key:", openai_api_key)
+print("openai api base:", openai_api_base)
+print("ollama embedding model:", ollama_embedding_model)
+print("ollama base url:", ollama_base_url)
+print("embedding dimension:", embedding_dimension)
 
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from pydantic import BaseModel
@@ -138,7 +149,7 @@ from langchain.embeddings import OllamaEmbeddings
 
 ollama_emb = OllamaEmbeddings(
     model=ollama_embedding_model,
-    # model="llama:7b",
+    base_url = ollama_base_url
 )
 
 
@@ -154,19 +165,19 @@ class CodeCommentChunk(BaseDoc):
     comment: str
     location: str
     chunk_hash: str
-    embedding: NdArray[4096]  # type:ignore
+    embedding: NdArray[embedding_dimension]  # type:ignore
 
 
 class FileDocumentChunk(BaseDoc):
     file_hash: str
     chunk: str
-    embedding: NdArray[4096]  # type:ignore
+    embedding: NdArray[embedding_dimension]  # type:ignore
 
 
 class FolderDocumentChunk(BaseDoc):
     folder_hash: str
     chunk: str
-    embedding: NdArray[4096]  # type:ignore
+    embedding: NdArray[embedding_dimension]  # type:ignore
 
 
 # create a Document Index
@@ -243,6 +254,7 @@ def print_and_return(content: str):
 
 
 if __name__ == "__main__":
+    print("===Initializaion Complete===")
     # query for code & embedding index
     init_prompt = """You are a helpful assistant who can answer questions based on relevant context about a specific code project. Please answer the user query according to the context.
 Assume the reader does not know anything about how the project is strucuted or which folders/files are provided in the context.

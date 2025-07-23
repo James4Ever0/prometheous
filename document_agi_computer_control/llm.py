@@ -3,7 +3,11 @@
 from contextlib import contextmanager
 
 #from langchain.llms import OpenAI # TODO: use openlm
-from langchain_community.llms import OpenLM as OpenAI
+#from langchain_community.llms import OpenLLM as OpenAI
+
+# TODO: use litellm instead of langchain openai
+import litellm
+
 import tiktoken
 
 import os
@@ -58,21 +62,29 @@ class LLM:
         Returns:
             str: The generated text.
         """
-        llm = OpenAI(
+        messages = [
+            dict(role="system", 
+                content=self.prompt),
+            dict(role="user",
+                content=query)
+            ]
+        llm = litellm.completion(
             temperature=self.temperature,
-            max_tokens=-1,
-            model_name=self.model_name,
-            disallowed_special=(),  # to suppress error when special tokens within the input text (encode special tokens as normal text)
+            stream=True,
+            model="openai/%s" % self.model_name,
+            messages = messages
         )
-        # chain = LLMChain(llm=llm, prompt=self.prompt)
         chunk_list = []
         print_center("query")
         print(query)
         print_center("response")
-        _input = "\n".join([self.prompt, query])
-        for chunk in llm.stream(input=_input):
-            print(chunk, end="", flush=True)
-            chunk_list.append(chunk)
+        for it in llm:
+            delta= it['choices'][0]['delta']
+            if hasattr(delta, "content"):
+                chunk = getattr(delta, 'content')
+                if chunk:
+                    print(chunk, end="", flush=True)
+                    chunk_list.append(chunk)
         print()
 
         result = "".join(chunk_list)

@@ -1,9 +1,9 @@
 langchain
+langchain-ollama
 pydantic
 tinydb
-docarray
+docarray[hnswlib]
 numpy
-docarray
 progressbar2
 rich
 llama_index

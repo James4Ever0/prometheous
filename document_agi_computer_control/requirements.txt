@@ -13,10 +13,13 @@ humanize
 rich
 aiofiles
 numpy
-langchain-community
+#langchain-community
 identify
 openai
 
 # for openai compatible completion
-langchain-openai
-openlm
+#langchain-openai
+#openlm
+
+#openllm
+litellm
