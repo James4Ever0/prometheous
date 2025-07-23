@@ -1,9 +1,12 @@
 # from langchain.prompts import Prompt
 # from langchain.chains import LLMChain
 from contextlib import contextmanager
-from langchain.llms import OpenAI
+
+#from langchain.llms import OpenAI # TODO: use openlm
+from langchain_community.llms import OpenLM as OpenAI
 import tiktoken
 
+import os
 
 
 def print_center(banner: str):
@@ -29,8 +32,12 @@ class LLM:
         self.prompt_size = self.number_of_tokens(prompt)
         self.temperature = temperature
         self.gpt_4 = gpt_4
-        self.model_name = "gpt-4" if self.gpt_4 else "text-davinci-003"
-        self.max_tokens = 4097 * 2 if self.gpt_4 else 4097
+        self.model_name = os.environ.get(
+            "PROMETHEOUS_MODEL_NAME", "gpt-4" if self.gpt_4 else "text-davinci-003"
+        )
+        self.max_tokens = int(
+            os.environ.get("PROMETHEOUS_MAX_TOKENS", 4097 * 2 if self.gpt_4 else 4097)
+        )
         self.show_init_config()
 
     def show_init_config(self):
