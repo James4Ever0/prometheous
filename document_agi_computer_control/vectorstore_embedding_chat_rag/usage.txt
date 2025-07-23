@@ -1,0 +1,9 @@
+
+example usage in: test_vectorindex.sh
+
+after running, it will first cache all files as vector embedding (will skip existing ones), then pop up a dialog for rag.
+
+``bash
+python3 vectorindex.py -s <dir_that_doc_being_generated>
+```
+
