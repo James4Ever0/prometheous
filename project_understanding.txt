@@ -1,0 +1,18 @@
+scripts are mainly organized using bash
+
+the llm is invoked at llm.py
+
+to control the llm invocation, use the following environment variables:
+
+PROMETHEOUS_MAX_TOKENS
+PROMETHEOUS_MODEL_NAME
+OPENAI_API_KEY
+OPENAI_API_BASE
+
+scripts are bounded to the environment of the development machine
+
+using custom python version "python3.9" and a special binary "ntfy_error"
+
+all python package versions are unspecified in "requirements.txt", so you may have to retrieve relevent versions from the development machine
+
+build_extra.sh > build_doc_custom.sh
