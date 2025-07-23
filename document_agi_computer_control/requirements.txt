@@ -1,0 +1,21 @@
+beartype
+jinja2
+langchain
+parse
+pydantic
+tiktoken
+tinydb
+textual
+markdown
+# textwrap
+humanize
+rich
+aiofiles
+numpy
+langchain-community
+identify
+openai
+
+# for openai compatible completion
+langchain-openai
+openlm

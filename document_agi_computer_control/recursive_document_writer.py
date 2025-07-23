@@ -4,6 +4,8 @@
 
 # TODO: add shared context while spliting code into chunks
 
+# TODO: create a docker container for this to run
+
 import os
 from typing import Literal, Optional, Union #, OrderedDict
 import uuid
@@ -12,6 +14,7 @@ from slice_utils import split_dict_into_chunks
 import parse
 import shutil
 import custom_doc_writer
+import sys
 
 CODE_LOCATION_FORMAT = '"{code_path}":{line_start:d}-{line_end:d}'
 DATA_SLICE_LENGTH = 100
@@ -344,11 +347,12 @@ def main():
     param = scan_code_dir_and_write_to_comment_dir(document_dir_path)
     # not done yet. we have to create the webpage.
     render_document_webpage(document_dir_path, param, repository_url)
+    python_exec=sys.executable
     run_subprocess(
-        f"python3.9 -u tree_markdown_view_folder_hierarchy/main_recursive.py -s '{document_dir_path}'"
+        f"{python_exec} -u tree_markdown_view_folder_hierarchy/main_recursive.py -s '{document_dir_path}'"
     )
-    run_subprocess(f"python3.9 -u title_generator/main.py -s '{document_dir_path}'")
-    run_subprocess(f"python3.9 -u sitemap_generator/main.py -s '{document_dir_path}'")
+    run_subprocess(f"{python_exec} -u title_generator/main.py -s '{document_dir_path}'")
+    run_subprocess(f"{python_exec} -u sitemap_generator/main.py -s '{document_dir_path}'")
 
 
 if __name__ == "__main__":
