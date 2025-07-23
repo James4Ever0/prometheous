@@ -1,6 +1,6 @@
 two bash files are created for demostration purposes. need to change to the same working directory as the script and modify environment variables before use:
     run_with_custom_binaries.sh
-        create documentation website for codebase, from validating ignore files to actual documentation generation, summarization, then serve the documentation to localhost
+        create documentation website for codebase, from validating ignore files to actual documentation generation, summarization, and serving the documentation to localhost
     document_agi_computer_control/vectorstore_embedding_chat_rag/universal_vectorindex.sh
         create vector index for codebase, will skip processed code chunks, then initialize an rag dialog prompt
 
