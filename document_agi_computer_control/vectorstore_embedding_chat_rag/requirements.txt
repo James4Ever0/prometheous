@@ -2,7 +2,7 @@ langchain
 langchain-ollama
 pydantic
 tinydb
-docarray[hnswlib]
+docarray[hnswlib,proto]
 numpy
 progressbar2
 rich
