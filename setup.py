@@ -51,7 +51,7 @@ setup(
     name="prometheous",
     version="0.1.0",
     author="James Brown",
-    author_email="james@example.com",
+    author_email="randomvoidmail@foxmail.com",
     description="AI-powered documentation generation and vector indexing tool",
     long_description=read_readme(),
     long_description_content_type="text/markdown",
