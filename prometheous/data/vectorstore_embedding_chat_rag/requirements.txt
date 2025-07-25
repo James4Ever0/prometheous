@@ -1,0 +1,9 @@
+langchain
+langchain-ollama
+pydantic
+tinydb
+docarray[hnswlib,proto]
+numpy
+progressbar2
+rich
+llama_index

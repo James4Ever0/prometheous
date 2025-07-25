@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>mark.js Demo</title>
+  <script src="https://cdn.jsdelivr.net/npm/mark.js"></script>
+  <style>
+    /* CSS for highlighted text */
+    mark {
+      background-color: yellow;
+      color: black;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <h1>mark.js Demo</h1>
+  <input type="text" id="keywordInput" placeholder="Enter keywords (comma-separated)">
+  <button onclick="highlightKeywords()">Highlight</button>
+  <p id="content">
+    This is a demo text where we will highlight keywords using mark.js library. 
+    The library can be used to highlight multiple keywords within a text element.
+  </p>
+
+  <script>
+    function highlightKeywords() {
+      const keywordsInput = document.getElementById('keywordInput').value;
+      const keywords = keywordsInput.split(',').map(keyword => keyword.trim());
+      
+      // Create a new Mark.js instance and apply the highlighting
+      const markInstance = new Mark(document.getElementById('content'));
+      markInstance.unmark(); // Clear previous marks
+      markInstance.mark(keywords);
+    }
+  </script>
+</body>
+</html>

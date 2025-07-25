@@ -1,0 +1,12 @@
+{
+    "/folder1/file.py": "Simple Hello Script",
+    "/folder1/folder2/file2.py": "Basic Python Output: \"world\"",
+    "/identify_utils.py": "Selecting Language IDs from Filenames",
+    "/main.py": "Title: \"Titles Generation Code\"",
+    "/main.py:1-41": "Title Generator Initialization",
+    "/main.py:118-149": "File Title Generator with Progress Tracking",
+    "/main.py:150-171": "File Processing and Summary Tracking",
+    "/main.py:42-86": "TinyDB Initialization and Setup",
+    "/main.py:87-117": "Generate and Cache Titles with LLM",
+    "/test.py": "Basic Test Program: \"Hello World\"\nin /test.py"
+}

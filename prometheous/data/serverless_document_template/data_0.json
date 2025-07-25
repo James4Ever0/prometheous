@@ -1,0 +1,55 @@
+{
+    "0": {
+        "file_id": 0,
+        "content": "/test.py",
+        "type": "filepath"
+    },
+    "1": {
+        "file_id": 0,
+        "content": "This code prints the string \"hello world\" to the console.",
+        "type": "summary"
+    },
+    "2": {
+        "file_id": 0,
+        "content": "print('hello world')",
+        "type": "code",
+        "location": "/test.py:1-1"
+    },
+    "3": {
+        "file_id": 0,
+        "content": "This code prints the string \"hello world\" to the console.",
+        "type": "comment"
+    },
+    "4": {
+        "file_id": 1,
+        "content": "/identify_utils.py",
+        "type": "filepath"
+    },
+    "5": {
+        "file_id": 1,
+        "content": "The code imports an \"identify\" module, checks tags from file names and returns language IDs if a specific tag (\"TEXT\") is present. It tests this functionality using the \"test()\" function and prints the results.",
+        "type": "summary"
+    },
+    "6": {
+        "file_id": 1,
+        "content": "from identify import identify\nfrom beartype import beartype\nimport random  # this is magic\nTEXT = \"text\"\n@beartype\ndef get_language_id_from_filename(filename: str) -> str:\n    language_id = \"\"\n    tags = identify.tags_from_filename(filename)\n    if TEXT in tags:\n        candidates = [it for it in tags if it != TEXT]\n        if candidates:\n            language_id = random.choice(candidates)\n    return language_id\ndef test():\n    names = [\"test.bash\", \"test.py\", \"test.js\"]",
+        "type": "code",
+        "location": "/identify_utils.py:1-20"
+    },
+    "7": {
+        "file_id": 1,
+        "content": "This code imports the \"identify\" module and uses it to get tags from file names. It then checks if \"TEXT\" (likely a constant) is in the tags, selects a random candidate tag if \"TEXT\" is present, and returns the language ID. The \"test()\" function tests this functionality with some file name examples.",
+        "type": "comment"
+    },
+    "8": {
+        "file_id": 1,
+        "content": "    for name in names:\n        language_id = get_language_id_from_filename(name)\n        print(f\"{name} -> {language_id}\")\nif __name__ == \"__main__\":\n    test()",
+        "type": "code",
+        "location": "/identify_utils.py:21-27"
+    },
+    "9": {
+        "file_id": 1,
+        "content": "This code runs the \"test()\" function to test the functionality of getting language IDs from file names and prints the results.",
+        "type": "comment"
+    }
+}

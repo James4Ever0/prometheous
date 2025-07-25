@@ -1,0 +1,10 @@
+{
+    "summary": "This code prints the word \"world\" to the console.",
+    "details": [
+        {
+            "comment": "This code prints the word \"world\" to the console.",
+            "location": "\"/media/root/Toshiba XG3/works/prometheous/document_agi_computer_control/demo_document_repository/src/folder1/folder2/file2.py\":0-0",
+            "content": "print(\"world\")"
+        }
+    ]
+}

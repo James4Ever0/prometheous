@@ -1,0 +1,151 @@
+{
+    "0": {
+        "file_id": 0,
+        "content": "/folder1/file.py",
+        "type": "filepath"
+    },
+    "1": {
+        "file_id": 0,
+        "content": "This code is a simple Python script that prints the word \"hello\" to the console. It is likely part of a larger program or script, used for testing or displaying output in a specific location.",
+        "type": "summary"
+    },
+    "2": {
+        "file_id": 0,
+        "content": "print(\"hello\")",
+        "type": "code",
+        "location": "/folder1/file.py:1-1"
+    },
+    "3": {
+        "file_id": 0,
+        "content": "This code is a simple Python script that prints the word \"hello\" to the console. It is likely part of a larger program or script, used for testing or displaying output in a specific location.",
+        "type": "comment"
+    },
+    "4": {
+        "file_id": 1,
+        "content": "/folder1/folder2/file2.py",
+        "type": "filepath"
+    },
+    "5": {
+        "file_id": 1,
+        "content": "This code snippet simply prints the string \"world\" to the console. It is a basic Python command that outputs the given text without any input or complex operations involved.",
+        "type": "summary"
+    },
+    "6": {
+        "file_id": 1,
+        "content": "print(\"world\")",
+        "type": "code",
+        "location": "/folder1/folder2/file2.py:1-1"
+    },
+    "7": {
+        "file_id": 1,
+        "content": "This code snippet simply prints the string \"world\" to the console. It is a basic Python command that outputs the given text without any input or complex operations involved.",
+        "type": "comment"
+    },
+    "8": {
+        "file_id": 2,
+        "content": "/identify_utils.py",
+        "type": "filepath"
+    },
+    "9": {
+        "file_id": 2,
+        "content": "The code imports the \"identify\" module and uses it to extract tags from file names. It then checks if the string \"TEXT\" is in the extracted tags. If so, it selects a random language ID (candidate) from the remaining tags and returns it as the language ID for the filename. The \"test()\" function tests the code by running it on a list of filenames and printing the filename and its associated language ID.",
+        "type": "summary"
+    },
+    "10": {
+        "file_id": 2,
+        "content": "from identify import identify\nfrom beartype import beartype\nimport random  # this is magic\nTEXT = \"text\"\n@beartype\ndef get_language_id_from_filename(filename: str) -> str:\n    language_id = \"\"\n    tags = identify.tags_from_filename(filename)\n    if TEXT in tags:\n        candidates = [it for it in tags if it != TEXT]\n        if candidates:\n            language_id = random.choice(candidates)\n    return language_id\ndef test():\n    names = [\"test.bash\", \"test.py\", \"test.js\"]\n    for name in names:\n        language_id = get_language_id_from_filename(name)\n        print(f\"{name} -> {language_id}\")\nif __name__ == \"__main__\":\n    test()",
+        "type": "code",
+        "location": "/identify_utils.py:1-27"
+    },
+    "11": {
+        "file_id": 2,
+        "content": "The code imports the \"identify\" module and uses it to extract tags from file names. It then checks if the string \"TEXT\" is in the extracted tags. If so, it selects a random language ID (candidate) from the remaining tags and returns it as the language ID for the filename. The \"test()\" function tests the code by running it on a list of filenames and printing the filename and its associated language ID.",
+        "type": "comment"
+    },
+    "12": {
+        "file_id": 3,
+        "content": "/main.py",
+        "type": "filepath"
+    },
+    "13": {
+        "file_id": 3,
+        "content": "The code initializes variables, prepares for title generation using a Language Model function or cache, and processes files to generate titles. It calculates split count, generates titles, updates the cache, checks directory existence, splits file summaries, and prints progress.",
+        "type": "summary"
+    },
+    "14": {
+        "file_id": 3,
+        "content": "# generate title\n# create /cache_title.json, /metadata_title.json, /data/titles/<number>.json\n# hash by comment, cache by path identifier and comment hash\n# identify those identical comments (file that only has one segment), only give title to file not segment\n# only display title if exists\nimport os\nimport argparse\nfrom re import L\nparser = argparse.ArgumentParser()\nparser.add_argument(\"-s\", \"--source_dir\", type=str, required=True)\nargs = parser.parse_args()\n# the only parameter.\nsource_dir = args.source_dir\nassert os.path.exists(source_dir)\nassert os.path.isdir(source_dir)\nassert os.path.isabs(source_dir)\nimport json\nimport sys\nsys.path.append(os.path.join(os.path.abspath(os.path.dirname(__file__)), \"../\"))\nfrom llm import llm_context\nfrom slice_utils import split_dict_into_chunks\nmetadata = json.loads(open(os.path.join(source_dir, \"metadata.json\"), \"r\").read())\nfile_mapping = metadata[\"file_mapping\"]\nsplit_count = metadata[\"split_count\"]\nproject_name = metadata[\"project_name\"]\ndata = {}\nfor i in range(split_count):",
+        "type": "code",
+        "location": "/main.py:1-41"
+    },
+    "15": {
+        "file_id": 3,
+        "content": "The code initializes variables, loads metadata from a JSON file, and prepares to generate titles for chunks of data based on comment and file information. It also checks the source directory's existence and appends necessary paths to the system path.",
+        "type": "comment"
+    },
+    "16": {
+        "file_id": 3,
+        "content": "    new_data = json.loads(open(os.path.join(source_dir, f\"data/{i}.json\"), \"r\").read())\n    data.update(new_data)\ndef strip_quote(s: str):\n    if s[0] == s[-1]:\n        if s[0] in ['\"', \"'\"]:\n            return s[1:-1].strip()\n    return s.strip()\nfrom tinydb import TinyDB, Query\ncache_title = TinyDB(os.path.join(source_dir, \"cache_title.json\"))\ntitle_split_dir = os.path.join(source_dir, \"data/titles\")\nmetadata_title_path = os.path.join(source_dir, \"metadata_title.json\")\nimport shutil\nif not os.path.exists(title_split_dir):\n    os.makedirs(title_split_dir)\nelse:\n    shutil.rmtree(title_split_dir)\n    os.makedirs(title_split_dir)\nif not os.path.isdir(title_split_dir):\n    raise Exception(\n        f\"'{title_split_dir}' (where splited titles stored) must be a directory\"\n    )\n# structure:\n# [filepath] [summary] [code] [comment] ...\ntitle_data = {}\nfile_mapping_detail = {}\ndata_count = len(data.keys())\nimport hashlib\ndef hash_key(summary: str):\n    enc = summary.strip()\n    if enc:\n        # Generate a hash for the given summary",
+        "type": "code",
+        "location": "/main.py:42-86"
+    },
+    "17": {
+        "file_id": 3,
+        "content": "The code is initializing the TinyDB for storing cache data, creating a directory for stored titles, and setting up variables to process the data. It also defines a function to strip quotes from strings and a function to generate hashes for summaries. The code then checks if the directory exists, removes any previous contents, and ensures it is a directory. It also defines an empty dictionary for storing title data and another dictionary for file mapping details. The length of the current data keys is counted.",
+        "type": "comment"
+    },
+    "18": {
+        "file_id": 3,
+        "content": "        hash_object = hashlib.md5(enc.encode())\n        return hash_object.hexdigest()\ndef ask_llm_for_title(path: str, comment: str):\n    init_prompt = \"\"\"You are a professional title writer. You can write a concise, conclusive and meaningful title within 3 to 7 words. You will be given a piece of content, a path that refers to the content and produce a single title.\n\"\"\"\n    with llm_context(init_prompt) as model:\n        prompt = f\"\"\"Content:\n{comment}\nPath of the content: {path}\nTitle within 3 to 7 words (do not quote or prefix the title, just write it out):\n\"\"\"\n        ret = model.run(prompt).strip()\n        ret = strip_quote(ret)\n    return ret\ndef generate_title_and_update_to_result(\n    path: str, comment: str, result_dict: dict[str, str]\n):\n    comment_hash = hash_key(comment)\n    doc = cache_title.get((Query().hash == comment_hash) and (Query().path == path))\n    if doc:\n        mtitle = doc[\"title\"]\n    else:\n        mtitle = ask_llm_for_title(path, comment)\n        cache_title.upsert(\n            dict(path=path, hash=comment_hash, title=mtitle), cond=Query().path == path",
+        "type": "code",
+        "location": "/main.py:87-117"
+    },
+    "19": {
+        "file_id": 3,
+        "content": "The code contains a function `ask_llm_for_title` that utilizes a Language Model (LLM) to generate a title for a given piece of content and its associated path. The generated LLM response is returned after stripping any quotes or prefixes. Another function, `generate_title_and_update_to_result`, takes a path and comment, generates the title using either cached results or the `ask_llm_for_title` function if not available in cache. Finally, it updates the cache with the new title for the given path.",
+        "type": "comment"
+    },
+    "20": {
+        "file_id": 3,
+        "content": "        )\n    result_dict[path] = mtitle\nfor k, v in file_mapping.items():\n    # end_id is exclusive.\n    if str(int(k) + 1) in file_mapping.keys():\n        end_id = int(file_mapping[str(int(k) + 1)][\"entry_id\"])\n    else:\n        end_id = data_count\n    file_mapping_detail[k] = {\n        \"filepath\": v[\"filepath\"],\n        \"span\": {\"start\": int(v[\"entry_id\"]), \"end\": end_id},\n    }\nfile_count = len(file_mapping.keys())\nprint(f\"\\n>>>> PROCESSING PROGRESS: 0/{file_count}\")\nfor i in range(file_count):\n    try:\n        it = file_mapping_detail[str(i)]\n        start, end = it[\"span\"][\"start\"], it[\"span\"][\"end\"]\n        split_count = (end - start - 2) / 2\n        split_count = int(split_count)\n        # generate for file summary title first.\n        generate_title_and_update_to_result(\n            data[str(start)][\"content\"], data[str(start + 1)][\"content\"], title_data\n        )\n        if split_count == 1:  # only generate for file summary\n            continue\n        else:\n            # generate for splits\n            for j in range(split_count):",
+        "type": "code",
+        "location": "/main.py:118-149"
+    },
+    "21": {
+        "file_id": 3,
+        "content": "This code segment is processing a set of files and generating titles for each file. It first calculates the number of splits needed for each file based on the end and start IDs, then generates a title for the file summary using the content from the start and end IDs. If more than one split is required, it generates titles for each split as well. The progress of the processing is printed to the console.",
+        "type": "comment"
+    },
+    "22": {
+        "file_id": 3,
+        "content": "                generate_title_and_update_to_result(\n                    data[str(start + 2 + j * 2)][\"location\"],\n                    data[str(start + 3 + j * 2)][\"content\"],\n                    title_data,\n                )\n    finally:\n        print(f\"\\n>>>> PROCESSING PROGRESS: {i+1}/{file_count}\")\n# split and store file summaries.\nprint(\"Spliting and storing titles...\")\ntitle_split_count = 0\nimport json\nfor i, chunk in enumerate(split_dict_into_chunks(title_data, 300)):\n    title_split_count += 1\n    with open(os.path.join(title_split_dir, f\"{i}.json\"), \"w+\") as f:\n        f.write(json.dumps(chunk, indent=4, ensure_ascii=False))\nprint(\"Storing title metadata...\")\nwith open(metadata_title_path, \"w+\") as f:\n    f.write(json.dumps(dict(split_count=title_split_count)))\nprint(\"Finished title generation.\")",
+        "type": "code",
+        "location": "/main.py:150-171"
+    },
+    "23": {
+        "file_id": 3,
+        "content": "Processing files, updating title and content. Printing progress, splitting and storing file summaries, tracking split count. Writing metadata, finishing title generation.",
+        "type": "comment"
+    },
+    "24": {
+        "file_id": 4,
+        "content": "/test.py",
+        "type": "filepath"
+    },
+    "25": {
+        "file_id": 4,
+        "content": "The code prints \"hello world\" to the console as a basic test or starting point for a program.",
+        "type": "summary"
+    },
+    "26": {
+        "file_id": 4,
+        "content": "print('hello world')",
+        "type": "code",
+        "location": "/test.py:1-1"
+    },
+    "27": {
+        "file_id": 4,
+        "content": "The code prints \"hello world\" to the console as a basic test or starting point for a program.",
+        "type": "comment"
+    }
+}

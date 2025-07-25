@@ -1,0 +1,15 @@
+{
+    "summary": "The code imports an \"identify\" module, checks tags from file names and returns language IDs if a specific tag (\"TEXT\") is present. It tests this functionality using the \"test()\" function and prints the results.",
+    "details": [
+        {
+            "comment": "This code imports the \"identify\" module and uses it to get tags from file names. It then checks if \"TEXT\" (likely a constant) is in the tags, selects a random candidate tag if \"TEXT\" is present, and returns the language ID. The \"test()\" function tests this functionality with some file name examples.",
+            "location": "\"/media/root/Toshiba XG3/works/prometheous/document_agi_computer_control/demo_document_repository/src/identify_utils.py\":0-19",
+            "content": "from identify import identify\nfrom beartype import beartype\nimport random  # this is magic\nTEXT = \"text\"\n@beartype\ndef get_language_id_from_filename(filename: str) -> str:\n    language_id = \"\"\n    tags = identify.tags_from_filename(filename)\n    if TEXT in tags:\n        candidates = [it for it in tags if it != TEXT]\n        if candidates:\n            language_id = random.choice(candidates)\n    return language_id\ndef test():\n    names = [\"test.bash\", \"test.py\", \"test.js\"]"
+        },
+        {
+            "comment": "This code runs the \"test()\" function to test the functionality of getting language IDs from file names and prints the results.",
+            "location": "\"/media/root/Toshiba XG3/works/prometheous/document_agi_computer_control/demo_document_repository/src/identify_utils.py\":20-26",
+            "content": "    for name in names:\n        language_id = get_language_id_from_filename(name)\n        print(f\"{name} -> {language_id}\")\nif __name__ == \"__main__\":\n    test()"
+        }
+    ]
+}

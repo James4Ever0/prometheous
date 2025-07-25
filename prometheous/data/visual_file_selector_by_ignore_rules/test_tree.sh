@@ -1,0 +1,1 @@
+python3.9 display_tree_structure.py --full "all_tree.json" --selected "selected_tree.json" --basepath "/media/root/Toshiba XG3/works/prometheous/document_agi_computer_control"

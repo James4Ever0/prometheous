@@ -1,0 +1,107 @@
+.
+├── all_tree.txt
+├── build_demo_document.sh
+├── build_static_website.sh
+├── build_website.py
+├── cache_db_context.py
+├── code_line_number.html
+├── codepiece_summarizer.py
+├── code_view_demo.py
+├── code_view.html
+├── code_view_with_path_argument_and_anchor
+│   ├── code_view_demo.py
+│   ├── codeview.html
+│   ├── index.html
+│   └── link.txt
+├── create_and_diff_tree.sh
+├── create_document.sh
+├── custom_doc_writer.py
+├── demo_document_repository
+│   ├── cache_db.json
+│   ├── codeview.html
+│   ├── data
+│   │   └── 0.json
+│   ├── doc
+│   │   ├── 6425b587-39d2-43e5-97f1-246e6d7418e0.json
+│   │   └── c67a5f66-a607-4187-bb6c-e78bcd226001.json
+│   ├── index.html
+│   ├── metadata.json
+│   └── src
+│       ├── identify_utils.py
+│       └── test.py
+├── demo_unordered_list.html
+├── drawer_file_tree
+│   ├── index.html
+│   ├── tree.js
+│   ├── treejs.css
+│   ├── treejs-master
+│   │   ├── demo
+│   │   │   ├── example.jpg
+│   │   │   └── index.html
+│   │   ├── LICENSE
+│   │   └── README.md
+│   ├── treejs-master.zip
+│   ├── treejs.min.css
+│   └── tree.min.js
+├── estimate_utils.py
+├── example.py
+├── flexsearch.bundle.js
+├── github_icon_demo
+│   ├── index.html
+│   └── style.css
+├── hexo_demo
+│   ├── init.sh
+│   └── serve.sh
+├── highlight_search_terms
+│   └── index.html
+├── identify_utils.py
+├── init_demo_document_repository.sh
+├── init_document_generator.sh
+├── init.sh
+├── llm.py
+├── loading_bar_demo
+│   └── index.html
+├── load_json
+│   ├── demo.json
+│   ├── load_json.html
+│   ├── script.js
+│   └── serve.sh
+├── path_select_utils.py
+├── prism_autoload
+│   └── index.html
+├── __pycache__
+│   ├── cache_db_context.cpython-39.pyc
+│   ├── codepiece_summarizer.cpython-39.pyc
+│   ├── custom_doc_writer.cpython-39.pyc
+│   ├── identify_utils.cpython-39.pyc
+│   ├── llm.cpython-39.pyc
+│   └── slice_utils.cpython-39.pyc
+├── README.md
+├── recursive_document_writer.py
+├── search_template.html.j2
+├── selected_tree.txt
+├── serverless_document_template
+│   ├── cache_db.json
+│   ├── codeview.html
+│   ├── data_0.json
+│   ├── doc
+│   │   ├── 6425b587-39d2-43e5-97f1-246e6d7418e0.json
+│   │   └── c67a5f66-a607-4187-bb6c-e78bcd226001.json
+│   ├── index.html
+│   ├── metadata.json
+│   └── src
+│       ├── identify_utils.py
+│       └── test.py
+├── serve.sh
+├── setup_openai_local_service.sh
+├── slice_utils.py
+├── split_search_result_view_demo
+│   └── index.html
+├── sync_to_cybergod.sh
+├── test_transformer.html
+├── transformers.js
+├── website_demo.html
+├── website_document_demo.html
+└── website_template.html.j2
+
+19 directories, 85 files

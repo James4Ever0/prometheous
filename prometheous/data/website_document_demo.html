@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<!-- simplicity first. let's just use the summary & code blocks as entry. once clicked, jump to code line -->
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Search Code By Comment</title>
+    <script src="./flexsearch.bundle.js"></script>
+    <script type="text/javascript" defer>
+        // Sample data for demonstration
+        function getQueryParams() {
+            // Get the current URL
+            const url = new URL(window.location.href);
+
+            // Get the search parameters from the URL
+            const searchParams = new URLSearchParams(url.search);
+
+            // Create an object to store the query parameters
+            const queryParams = {};
+
+            // Iterate over the search parameters and populate the queryParams object
+            for (const [key, value] of searchParams) {
+                queryParams[key] = value;
+            }
+
+            // Output the query parameters object to the console
+            console.log("Query Parameters:", queryParams);
+        }
+
+        const data = {
+            1: { title: "JavaScript is a programming language", content: "JavaScript is a programming language" },
+            2: { title: "Python is a popular language for data science", content: "Python is a popular language for data science" },
+            3: { title: "JavaScript and Python are both used in web development", content: "JavaScript and Python are both used in web development" },
+            4: { title: "JavaScript is a programming language", content: "JavaScript is a programming language" },
+            5: { title: "Python is a popular language for data science", content: "Python is a popular language for data science" },
+            6: { title: "JavaScript and Python are both used in web development", content: "JavaScript and Python are both used in web development" },
+            7: { title: "JavaScript is a programming language", content: "JavaScript is a programming language" },
+            8: { title: "Python is a popular language for data science", content: "Python is a popular language for data science" },
+            9: { title: "JavaScript and Python are both used in web development", content: "JavaScript and Python are both used in web development" },
+            10: { title: "JavaScript is a programming language", content: "JavaScript is a programming language" },
+            11: { title: "Python is a popular language for data science", content: "Python is a popular language for data science" },
+            12: { title: "JavaScript and Python are both used in web development", content: "JavaScript and Python are both used in web development" },
+            13: { title: "JavaScript is a programming language", content: "JavaScript is a programming language" },
+            14: { title: "Python is a popular language for data science", content: "Python is a popular language for data science" },
+            15: { title: "JavaScript and Python are both used in web development", content: "JavaScript and Python are both used in web development" },
+            16: { title: "JavaScript is a programming language", content: "JavaScript is a programming language" },
+            17: { title: "Python is a popular language for data science", content: "Python is a popular language for data science" },
+            18: { title: "JavaScript and Python are both used in web development", content: "JavaScript and Python are both used in web development" },
+            19: { title: "JavaScript is a programming language", content: "JavaScript is a programming language" },
+            20: { title: "Python is a popular language for data science", content: "Python is a popular language for data science" },
+            21: { title: "JavaScript and Python are both used in web development", content: "JavaScript and Python are both used in web development" },
+            22: { title: "JavaScript is a programming language", content: "JavaScript is a programming language" },
+            23: { title: "Python is a popular language for data science", content: "Python is a popular language for data science" },
+            24: { title: "JavaScript and Python are both used in web development", content: "JavaScript and Python are both used in web development" }
+        };
+
+        // Create a new FlexSearch instance with the required configuration
+        const doc = new FlexSearch.Document({
+            tokenize: "full",
+            document: {
+                id: "id",
+                index: ["title", "content"]
+            }
+        });
+
+        // Add the data to the search index
+        Object.keys(data).forEach(id => {
+            doc.add(id, data[id]);
+        });
+
+        // Event listener for the search input
+        function registerSearchEventListener() {
+            document.getElementById('searchInput').addEventListener('input', function () {
+                const searchTerm = this.value;
+                const results = doc.search(searchTerm, 100); // Limiting to 5 results for demonstration
+
+                // Display the search results
+                const searchResults = document.getElementById('searchResults');
+                searchResults.innerHTML = '';
+                var visited_ids = [];
+
+                results.forEach(result => {
+                    const field = result.field;
+                    const ids = result.result;
+                    const container = document.getElementById('searchResultContainer');
+                    ids.forEach(id => {
+                        if (visited_ids.indexOf(id) == -1) {
+                            visited_ids.push(id);
+                            const listItem = container.createElement('li');
+                            listItem.textContent = `[${field}] ${data[id][field]}`;
+                            searchResults.appendChild(listItem);
+                        }
+                    });
+                });
+            });
+        }
+        document.addEventListener('DOMContentLoaded', registerSearchEventListener);
+        getQueryParams();
+    </script>
+    <style type="text/css">
+        html,
+        body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            font-family: 'Roboto', sans-serif;
+        }
+
+        header {
+            display: flex;
+            flex-direction: column;
+            align-items: left;
+            justify-content: center;
+            text-align: left;
+            margin-left: 20px;
+            margin-right: 20px;
+            margin-top: 10px;
+            margin-bottom: 10px;
+        }
+
+        .container {
+            flex: 1;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            align-items: left;
+            justify-content: center;
+            text-align: left;
+            margin-left: 20px;
+            margin-right: 20px;
+            margin-top: 10px;
+            margin-bottom: 10px;
+        }
+
+        input[type="text"] {
+            padding: 10px;
+            border-radius: 10px;
+            border: 2px solid #ccc;
+        }
+
+        ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        ul li {
+            background-color: #f2f2f2;
+            border: 2px solid #ccc;
+            /* padding: 10px; */
+            margin-top: 10px;
+            margin-bottom: 10px;
+            /* border-radius: 10px; */
+            box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1);
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <h1><a href="website_document_demo.html?q=1">Search</a>/<a href="website_document_demo.html?q=2">document</a>
+        </h1>
+        <input type="text" id="searchInput" placeholder="Search...">
+    </header>
+    <div class="container" , id='searchResultContainer'>
+        <ul id="searchResults"></ul>
+    </div>
+</body>
+
+</html>

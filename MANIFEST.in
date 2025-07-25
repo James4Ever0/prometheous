@@ -1,0 +1,15 @@
+include README.md
+include LICENSE
+include pyproject.toml
+include setup.py
+recursive-include prometheous *.py
+recursive-include document_agi_computer_control *.py
+recursive-include document_agi_computer_control *.html
+recursive-include document_agi_computer_control *.j2
+recursive-include document_agi_computer_control *.js
+recursive-include document_agi_computer_control *.css
+recursive-include document_agi_computer_control *.txt
+recursive-exclude document_agi_computer_control *.pyc
+recursive-exclude document_agi_computer_control __pycache__
+global-exclude *.pyc
+global-exclude __pycache__

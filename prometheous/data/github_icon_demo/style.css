@@ -1,0 +1,20 @@
+.container {
+    display: flex;
+    align-items: center;
+}
+
+h2 {
+    margin: 0;
+    font-size: 1.5em;
+}
+
+.github-icon {
+    margin-left: 10px;
+    line-height: 1;
+}
+
+.github-icon i {
+    font-size: 1.5em;
+    height: 1.5em;
+    width: 1.5em;
+}

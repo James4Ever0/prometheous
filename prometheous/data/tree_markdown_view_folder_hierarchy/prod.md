@@ -1,0 +1,3 @@
+- **`agi_computer_control`** *Identify language from filenames, Python testing.*
+    - [`test.py`](index.html?q=/test.py) *"Python code prints 'hello world'"*
+    - [`identify_utils.py`](index.html?q=/identify_utils.py) *Determine language from filename with random selection.*

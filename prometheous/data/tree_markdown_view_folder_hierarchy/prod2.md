@@ -1,0 +1,7 @@
+- **`agi_computer_control`** *Identify language from filenames, Python testing.*
+    - **`folder1`** *Prints "world" in file2.py, contains folder2.*
+        - **`folder2`**
+            - [`file2.py`](index.html?q=/folder1/folder2/file2.py) *Prints "world" in file2.py*
+        - [`file.py`](index.html?q=/folder1/file.py) *Entry point for simple Python code.*
+    - [`test.py`](index.html?q=/test.py) *"Python code prints 'hello world'"*
+    - [`identify_utils.py`](index.html?q=/identify_utils.py) *Determine language from filename with random selection.*
